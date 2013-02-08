@@ -1,13 +1,12 @@
+# Heavily tweaked to roll back Fedora 18 version for RHEL 6 compatibility
 %define main_release 0.1
 
-%define samba_version 4.0.0
+%define samba_version 4.0.2
 %define talloc_version 2.0.7
 %define ntdb_version 0.9
 %define tdb_version 1.2.10
 %define tevent_version 0.9.17
 %define ldb_version 1.1.12
-#%define pre_release rc5
-#%define samba_release %{main_release}%{?dist}.%{pre_release}
 %define samba_release %{main_release}%{?dist}
 
 %global with_libsmbclient 1
@@ -49,7 +48,7 @@ License:        GPLv3+ and LGPLv3+
 Group:          System Environment/Daemons
 URL:            http://www.samba.org/
 
-Source0:        samba-%{version}%{pre_release}.tar.bz2
+Source0:        samba-%{version}.tar.gz
 
 # Red Hat specific replacement-files
 Source1: samba.log
@@ -60,9 +59,6 @@ Source5: pam_winbind.conf
 
 Source200: README.dc
 Source201: README.downgrade
-
-Patch0: samba-4.0.0rc6-LogonSamLogon_failover.patch
-Patch1: samba-4.0.0rc6-winbind_default_domain_workaround.patch
 
 BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
@@ -411,10 +407,7 @@ The winbind krb5 locator is a plugin for the system kerberos library to allow
 the local kerberos library to use the same KDC as samba and winbind use
 
 %prep
-%setup -q -n samba-%{version}%{pre_release}
-
-%patch0 -p1 -b .samlogon_failover
-%patch1 -p1 -b .winbind_default_domain_workaround
+%setup -q -n samba-%{version}
 
 %build
 %global _talloc_lib ,talloc,pytalloc,pytalloc-util
@@ -672,8 +665,8 @@ rm -rf %{buildroot}
 %{_sbindir}/smbd
 %{_libdir}/samba/auth
 %{_libdir}/samba/vfs
-%{_unitdir}/nmb.service
-%{_unitdir}/smb.service
+#%{_unitdir}/nmb.service
+#%{_unitdir}/smb.service
 %attr(1777,root,root) %dir /var/spool/samba
 %dir %{_sysconfdir}/openldap/schema
 %{_sysconfdir}/openldap/schema/samba.schema
@@ -1314,9 +1307,11 @@ rm -rf %{buildroot}
 %{_mandir}/man7/winbind_krb5_locator.7*
 
 %changelog
-* Fri Feb 08 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.0-0.1
-- Roll back version number for RHEL 6, rely on backported libtdb package.
-- Disable systemd
+* Fri Feb 08 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.2-0.1
+- Disable systemd for RHEL 6
+- Discard pre_release naming weirdness, update to 4.0.2
+- Discard 4.0.2 included samba-4.0.0rc6-LogonSamLogon_failover.patch and
+  samba-4.0.0rc6-winbind_default_domain_workaround.patch
 
 * Thu Nov 15 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-168.rc5
 - Reduce dependencies of samba-devel and create samba-test-devel package.
