@@ -67,9 +67,9 @@ Patch1: samba-4.0.0rc6-winbind_default_domain_workaround.patch
 BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 Requires(pre): /usr/sbin/groupadd
-Requires(post): systemd
-Requires(preun): systemd
-Requires(postun): systemd
+#Requires(post): systemd
+#Requires(preun): systemd
+#Requires(postun): systemd
 
 Requires(pre): %{name}-common = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
@@ -168,7 +168,7 @@ of SMB/CIFS shares and printing to SMB/CIFS printers.
 Summary: Files used by both Samba servers and clients
 Group: Applications/System
 Requires: %{name}-libs = %{samba_depver}
-Requires(post): systemd
+#Requires(post): systemd
 Requires: logrotate
 
 Provides: samba4-common = %{samba_depver}
@@ -554,16 +554,17 @@ install -m 0644 %{SOURCE200} %{buildroot}%{_defaultdocdir}/%{name}/README.dc
 install -m 0644 %{SOURCE200} %{buildroot}%{_defaultdocdir}/%{name}/README.dc-libs
 %endif
 
-install -d -m 0755 %{buildroot}%{_unitdir}
-for i in nmb smb winbind ; do
-    cat packaging/systemd/$i.service | sed -e 's@Type=forking@Type=forking\nEnvironment=KRB5CCNAME=/run/samba/krb5cc_samba@g' >tmp$i.service
-    install -m 0644 tmp$i.service %{buildroot}%{_unitdir}/$i.service
-done
+# Disable systemd
+#install -d -m 0755 %{buildroot}%{_unitdir}
+#for i in nmb smb winbind ; do
+#    cat packaging/systemd/$i.service | sed -e 's@Type=forking@Type=forking\nEnvironment=KRB5CCNAME=/run/samba/krb5cc_samba@g' >tmp$i.service
+#    install -m 0644 tmp$i.service %{buildroot}%{_unitdir}/$i.service
+#done
 
-# NetworkManager online/offline script
-install -d -m 0755 %{buildroot}%{_sysconfdir}/NetworkManager/dispatcher.d/
-install -m 0755 packaging/NetworkManager/30-winbind-systemd \
-            %{buildroot}%{_sysconfdir}/NetworkManager/dispatcher.d/30-winbind
+## NetworkManager online/offline script
+#install -d -m 0755 %{buildroot}%{_sysconfdir}/NetworkManager/dispatcher.d/
+#install -m 0755 packaging/NetworkManager/30-winbind-systemd \
+#            %{buildroot}%{_sysconfdir}/NetworkManager/dispatcher.d/30-winbind
 
 # winbind krb5 locator
 install -d -m 0755 %{buildroot}%{_libdir}/krb5/plugins/libkrb5
@@ -582,20 +583,20 @@ rm -rf %{buildroot}%{perl_vendorlib}/Parse/Yapp
 %{_fixperms} %{buildroot}%{perl_vendorlib}
 
 %post
-%systemd_post smb.service
-%systemd_post nmb.service
+#%systemd_post smb.service
+#%systemd_post nmb.service
 
 %preun
-%systemd_preun smb.service
-%systemd_preun nmb.service
+#%systemd_preun smb.service
+#%systemd_preun nmb.service
 
 %postun
-%systemd_postun_with_restart smb.service
-%systemd_postun_with_restart nmb.service
+#%systemd_postun_with_restart smb.service
+#%systemd_postun_with_restart nmb.service
 
 %post common
 /sbin/ldconfig
-/usr/bin/systemd-tmpfiles --create %{_sysconfdir}/tmpfiles.d/samba.conf
+#/usr/bin/systemd-tmpfiles --create %{_sysconfdir}/tmpfiles.d/samba.conf
 
 %postun common -p /sbin/ldconfig
 
@@ -629,14 +630,14 @@ rm -rf %{buildroot}%{perl_vendorlib}/Parse/Yapp
 /usr/sbin/groupadd -g 88 wbpriv >/dev/null 2>&1 || :
 
 %post winbind
-%systemd_post winbind.service
+#%systemd_post winbind.service
 
 %preun winbind
-%systemd_preun winbind.service
+#%systemd_preun winbind.service
 
 %postun winbind
-%systemd_postun_with_restart smb.service
-%systemd_postun_with_restart nmb.service
+#%systemd_postun_with_restart smb.service
+#%systemd_postun_with_restart nmb.service
 
 %post winbind-clients -p /sbin/ldconfig
 
@@ -1315,6 +1316,7 @@ rm -rf %{buildroot}
 %changelog
 * Fri Feb 08 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.0-0.1
 - Roll back version number for RHEL 6, rely on backported libtdb package.
+- Disable systemd
 
 * Thu Nov 15 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-168.rc5
 - Reduce dependencies of samba-devel and create samba-test-devel package.
