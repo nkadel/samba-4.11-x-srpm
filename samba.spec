@@ -1,4 +1,4 @@
-%define main_release 168
+%define main_release 0.1
 
 %define samba_version 4.0.0
 %define talloc_version 2.0.7
@@ -6,9 +6,9 @@
 %define tdb_version 1.2.10
 %define tevent_version 0.9.17
 %define ldb_version 1.1.12
-%define pre_release rc5
-
-%define samba_release %{main_release}%{?dist}.%{pre_release}
+#%define pre_release rc5
+#%define samba_release %{main_release}%{?dist}.%{pre_release}
+%define samba_release %{main_release}%{?dist}
 
 %global with_libsmbclient 1
 %global with_libwbclient 1
@@ -1313,6 +1313,9 @@ rm -rf %{buildroot}
 %{_mandir}/man7/winbind_krb5_locator.7*
 
 %changelog
+* Fri Feb 08 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.0-0.1
+- Roll back version number for RHEL 6, rely on backported libtdb package.
+
 * Thu Nov 15 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-168.rc5
 - Reduce dependencies of samba-devel and create samba-test-devel package.
 
