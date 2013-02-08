@@ -57,6 +57,11 @@ Source3: swat.desktop
 Source4: smb.conf.default
 Source5: pam_winbind.conf
 
+# RHEL 6 specific init scripts, to avoid systemd
+Source11: smb.init
+Source12: winbind.init
+Source13: nmb.init
+
 Source200: README.dc
 Source201: README.downgrade
 
@@ -491,6 +496,20 @@ make %{?_smp_mflags}
 # 'make proto' gets to it.
 (cd pidl && %{__perl} Makefile.PL INSTALLDIRS=vendor )
 
+# Store init scripts for RHEL 6 backport
+mkdir -p packaging/RHEL6
+[ ! -e packaging/RHEL/smb.init ] || \
+  mv packaging/RHEL/smb.init.default
+cp %{SOURCE11} packaging/RHEL/smb.init
+
+[ ! -e packaging/RHEL/winbind.init ] || \
+  mv packaging/RHEL/winbind.init.default
+cp %{SOURCE12} packaging/RHEL/winbind.init
+
+[ ! -e packaging/RHEL/nmb.init ] || \
+  mv packaging/RHEL/nmb.init.default
+cp %{SOURCE13} packaging/RHEL/nmb.init
+
 %install
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
@@ -533,8 +552,13 @@ install -m644 %{SOURCE2} %{buildroot}%{_sysconfdir}/xinetd.d/swat
 
 install -m 0744 packaging/printing/smbprint %{buildroot}%{_bindir}/smbprint
 
-install -d -m 0755 %{buildroot}%{_sysconfdir}/tmpfiles.d/
-install -m644 packaging/systemd/samba.conf.tmp %{buildroot}%{_sysconfdir}/tmpfiles.d/samba.conf
+# systemd
+#install -d -m 0755 %{buildroot}%{_sysconfdir}/tmpfiles.d/
+#install -m644 packaging/systemd/samba.conf.tmp %{buildroot}%{_sysconfdir}/tmpfiles.d/samba.conf
+
+# sysdonfig from SRPM
+#mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
+#install -m644 %{SOURCE4} %{buildroot}%{_sysconfdir}/sysconfig/samba
 
 install -d -m 0755 %{buildroot}%{_sysconfdir}/sysconfig
 install -m 0644 packaging/systemd/samba.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/samba
@@ -767,7 +791,7 @@ rm -rf %{buildroot}
 %files common
 %defattr(-,root,root)
 #%{_libdir}/samba/charset ???
-%{_sysconfdir}/tmpfiles.d/samba.conf
+#%{_sysconfdir}/tmpfiles.d/samba.conf
 %{_bindir}/net
 %{_bindir}/pdbedit
 %{_bindir}/profiles
