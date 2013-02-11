@@ -1,13 +1,23 @@
+# Set --with testsuite or %bcond_without to run the Samba torture testsuite.
+%bcond_with testsuite
+
 # Heavily tweaked to roll back Fedora 18 version for RHEL 6 compatibility
 %define main_release 0.1
 
-%define samba_version 4.0.2
-%define talloc_version 2.0.7
+%define samba_version 4.0.3
+%define talloc_version 2.0.8
 %define ntdb_version 0.9
 %define tdb_version 1.2.10
 %define tevent_version 0.9.17
 %define ldb_version 1.1.12
+# This should be rc1 or nil
+%define pre_release %nil
+
+%if "x%{?pre_release}" != "x"
+%define samba_release 0.%{main_release}.%{pre_release}%{?dist}
+%else
 %define samba_release %{main_release}%{?dist}
+%endif
 
 %global with_libsmbclient 1
 %global with_libwbclient 1
@@ -21,6 +31,12 @@
 
 %global with_mitkrb5 1
 %global with_dc 0
+
+%if %{with testsuite}
+# The testsuite only works with a full build right now.
+%global with_mitkrb5 0
+%global with_dc 1
+%endif
 
 %global with_clustering_support 1
 
@@ -48,7 +64,7 @@ License:        GPLv3+ and LGPLv3+
 Group:          System Environment/Daemons
 URL:            http://www.samba.org/
 
-Source0:        samba-%{version}.tar.gz
+Source0:        samba-%{version}%{pre_release}.tar.bz2
 
 # Red Hat specific replacement-files
 Source1: samba.log
@@ -56,6 +72,7 @@ Source2: samba.xinetd
 Source3: swat.desktop
 Source4: smb.conf.default
 Source5: pam_winbind.conf
+Source6: samba.pamd
 
 # RHEL 6 specific init scripts, to avoid systemd
 Source11: smb.init
@@ -64,6 +81,9 @@ Source13: nmb.init
 
 Source200: README.dc
 Source201: README.downgrade
+
+Patch0: samba-4.0.3-fix_pidl_with_gcc48.patch
+Patch1: samba-4.0.3-fix_pdb_ldapsam.patch
 
 BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
@@ -87,7 +107,7 @@ BuildRequires: docbook-style-xsl
 BuildRequires: e2fsprogs-devel
 BuildRequires: gawk
 BuildRequires: iniparser-devel
-BuildRequires: krb5-devel
+BuildRequires: krb5-devel >= 1.10
 BuildRequires: libacl-devel
 BuildRequires: libaio-devel
 BuildRequires: libattr-devel
@@ -109,7 +129,7 @@ BuildRequires: zlib-devel >= 1.2.3
 BuildRequires: libbsd-devel
 
 %if ! %with_talloc
-%global libtalloc_version 2.0.7
+%global libtalloc_version 2.0.8
 
 BuildRequires: libtalloc-devel >= %{libtalloc_version}
 BuildRequires: pytalloc-devel >= %{libtalloc_version}
@@ -130,20 +150,22 @@ BuildRequires: pyldb-devel >= %{libldb_version}
 %endif
 
 %if ! %with_tdb
-%global libtdb_version 1.2.10
+%global libtdb_version 1.2.11
 
 BuildRequires: libtdb-devel >= %{libtdb_version}
 BuildRequires: python-tdb >= %{libtdb_version}
 %endif
 
-# UGLY HACK: Fix 'Provides' for libsmbclient and libwbclient
-%if ! %with_libsmbclient && ! %with_libwbclient
+%if %{with testsuite}
+BuildRequires: ldb-tools
+%endif
+
+# filter out perl requirements pulled in from examples in the docdir.
 %{?filter_setup:
-%filter_from_provides /libsmbclient.so.0()/d; /libwbclient.so.0()/d
-%filter_from_requires /libsmbclient.so.0()/d; /libwbclient.so.0()/d
+%filter_provides_in %{_docdir}
+%filter_requires_in %{_docdir}
 %filter_setup
 }
-%endif
 
 ### SAMBA
 %description
@@ -225,6 +247,7 @@ libraries in the Samba suite.
 %package libs
 Summary: Samba libraries
 Group: Applications/System
+Requires: krb5-libs >= 1.10
 %if %with_libwbclient
 Requires: libwbclient = %{samba_depver}
 %endif
@@ -329,7 +352,9 @@ Summary: Testing tools for Samba servers and clients
 Group: Applications/System
 Requires: %{name} = %{samba_depver}
 Requires: %{name}-common = %{samba_depver}
-Requires: %{name}-dc = %{samba_depver}
+%if %with_dc
+Requires: %{name}-dc-libs = %{samba_depver}
+%endif
 Requires: %{name}-libs = %{samba_depver}
 Requires: %{name}-winbind = %{samba_depver}
 
@@ -412,7 +437,10 @@ The winbind krb5 locator is a plugin for the system kerberos library to allow
 the local kerberos library to use the same KDC as samba and winbind use
 
 %prep
-%setup -q -n samba-%{version}
+%setup -q -n samba-%{version}%{pre_release}
+
+%patch0 -p1 -b .pidl_gcc48
+%patch1 -p1 -b .pdb_ldapsam
 
 %build
 %global _talloc_lib ,talloc,pytalloc,pytalloc-util
@@ -484,6 +512,9 @@ the local kerberos library to use the same KDC as samba and winbind use
         --with-cluster-support \
         --enable-old-ctdb \
 %endif
+%if %{with testsuite}
+        --enable-selftest \
+%endif
 %if ! %with_pam_smbpass
         --without-pam_smbpass
 %endif
@@ -515,7 +546,6 @@ rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
 
 install -d -m 0755 %{buildroot}/usr/{sbin,bin}
-install -d -m 0755 %{buildroot}%{_sysconfdir}/{logrotate.d,security}
 install -d -m 0755 %{buildroot}%{_libdir}/security
 install -d -m 0755 %{buildroot}/var/lib/samba
 install -d -m 0755 %{buildroot}/var/lib/samba/private
@@ -538,12 +568,21 @@ rm -rf %{buildroot}/%{_datadir}/perl5
 ( cd pidl && make install PERL_INSTALL_ROOT=%{buildroot} )
 
 # Install other stuff
+install -d -m 0755 %{buildroot}%{_sysconfdir}/logrotate.d
 install -m 0644 %{SOURCE1} %{buildroot}%{_sysconfdir}/logrotate.d/samba
+
 install -m 0644 %{SOURCE4} %{buildroot}%{_sysconfdir}/samba/smb.conf
+
+install -d -m 0755 %{buildroot}%{_sysconfdir}/security
 install -m 0644 %{SOURCE5} %{buildroot}%{_sysconfdir}/security/pam_winbind.conf
+
+# Install pam file for swat
+install -d -m 0755 %{buildroot}%{_sysconfdir}/pam.d
+install -m 0644 %{SOURCE6} %{buildroot}%{_sysconfdir}/pam.d/samba
 
 echo 127.0.0.1 localhost > %{buildroot}%{_sysconfdir}/samba/lmhosts
 
+# openLDAP database schema
 install -d -m 0755 %{buildroot}%{_sysconfdir}/openldap/schema
 install -m644 examples/LDAP/samba.schema %{buildroot}%{_sysconfdir}/openldap/schema/samba.schema
 
@@ -556,19 +595,15 @@ install -m 0744 packaging/printing/smbprint %{buildroot}%{_bindir}/smbprint
 #install -d -m 0755 %{buildroot}%{_sysconfdir}/tmpfiles.d/
 #install -m644 packaging/systemd/samba.conf.tmp %{buildroot}%{_sysconfdir}/tmpfiles.d/samba.conf
 
-# sysdonfig from SRPM
-#mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
-#install -m644 %{SOURCE4} %{buildroot}%{_sysconfdir}/sysconfig/samba
-
 install -d -m 0755 %{buildroot}%{_sysconfdir}/sysconfig
 install -m 0644 packaging/systemd/samba.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/samba
 
-install -d -m 0755 %{buildroot}%{_defaultdocdir}/%{name}
-install -m 0644 %{SOURCE201} %{buildroot}%{_defaultdocdir}/%{name}/README.downgrade
+install -d -m 0755 %{buildroot}%{_defaultdocdir}/%{name}-%{version}
+install -m 0644 %{SOURCE201} %{buildroot}%{_defaultdocdir}/%{name}-%{version}/README.downgrade
 
 %if ! %with_dc
-install -m 0644 %{SOURCE200} %{buildroot}%{_defaultdocdir}/%{name}/README.dc
-install -m 0644 %{SOURCE200} %{buildroot}%{_defaultdocdir}/%{name}/README.dc-libs
+install -m 0644 %{SOURCE200} %{buildroot}%{_defaultdocdir}/%{name}-%{version}/README.dc
+install -m 0644 %{SOURCE200} %{buildroot}%{_defaultdocdir}/%{name}-%{version}/README.dc-libs
 %endif
 
 # Disable systemd
@@ -578,10 +613,10 @@ install -m 0644 %{SOURCE200} %{buildroot}%{_defaultdocdir}/%{name}/README.dc-lib
 #    install -m 0644 tmp$i.service %{buildroot}%{_unitdir}/$i.service
 #done
 
-## NetworkManager online/offline script
-#install -d -m 0755 %{buildroot}%{_sysconfdir}/NetworkManager/dispatcher.d/
-#install -m 0755 packaging/NetworkManager/30-winbind-systemd \
-#            %{buildroot}%{_sysconfdir}/NetworkManager/dispatcher.d/30-winbind
+# NetworkManager online/offline script
+install -d -m 0755 %{buildroot}%{_sysconfdir}/NetworkManager/dispatcher.d/
+install -m 0755 packaging/NetworkManager/30-winbind-systemd \
+            %{buildroot}%{_sysconfdir}/NetworkManager/dispatcher.d/30-winbind
 
 # winbind krb5 locator
 install -d -m 0755 %{buildroot}%{_libdir}/krb5/plugins/libkrb5
@@ -598,6 +633,11 @@ rm -rf %{buildroot}%{perl_vendorlib}/Parse/Yapp
 
 # Fix up permission on perl install.
 %{_fixperms} %{buildroot}%{perl_vendorlib}
+
+%if %{with testsuite}
+%check
+TDB_NO_FSYNC=1 make %{?_smp_mflags} test
+%endif
 
 %post
 #%systemd_post smb.service
@@ -663,7 +703,7 @@ rm -rf %{buildroot}%{perl_vendorlib}/Parse/Yapp
 %postun winbind-krb5-locator
 if [ "$1" -ge "1" ]; then
         if [ "`readlink %{_sysconfdir}/alternatives/winbind_krb5_locator.so`" == "%{_libdir}/winbind_krb5_locator.so" ]; then
-                %{_sbindir}/alternatives --set winbind_krb5_locator %{_libdir}/winbind_krb5_locator.so
+                %{_sbindir}/update-alternatives --set winbind_krb5_locator.so %{_libdir}/winbind_krb5_locator.so
         fi
 fi
 
@@ -682,7 +722,9 @@ rm -rf %{buildroot}
 ### SAMBA
 %files
 %defattr(-,root,root,-)
-%doc COPYING
+%doc COPYING README WHATSNEW.txt
+%doc examples/autofs examples/LDAP examples/misc
+%doc examples/printer-accounting examples/printing
 %{_bindir}/smbstatus
 %{_bindir}/eventlogadm
 %{_sbindir}/nmbd
@@ -694,7 +736,7 @@ rm -rf %{buildroot}
 %attr(1777,root,root) %dir /var/spool/samba
 %dir %{_sysconfdir}/openldap/schema
 %{_sysconfdir}/openldap/schema/samba.schema
-%doc %{_defaultdocdir}/%{name}/README.downgrade
+%doc %{_defaultdocdir}/%{name}-%{version}/README.downgrade
 %{_mandir}/man1/smbstatus.1*
 %{_mandir}/man8/eventlogadm.8*
 %{_mandir}/man8/smbd.8*
@@ -706,8 +748,6 @@ rm -rf %{buildroot}
 %defattr(-,root,root)
 %{_bindir}/cifsdd
 %{_bindir}/dbwrap_tool
-%{_bindir}/debug2html
-%{_bindir}/log2pcap
 %{_bindir}/nmblookup
 %{_bindir}/nmblookup4
 %{_bindir}/oLschema2ldif
@@ -721,7 +761,6 @@ rm -rf %{buildroot}
 %{_bindir}/smbclient
 %{_bindir}/smbclient4
 %{_bindir}/smbcquotas
-%{_bindir}/smbfilter
 %{_bindir}/smbget
 #%{_bindir}/smbiconv
 %{_bindir}/smbpasswd
@@ -729,8 +768,8 @@ rm -rf %{buildroot}
 %{_bindir}/smbspool
 %{_bindir}/smbta-util
 %{_bindir}/smbtree
-%{_bindir}/split_tokens
 %{_libdir}/samba/libldb-cmdline.so
+%{_mandir}/man1/dbwrap_tool.1*
 %{_mandir}/man1/nmblookup.1*
 %{_mandir}/man1/oLschema2ldif.1*
 %{_mandir}/man1/regdiff.1*
@@ -791,7 +830,7 @@ rm -rf %{buildroot}
 %files common
 %defattr(-,root,root)
 #%{_libdir}/samba/charset ???
-#%{_sysconfdir}/tmpfiles.d/samba.conf
+%{_sysconfdir}/tmpfiles.d/samba.conf
 %{_bindir}/net
 %{_bindir}/pdbedit
 %{_bindir}/profiles
@@ -829,10 +868,9 @@ rm -rf %{buildroot}
 ### DC
 %files dc
 %defattr(-,root,root)
-%{_bindir}/samba-dig
-%{_libdir}/samba/ldb
-%{_libdir}/samba/libdfs_server_ad.so
-%{_libdir}/samba/libdsdb-module.so
+%exclude %{_libdir}/samba/ldb/ildap.so
+%exclude %{_libdir}/samba/ldb/ldbsamba_extensions.so
+%exclude %{_libdir}/samba/libdfs_server_ad.so
 
 %if %with_dc
 %{_bindir}/samba-tool
@@ -853,8 +891,11 @@ rm -rf %{buildroot}
 %dir /var/lib/samba/sysvol
 %{_datadir}/samba/setup
 %{_mandir}/man8/samba.8.gz
+%{_mandir}/man8/samba-tool.8.gz
 %else # with_dc
-%doc %{_defaultdocdir}/%{name}/README.dc
+%doc %{_defaultdocdir}/%{name}-%{version}/README.dc
+%exclude %{_mandir}/man8/samba.8.gz
+%exclude %{_mandir}/man8/samba-tool.8.gz
 %endif # with_dc
 
 ### DC-LIBS
@@ -866,11 +907,12 @@ rm -rf %{buildroot}
 %{_libdir}/samba/process_model
 %{_libdir}/samba/service
 %{_libdir}/libdcerpc-server.so.*
+%{_libdir}/samba/libdsdb-module.so
 %{_libdir}/samba/libntvfs.so
 %{_libdir}/samba/libposix_eadb.so
 %{_libdir}/samba/bind9/dlz_bind9_9.so
 %else
-%doc %{_defaultdocdir}/%{name}/README.dc-libs
+%doc %{_defaultdocdir}/%{name}-%{version}/README.dc-libs
 %endif # with_dc
 
 ### DEVEL
@@ -1063,6 +1105,7 @@ rm -rf %{buildroot}
 %{_libdir}/libsmbldap.so.*
 
 # libraries needed by the public libraries
+%dir %{_libdir}/samba
 %{_libdir}/samba/libCHARSET3.so
 %{_libdir}/samba/libMESSAGING.so
 %{_libdir}/samba/libLIBWBCLIENT_OLD.so
@@ -1244,6 +1287,7 @@ rm -rf %{buildroot}
 %files swat
 %defattr(-,root,root)
 %config(noreplace) %{_sysconfdir}/xinetd.d/swat
+%config(noreplace) %{_sysconfdir}/pam.d/samba
 %{_datadir}/samba/swat
 %{_sbindir}/swat
 %{_mandir}/man8/swat.8*
@@ -1252,32 +1296,17 @@ rm -rf %{buildroot}
 ### TEST
 %files test
 %defattr(-,root,root)
-%{_bindir}/asystest
-%{_bindir}/dbwrap_torture
 %{_bindir}/gentest
 %{_bindir}/locktest
-%{_bindir}/locktest2
-%{_bindir}/locktest3
 %{_bindir}/masktest
-%{_bindir}/masktest3
-%{_bindir}/msgtest
 %{_bindir}/ndrdump
-%{_bindir}/nsstest
-%{_bindir}/pdbtest
-%{_bindir}/pthreadpooltest
-%{_bindir}/rpc_open_tcp
-%{_bindir}/smbconftort
 %{_bindir}/smbtorture
-%{_bindir}/smbtorture3
-%{_bindir}/test_lp_load
-%{_bindir}/timelimit
-%{_bindir}/versiontest
-%{_bindir}/vfstest
-%{_bindir}/vlp
 %{_libdir}/libtorture.so.*
 %{_libdir}/samba/libsubunit.so
 %if %with_dc
 %{_libdir}/samba/libdlz_bind9_for_torture.so
+%else
+%{_libdir}/samba/libdsdb-module.so
 %endif
 %{_mandir}/man1/gentest.1*
 %{_mandir}/man1/locktest.1*
@@ -1285,6 +1314,13 @@ rm -rf %{buildroot}
 %{_mandir}/man1/ndrdump.1*
 %{_mandir}/man1/smbtorture.1*
 %{_mandir}/man1/vfstest.1*
+
+%if %{with testsuite}
+# files to ignore in testsuite mode
+%{_libdir}/samba/libnss_wrapper.so
+%{_libdir}/samba/libsocket_wrapper.so
+%{_libdir}/samba/libuid_wrapper.so
+%endif
 
 ### TEST-DEVEL
 %files test-devel
@@ -1303,8 +1339,8 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libidmap.so
 %{_sbindir}/winbindd
 %attr(750,root,wbpriv) %dir /var/lib/samba/winbindd_privileged
-%{_unitdir}/winbind.service
-%{_sysconfdir}/NetworkManager/dispatcher.d/30-winbind
+#%{_unitdir}/winbind.service
+#%{_sysconfdir}/NetworkManager/dispatcher.d/30-winbind
 %{_mandir}/man8/winbindd.8*
 %{_mandir}/man8/idmap_*.8*
 
@@ -1312,7 +1348,6 @@ rm -rf %{buildroot}
 %files winbind-clients
 %defattr(-,root,root)
 %{_bindir}/ntlm_auth
-%{_bindir}/ntlm_auth3
 %{_bindir}/wbinfo
 %{_libdir}/libnss_winbind.so*
 %{_libdir}/libnss_wins.so*
@@ -1336,6 +1371,47 @@ rm -rf %{buildroot}
 - Discard pre_release naming weirdness, update to 4.0.2
 - Discard 4.0.2 included samba-4.0.0rc6-LogonSamLogon_failover.patch and
   samba-4.0.0rc6-winbind_default_domain_workaround.patch
+- Discard smbfilter, split_tokens, and other binaries no longer 
+  automatically installed with "make install"
+
+* Thu Feb 07 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.3-1
+- Update to Samba 4.0.3.
+- resolves: #907544 - Add unowned directory /usr/lib64/samba.
+- resolves: #906517 - Fix pidl code generation with gcc 4.8.
+- resolves: #908353 - Fix passdb backend ldapsam as module.
+
+* Wed Jan 30 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.2-1
+- Update to Samba 4.0.2.
+- Fixes CVE-2013-0213.
+- Fixes CVE-2013-0214.
+- resolves: #906002
+- resolves: #905700
+- resolves: #905704
+- Fix conn->share_access which is reset between user switches.
+- resolves: #903806
+- Add missing example and make sure we don't introduce perl dependencies.
+- resolves: #639470
+
+* Wed Jan 16 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.1-1
+- Update to Samba 4.0.1.
+- Fixes CVE-2013-0172.
+
+* Mon Dec 17 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-174
+- Fix typo in winbind-krb-locator post uninstall script.
+
+* Tue Dec 11 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-173
+- Update to Samba 4.0.0.
+
+* Thu Dec 06 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-171.rc6
+- Fix typo in winbind-krb-locator post uninstall script.
+
+* Tue Dec 04 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-170.rc6
+- Update to Samba 4.0.0rc6.
+- Add /etc/pam.d/samba for swat to work correctly.
+- resolves #882700
+
+* Fri Nov 23 2012 Guenther Deschner <gdeschner@redhat.com> - 2:4.0.0-169.rc5
+- Make sure ncacn_ip_tcp client code looks for NBT_NAME_SERVER name types.
 
 * Thu Nov 15 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-168.rc5
 - Reduce dependencies of samba-devel and create samba-test-devel package.
