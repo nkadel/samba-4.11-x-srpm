@@ -23,11 +23,22 @@
 %global with_libwbclient 1
 
 %global with_pam_smbpass 0
+
+%if 0%{?fedora} > 15 || 0%{?rhel} > 6
+%global with_sysv 0
 %global with_talloc 0
 %global with_tevent 0
 %global with_tdb 0
-%global with_ntdb 1
 %global with_ldb 0
+%else
+%global with_sysv 1
+%global with_talloc 1
+%global with_tevent 1
+%global with_tdb 1
+%global with_ldb 1
+%endif
+
+%global with_ntdb 1
 
 %global with_mitkrb5 1
 %global with_dc 0
