@@ -29,8 +29,8 @@
 %global with_tdb 0
 %global with_ldb 0
 
+# Use systemd, not SysV init scripts, as appropriate
 %if 0%{?fedora} > 15 || 0%{?rhel} > 6
-# Use systemd, not SysV
 %global with_systemd 1
 %else
 %global with_systemd 0
@@ -1399,12 +1399,8 @@ rm -rf %{buildroot}
 
 %changelog
 * Fri Feb 08 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.2-0.1
-- Disable systemd for RHEL 6
-- Discard pre_release naming weirdness, update to 4.0.2
-- Discard 4.0.2 included samba-4.0.0rc6-LogonSamLogon_failover.patch and
-  samba-4.0.0rc6-winbind_default_domain_workaround.patch
-- Discard smbfilter, split_tokens, and other binaries no longer 
-  automatically installed with "make install"
+- Make sytemd optional with "with_systemd" as needed.
+- Update libtalloc to 2.0.8 and krb5-devel as needed for 4.0.3.
 
 * Thu Feb 07 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.3-1
 - Update to Samba 4.0.3.
