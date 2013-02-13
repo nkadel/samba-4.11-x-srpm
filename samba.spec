@@ -24,18 +24,16 @@
 
 %global with_pam_smbpass 0
 
-%if 0%{?fedora} > 15 || 0%{?rhel} > 6
-%global with_sysv 0
 %global with_talloc 0
 %global with_tevent 0
 %global with_tdb 0
 %global with_ldb 0
+
+%if 0%{?fedora} > 15 || 0%{?rhel} > 6
+# Use systemd, not SysV
+%global with_systemd 1
 %else
-%global with_sysv 1
-%global with_talloc 1
-%global with_tevent 1
-%global with_tdb 1
-%global with_ldb 1
+%global with_systemd 0
 %endif
 
 %global with_ntdb 1
@@ -86,9 +84,9 @@ Source5: pam_winbind.conf
 Source6: samba.pamd
 
 # RHEL 6 specific init scripts, to avoid systemd
-Source11: smb.init
-Source12: winbind.init
-Source13: nmb.init
+Source100: smb.init
+Source101: winbind.init
+Source102: nmb.init
 
 Source200: README.dc
 Source201: README.downgrade
@@ -99,9 +97,15 @@ Patch1: samba-4.0.3-fix_pdb_ldapsam.patch
 BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 Requires(pre): /usr/sbin/groupadd
-#Requires(post): systemd
-#Requires(preun): systemd
-#Requires(postun): systemd
+%if %with_systemd
+Requires(post): systemd
+Requires(preun): systemd
+Requires(postun): systemd
+%else
+Requires(post): /sbin/chkconfig, /sbin/service
+Requires(preun): /sbin/chkconfig, /sbin/service
+Requires(postun): /sbin/chkconfig, /sbin/service
+%endif
 
 Requires(pre): %{name}-common = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
@@ -202,7 +206,11 @@ of SMB/CIFS shares and printing to SMB/CIFS printers.
 Summary: Files used by both Samba servers and clients
 Group: Applications/System
 Requires: %{name}-libs = %{samba_depver}
-#Requires(post): systemd
+%if %with_systemd
+Requires(post): systemd
+%else
+Requires(post): /sbin/chkconfig, /sbin/service
+%endif
 Requires: logrotate
 
 Provides: samba4-common = %{samba_depver}
@@ -540,17 +548,9 @@ make %{?_smp_mflags}
 
 # Store init scripts for RHEL 6 backport
 mkdir -p packaging/RHEL6
-[ ! -e packaging/RHEL/smb.init ] || \
-  mv packaging/RHEL/smb.init.default
-cp %{SOURCE11} packaging/RHEL/smb.init
-
-[ ! -e packaging/RHEL/winbind.init ] || \
-  mv packaging/RHEL/winbind.init.default
-cp %{SOURCE12} packaging/RHEL/winbind.init
-
-[ ! -e packaging/RHEL/nmb.init ] || \
-  mv packaging/RHEL/nmb.init.default
-cp %{SOURCE13} packaging/RHEL/nmb.init
+cp %{SOURCE100} packaging/RHEL6/smb.init
+cp %{SOURCE101} packaging/RHEL6/winbind.init
+cp %{SOURCE102} packaging/RHEL6/nmb.init
 
 %install
 rm -rf %{buildroot}
@@ -602,9 +602,10 @@ install -m644 %{SOURCE2} %{buildroot}%{_sysconfdir}/xinetd.d/swat
 
 install -m 0744 packaging/printing/smbprint %{buildroot}%{_bindir}/smbprint
 
-# systemd
-#install -d -m 0755 %{buildroot}%{_sysconfdir}/tmpfiles.d/
-#install -m644 packaging/systemd/samba.conf.tmp %{buildroot}%{_sysconfdir}/tmpfiles.d/samba.conf
+%if %with_systemd
+install -d -m 0755 %{buildroot}%{_sysconfdir}/tmpfiles.d/
+install -m644 packaging/systemd/samba.conf.tmp %{buildroot}%{_sysconfdir}/tmpfiles.d/samba.conf
+%endif
 
 install -d -m 0755 %{buildroot}%{_sysconfdir}/sysconfig
 install -m 0644 packaging/systemd/samba.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/samba
@@ -617,12 +618,13 @@ install -m 0644 %{SOURCE200} %{buildroot}%{_defaultdocdir}/%{name}-%{version}/RE
 install -m 0644 %{SOURCE200} %{buildroot}%{_defaultdocdir}/%{name}-%{version}/README.dc-libs
 %endif
 
-# Disable systemd
-#install -d -m 0755 %{buildroot}%{_unitdir}
-#for i in nmb smb winbind ; do
-#    cat packaging/systemd/$i.service | sed -e 's@Type=forking@Type=forking\nEnvironment=KRB5CCNAME=/run/samba/krb5cc_samba@g' >tmp$i.service
-#    install -m 0644 tmp$i.service %{buildroot}%{_unitdir}/$i.service
-#done
+%if %with_systemd
+install -d -m 0755 %{buildroot}%{_unitdir}
+for i in nmb smb winbind ; do
+    cat packaging/systemd/$i.service | sed -e 's@Type=forking@Type=forking\nEnvironment=KRB5CCNAME=/run/samba/krb5cc_samba@g' >tmp$i.service
+    install -m 0644 tmp$i.service %{buildroot}%{_unitdir}/$i.service
+done
+%endif
 
 # NetworkManager online/offline script
 install -d -m 0755 %{buildroot}%{_sysconfdir}/NetworkManager/dispatcher.d/
@@ -651,20 +653,29 @@ TDB_NO_FSYNC=1 make %{?_smp_mflags} test
 %endif
 
 %post
-#%systemd_post smb.service
-#%systemd_post nmb.service
+%if %with_systemd
+%systemd_post smb.service
+%systemd_post nmb.service
+%endif
 
 %preun
-#%systemd_preun smb.service
-#%systemd_preun nmb.service
+%if %with_systemd
+%systemd_preun smb.service
+%systemd_preun nmb.service
+%endif
 
 %postun
-#%systemd_postun_with_restart smb.service
-#%systemd_postun_with_restart nmb.service
+%if %with_systemd
+%else
+%systemd_postun_with_restart smb.service
+%systemd_postun_with_restart nmb.service
+%endif
 
 %post common
 /sbin/ldconfig
-#/usr/bin/systemd-tmpfiles --create %{_sysconfdir}/tmpfiles.d/samba.conf
+%if %with_systemd
+/usr/bin/systemd-tmpfiles --create %{_sysconfdir}/tmpfiles.d/samba.conf
+%endif
 
 %postun common -p /sbin/ldconfig
 
@@ -698,14 +709,20 @@ TDB_NO_FSYNC=1 make %{?_smp_mflags} test
 /usr/sbin/groupadd -g 88 wbpriv >/dev/null 2>&1 || :
 
 %post winbind
-#%systemd_post winbind.service
+%if %with_systemd
+%systemd_post winbind.service
+%endif
 
 %preun winbind
-#%systemd_preun winbind.service
+%if %with_systemd
+%systemd_preun winbind.service
+%endif
 
 %postun winbind
-#%systemd_postun_with_restart smb.service
-#%systemd_postun_with_restart nmb.service
+%if %with_systemd
+%systemd_postun_with_restart smb.service
+%systemd_postun_with_restart nmb.service
+%endif
 
 %post winbind-clients -p /sbin/ldconfig
 
@@ -841,7 +858,9 @@ rm -rf %{buildroot}
 %files common
 %defattr(-,root,root)
 #%{_libdir}/samba/charset ???
+%if %with_systemd
 %{_sysconfdir}/tmpfiles.d/samba.conf
+%endif
 %{_bindir}/net
 %{_bindir}/pdbedit
 %{_bindir}/profiles
@@ -904,7 +923,7 @@ rm -rf %{buildroot}
 %{_mandir}/man8/samba.8.gz
 %{_mandir}/man8/samba-tool.8.gz
 %else # with_dc
-%doc %{_defaultdocdir}/%{name}-%{version}/README.dc
+#%doc %{_defaultdocdir}/%{name}-%{version}/README.dc
 %exclude %{_mandir}/man8/samba.8.gz
 %exclude %{_mandir}/man8/samba-tool.8.gz
 %endif # with_dc
@@ -923,7 +942,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libposix_eadb.so
 %{_libdir}/samba/bind9/dlz_bind9_9.so
 %else
-%doc %{_defaultdocdir}/%{name}-%{version}/README.dc-libs
+#%doc %{_defaultdocdir}/%{name}-%{version}/README.dc-libs
 %endif # with_dc
 
 ### DEVEL
@@ -1350,8 +1369,10 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libidmap.so
 %{_sbindir}/winbindd
 %attr(750,root,wbpriv) %dir /var/lib/samba/winbindd_privileged
-#%{_unitdir}/winbind.service
-#%{_sysconfdir}/NetworkManager/dispatcher.d/30-winbind
+%if %with_systemd
+%{_unitdir}/winbind.service
+%endif
+%{_sysconfdir}/NetworkManager/dispatcher.d/30-winbind
 %{_mandir}/man8/winbindd.8*
 %{_mandir}/man8/idmap_*.8*
 
