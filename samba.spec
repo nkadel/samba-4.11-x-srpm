@@ -609,9 +609,12 @@ install -m644 %{SOURCE2} %{buildroot}%{_sysconfdir}/xinetd.d/swat
 install -m 0744 packaging/printing/smbprint %{buildroot}%{_bindir}/smbprint
 
 %if %with_systemd
+echo Using %{_sysconfdir}/tmpfiles.d for init scripts
 install -d -m 0755 %{buildroot}%{_sysconfdir}/tmpfiles.d/
 install -m644 packaging/systemd/samba.conf.tmp %{buildroot}%{_sysconfdir}/tmpfiles.d/samba.conf
 %else
+echo Using %{_initrddir} for init scripts
+install -d -m 0755 %{buildroot}%{_initrddir}
 install -m644 packaging/RHEL6/smb.init %{buildroot}%{_initrddir}/smb
 install -m644 packaging/RHEL6/smb.init %{buildroot}%{_initrddir}/winbind
 install -m644 packaging/RHEL6/smb.init %{buildroot}%{_initrddir}/nmb
@@ -804,7 +807,7 @@ rm -rf %{buildroot}
 %attr(1777,root,root) %dir /var/spool/samba
 %dir %{_sysconfdir}/openldap/schema
 %{_sysconfdir}/openldap/schema/samba.schema
-%doc %{_defaultdocdir}/%{name}-%{version}/README.downgrade
+#%doc %{_defaultdocdir}/%{name}-%{version}/README.downgrade
 %{_mandir}/man1/smbstatus.1*
 %{_mandir}/man8/eventlogadm.8*
 %{_mandir}/man8/smbd.8*
