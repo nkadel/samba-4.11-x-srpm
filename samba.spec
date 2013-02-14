@@ -458,6 +458,12 @@ the local kerberos library to use the same KDC as samba and winbind use
 %prep
 %setup -q -n samba-%{version}%{pre_release}
 
+# SysV compatible init scripts for RHEL 6 based layout
+mkdir packaging/RHEL6
+cp %{SOURCE100} packaging/RHEL6/.
+cp %{SOURCE101} packaging/RHEL6/.
+cp %{SOURCE102} packaging/RHEL6/.
+
 %patch0 -p1 -b .pidl_gcc48
 %patch1 -p1 -b .pdb_ldapsam
 
@@ -605,6 +611,10 @@ install -m 0744 packaging/printing/smbprint %{buildroot}%{_bindir}/smbprint
 %if %with_systemd
 install -d -m 0755 %{buildroot}%{_sysconfdir}/tmpfiles.d/
 install -m644 packaging/systemd/samba.conf.tmp %{buildroot}%{_sysconfdir}/tmpfiles.d/samba.conf
+%else
+install -m644 packaging/RHEL6/smb.init %{buildroot}%{_initrddir}/smb
+install -m644 packaging/RHEL6/smb.init %{buildroot}%{_initrddir}/winbind
+install -m644 packaging/RHEL6/smb.init %{buildroot}%{_initrddir}/nmb
 %endif
 
 install -d -m 0755 %{buildroot}%{_sysconfdir}/sysconfig
@@ -656,12 +666,27 @@ TDB_NO_FSYNC=1 make %{?_smp_mflags} test
 %if %with_systemd
 %systemd_post smb.service
 %systemd_post nmb.service
+%else
+/sbin/chkconfig --add smb
+/sbin/chkconfig --add nmb
+if [ "$1" -ge "1" ]; then
+    /sbin/service smb condrestart >/dev/null 2>&1 || :
+    /sbin/service nmb condrestart >/dev/null 2>&1 || :
+fi
 %endif
 
 %preun
 %if %with_systemd
 %systemd_preun smb.service
 %systemd_preun nmb.service
+%else
+if [ $1 = 0 ] ; then
+    /sbin/service smb stop >/dev/null 2>&1 || :
+    /sbin/service nmb stop >/dev/null 2>&1 || :
+    /sbin/chkconfig --del smb
+    /sbin/chkconfig --del nmb
+fi
+exit 0
 %endif
 
 %postun
@@ -711,11 +736,21 @@ TDB_NO_FSYNC=1 make %{?_smp_mflags} test
 %post winbind
 %if %with_systemd
 %systemd_post winbind.service
+%else
+/sbin/chkconfig --add winbind
+if [ "$1" -ge "1" ]; then
+    /sbin/service winbind condrestart >/dev/null 2>&1 || :
+fi
 %endif
 
 %preun winbind
 %if %with_systemd
 %systemd_preun winbind.service
+%else
+if [ $1 = 0 ] ; then
+    /sbin/service winbind stop >/dev/null 2>&1 || :
+    /sbin/chkconfig --del winbind
+fi
 %endif
 
 %postun winbind
@@ -759,8 +794,13 @@ rm -rf %{buildroot}
 %{_sbindir}/smbd
 %{_libdir}/samba/auth
 %{_libdir}/samba/vfs
-#%{_unitdir}/nmb.service
-#%{_unitdir}/smb.service
+%if %{with_systemd}
+%{_unitdir}/nmb.service
+%{_unitdir}/smb.service
+%else
+%attr(755,root,root) %{_initrddir}/smb
+%attr(755,root,root) %{_initrddir}/nmb
+%endif # with_systemd
 %attr(1777,root,root) %dir /var/spool/samba
 %dir %{_sysconfdir}/openldap/schema
 %{_sysconfdir}/openldap/schema/samba.schema
@@ -1371,6 +1411,8 @@ rm -rf %{buildroot}
 %attr(750,root,wbpriv) %dir /var/lib/samba/winbindd_privileged
 %if %with_systemd
 %{_unitdir}/winbind.service
+%else
+%{_initrddir}/winbind
 %endif
 %{_sysconfdir}/NetworkManager/dispatcher.d/30-winbind
 %{_mandir}/man8/winbindd.8*
