@@ -558,6 +558,14 @@ cp %{SOURCE100} packaging/RHEL6/smb.init
 cp %{SOURCE101} packaging/RHEL6/winbind.init
 cp %{SOURCE102} packaging/RHEL6/nmb.init
 
+# README.downgrade for RHEL
+cp %{SOURCE201} .
+%if ! %with_dc
+cp %{SOURCE200} README.dc
+cp %{SOURCE200} README.dc-libs
+%endif
+
+
 %install
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
@@ -622,14 +630,6 @@ install -m644 packaging/RHEL6/smb.init %{buildroot}%{_initrddir}/nmb
 
 install -d -m 0755 %{buildroot}%{_sysconfdir}/sysconfig
 install -m 0644 packaging/systemd/samba.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/samba
-
-install -d -m 0755 %{buildroot}%{_defaultdocdir}/%{name}-%{version}
-install -m 0644 %{SOURCE201} %{buildroot}%{_defaultdocdir}/%{name}-%{version}/README.downgrade
-
-%if ! %with_dc
-install -m 0644 %{SOURCE200} %{buildroot}%{_defaultdocdir}/%{name}-%{version}/README.dc
-install -m 0644 %{SOURCE200} %{buildroot}%{_defaultdocdir}/%{name}-%{version}/README.dc-libs
-%endif
 
 %if %with_systemd
 install -d -m 0755 %{buildroot}%{_unitdir}
@@ -807,7 +807,7 @@ rm -rf %{buildroot}
 %attr(1777,root,root) %dir /var/spool/samba
 %dir %{_sysconfdir}/openldap/schema
 %{_sysconfdir}/openldap/schema/samba.schema
-#%doc %{_defaultdocdir}/%{name}-%{version}/README.downgrade
+%doc README.downgrade
 %{_mandir}/man1/smbstatus.1*
 %{_mandir}/man8/eventlogadm.8*
 %{_mandir}/man8/smbd.8*
@@ -966,7 +966,7 @@ rm -rf %{buildroot}
 %{_mandir}/man8/samba.8.gz
 %{_mandir}/man8/samba-tool.8.gz
 %else # with_dc
-#%doc %{_defaultdocdir}/%{name}-%{version}/README.dc
+#%doc README.dc
 %exclude %{_mandir}/man8/samba.8.gz
 %exclude %{_mandir}/man8/samba-tool.8.gz
 %endif # with_dc
@@ -985,7 +985,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libposix_eadb.so
 %{_libdir}/samba/bind9/dlz_bind9_9.so
 %else
-#%doc %{_defaultdocdir}/%{name}-%{version}/README.dc-libs
+#%doc README.dc-libs
 %endif # with_dc
 
 ### DEVEL
