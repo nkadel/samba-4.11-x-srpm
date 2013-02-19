@@ -459,6 +459,7 @@ the local kerberos library to use the same KDC as samba and winbind use
 %setup -q -n samba-%{version}%{pre_release}
 
 # SysV compatible init scripts for RHEL 6 based layout
+mkdir -p packaging/RHEL/init.d
 cp %{SOURCE100} packaging/RHEL/init.d/.
 cp %{SOURCE101} packaging/RHEL/init.d/.
 cp %{SOURCE102} packaging/RHEL/init.d/.
