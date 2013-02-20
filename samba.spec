@@ -93,6 +93,7 @@ Source201: README.downgrade
 
 Patch0: samba-4.0.3-fix_pidl_with_gcc48.patch
 Patch1: samba-4.0.3-fix_pdb_ldapsam.patch
+Patch2: samba-4.0.3-fix_libcmdline-credentials_linking.patch
 
 BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
@@ -466,6 +467,7 @@ cp %{SOURCE102} packaging/RHEL/init.d/.
 
 %patch0 -p1 -b .pidl_gcc48
 %patch1 -p1 -b .pdb_ldapsam
+%patch2 -p1 -b .libreplace_linking
 
 %build
 %global _talloc_lib ,talloc,pytalloc,pytalloc-util
@@ -628,13 +630,13 @@ install -m755 packaging/RHEL/init.d/nmb.init %{buildroot}%{_initrddir}/nmb
 install -d -m 0755 %{buildroot}%{_sysconfdir}/sysconfig
 install -m 0644 packaging/systemd/samba.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/samba
 
-# RHEL does not deal with pre-pushed docs this way well
+# rpmbuild in RHEL 6 does not deal with pre-pushed docs this way well
 #install -d -m 0755 %{buildroot}%{_defaultdocdir}/%{name}-%{version}
 #install -m 0644 %{SOURCE201} %{buildroot}%{_defaultdocdir}/%{name}-%{version}/README.downgrade
 install -m 0644 %{SOURCE201} packaging/RHEL/README.downgrade
 
 %if ! %with_dc
-# RHEL does not deal with pre-pushed docs this way well
+# rpmbuild in RHEL 6 does not deal with pre-pushed docs this way well
 #install -m 0644 %{SOURCE200} %{buildroot}%{_defaultdocdir}/%{name}-%{version}/README.dc
 #install -m 0644 %{SOURCE200} %{buildroot}%{_defaultdocdir}/%{name}-%{version}/README.dc-libs
 install -m 0644 %{SOURCE200} packaging/RHEL/README.dc
@@ -817,7 +819,7 @@ rm -rf %{buildroot}
 %attr(1777,root,root) %dir /var/spool/samba
 %dir %{_sysconfdir}/openldap/schema
 %{_sysconfdir}/openldap/schema/samba.schema
-# RHEL does not deal with pre-pushed docs this way well
+# rpmbuild in RHEL 6 does not deal with pre-pushed docs this way well
 #%doc %{_defaultdocdir}/%{name}-%{version}/README.downgrade
 %doc packaging/RHEL/README.downgrade
 %{_mandir}/man1/smbstatus.1*
@@ -983,7 +985,7 @@ rm -rf %{buildroot}
 %{_mandir}/man8/samba.8.gz
 %{_mandir}/man8/samba-tool.8.gz
 %else # with_dc
-# RHEL does not deal well with pre-instlaled log files
+# rpmbuild in RHEL 6 does not deal well with pre-instlaled log files
 #%{_defaultdocdir}/%{name}-%{version}/README.dc
 %doc packaging/RHEL/README.dc
 %exclude %{_mandir}/man8/samba.8.gz
@@ -1004,7 +1006,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libposix_eadb.so
 %{_libdir}/samba/bind9/dlz_bind9_9.so
 %else
-# RHEL does not deal well with pre-instlaled log files
+# rpmbuild in RHEL 6 does not deal well with pre-instlaled log files
 #%{_defaultdocdir}/%{name}-%{version}/README.dc-libs
 %doc packaging/RHEL/README.dc-libs
 %endif # with_dc
