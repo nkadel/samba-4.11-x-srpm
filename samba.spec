@@ -23,20 +23,11 @@
 %global with_libwbclient 1
 
 %global with_pam_smbpass 0
-
 %global with_talloc 0
 %global with_tevent 0
 %global with_tdb 0
-%global with_ldb 0
-
-# Use systemd, not SysV init scripts, as appropriate
-%if 0%{?fedora} > 15 || 0%{?rhel} > 6
-%global with_systemd 1
-%else
-%global with_systemd 0
-%endif
-
 %global with_ntdb 1
+%global with_ldb 0
 
 %global with_mitkrb5 1
 %global with_dc 0
@@ -48,6 +39,13 @@
 %endif
 
 %global with_clustering_support 1
+
+# Use systemd, not SysV init scripts, as appropriate
+%if 0%{?fedora} > 15 || 0%{?rhel} > 6
+%global with_systemd 1
+%else
+%global with_systemd 0
+%endif
 
 %{!?python_libdir: %define python_libdir %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1,1)")}
 %{!?python_sitearch: %define python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
@@ -87,6 +85,7 @@ Source6: samba.pamd
 Source100: smb.init
 Source101: winbind.init
 Source102: nmb.init
+Source103: samba.sysconfig
 
 Source200: README.dc
 Source201: README.downgrade
@@ -460,10 +459,11 @@ the local kerberos library to use the same KDC as samba and winbind use
 %setup -q -n samba-%{version}%{pre_release}
 
 # SysV compatible init scripts for RHEL 6 based layout
-mkdir -p packaging/RHEL/init.d
-cp %{SOURCE100} packaging/RHEL/init.d/.
-cp %{SOURCE101} packaging/RHEL/init.d/.
-cp %{SOURCE102} packaging/RHEL/init.d/.
+mkdir -p packaging/init.d
+cp %{SOURCE100} packaging/init.d/.
+cp %{SOURCE101} packaging/init.d/.
+cp %{SOURCE102} packaging/init.d/.
+cp %{SOURCE103} packaging/init.d/.
 
 %patch0 -p1 -b .pidl_gcc48
 %patch1 -p1 -b .pdb_ldapsam
@@ -560,10 +560,11 @@ make %{?_smp_mflags}
 (cd pidl && %{__perl} Makefile.PL INSTALLDIRS=vendor )
 
 # Store init scripts for RHEL 6 backport
-mkdir -p packaging/RHEL/init.d
-cp %{SOURCE100} packaging/RHEL/init.d/smb.init
-cp %{SOURCE101} packaging/RHEL/init.d/winbind.init
-cp %{SOURCE102} packaging/RHEL/init.d/nmb.init
+mkdir -p packaging/init.d
+cp %{SOURCE100} packaging/init.d/smb.init
+cp %{SOURCE101} packaging/init.d/winbind.init
+cp %{SOURCE102} packaging/init.d/nmb.init
+cp %{SOURCE103} packaging/init.d/samba.sysconfig
 
 %install
 rm -rf %{buildroot}
@@ -616,29 +617,22 @@ install -m644 %{SOURCE2} %{buildroot}%{_sysconfdir}/xinetd.d/swat
 install -m 0744 packaging/printing/smbprint %{buildroot}%{_bindir}/smbprint
 
 %if %with_systemd
-echo Using %{_sysconfdir}/tmpfiles.d for init scripts
 install -d -m 0755 %{buildroot}%{_sysconfdir}/tmpfiles.d/
 install -m644 packaging/systemd/samba.conf.tmp %{buildroot}%{_sysconfdir}/tmpfiles.d/samba.conf
-%else
-echo Using %{_initrddir} for init scripts
-install -d -m 0755 %{buildroot}%{_initrddir}
-install -m755 packaging/RHEL/init.d/smb.init %{buildroot}%{_initrddir}/smb
-install -m755 packaging/RHEL/init.d/winbind.init %{buildroot}%{_initrddir}/winbind
-install -m755 packaging/RHEL/init.d/nmb.init %{buildroot}%{_initrddir}/nmb
-%endif
 
 install -d -m 0755 %{buildroot}%{_sysconfdir}/sysconfig
 install -m 0644 packaging/systemd/samba.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/samba
+%else
+
+install -d -m 0755 %{buildroot}%{_sysconfdir}/sysconfig
+install -m 0644 packaging/init.d/samba.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/samba
+%endif
 
 # rpmbuild in RHEL 6 does not deal with pre-pushed docs this way well
-#install -d -m 0755 %{buildroot}%{_defaultdocdir}/%{name}-%{version}
-#install -m 0644 %{SOURCE201} %{buildroot}%{_defaultdocdir}/%{name}-%{version}/README.downgrade
 install -m 0644 %{SOURCE201} packaging/RHEL/README.downgrade
 
 %if ! %with_dc
 # rpmbuild in RHEL 6 does not deal with pre-pushed docs this way well
-#install -m 0644 %{SOURCE200} %{buildroot}%{_defaultdocdir}/%{name}-%{version}/README.dc
-#install -m 0644 %{SOURCE200} %{buildroot}%{_defaultdocdir}/%{name}-%{version}/README.dc-libs
 install -m 0644 %{SOURCE200} packaging/RHEL/README.dc
 install -m 0644 %{SOURCE200} packaging/RHEL/README.dc-libs
 %endif
@@ -648,6 +642,11 @@ install -d -m 0755 %{buildroot}%{_unitdir}
 for i in nmb smb winbind ; do
     cat packaging/systemd/$i.service | sed -e 's@Type=forking@Type=forking\nEnvironment=KRB5CCNAME=/run/samba/krb5cc_samba@g' >tmp$i.service
     install -m 0644 tmp$i.service %{buildroot}%{_unitdir}/$i.service
+done
+%else
+install -d -m 0755 %{buildroot}%{_initrddir}
+for i in nmb smb winbind ; do
+    install -m755 packaging/$i.init %{buildroot}%{_initrddir}/$i
 done
 %endif
 
@@ -820,7 +819,6 @@ rm -rf %{buildroot}
 %dir %{_sysconfdir}/openldap/schema
 %{_sysconfdir}/openldap/schema/samba.schema
 # rpmbuild in RHEL 6 does not deal with pre-pushed docs this way well
-#%doc %{_defaultdocdir}/%{name}-%{version}/README.downgrade
 %doc packaging/RHEL/README.downgrade
 %{_mandir}/man1/smbstatus.1*
 %{_mandir}/man8/eventlogadm.8*
@@ -986,7 +984,6 @@ rm -rf %{buildroot}
 %{_mandir}/man8/samba-tool.8.gz
 %else # with_dc
 # rpmbuild in RHEL 6 does not deal well with pre-instlaled log files
-#%{_defaultdocdir}/%{name}-%{version}/README.dc
 %doc packaging/RHEL/README.dc
 %exclude %{_mandir}/man8/samba.8.gz
 %exclude %{_mandir}/man8/samba-tool.8.gz
@@ -1007,7 +1004,6 @@ rm -rf %{buildroot}
 %{_libdir}/samba/bind9/dlz_bind9_9.so
 %else
 # rpmbuild in RHEL 6 does not deal well with pre-instlaled log files
-#%{_defaultdocdir}/%{name}-%{version}/README.dc-libs
 %doc packaging/RHEL/README.dc-libs
 %endif # with_dc
 
