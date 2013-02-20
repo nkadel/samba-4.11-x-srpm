@@ -2,7 +2,7 @@
 %bcond_with testsuite
 
 # Heavily tweaked to roll back Fedora 18 version for RHEL 6 compatibility
-%define main_release 0.1
+%define main_release 0.2
 
 %define samba_version 4.0.3
 %define talloc_version 2.0.8
@@ -512,8 +512,13 @@ cp %{SOURCE102} packaging/RHEL/init.d/.
 
 %configure \
         --enable-fhs \
+%if %with_systemd
         --with-piddir=/run \
         --with-sockets-dir=/run/samba \
+%else
+	--with-piddir=/var/run/samba \
+	--with-sockets-dir=/var/run/samba \
+%endif
         --with-modulesdir=%{_libdir}/samba \
         --with-pammodulesdir=%{_libdir}/security \
         --with-lockdir=/var/lib/samba \
@@ -615,9 +620,9 @@ install -m644 packaging/systemd/samba.conf.tmp %{buildroot}%{_sysconfdir}/tmpfil
 %else
 echo Using %{_initrddir} for init scripts
 install -d -m 0755 %{buildroot}%{_initrddir}
-install -m644 packaging/RHEL/init.d/smb.init %{buildroot}%{_initrddir}/smb
-install -m644 packaging/RHEL/init.d/winbind.init %{buildroot}%{_initrddir}/winbind
-install -m644 packaging/RHEL/init.d/nmb.init %{buildroot}%{_initrddir}/nmb
+install -m755 packaging/RHEL/init.d/smb.init %{buildroot}%{_initrddir}/smb
+install -m755 packaging/RHEL/init.d/winbind.init %{buildroot}%{_initrddir}/winbind
+install -m755 packaging/RHEL/init.d/nmb.init %{buildroot}%{_initrddir}/nmb
 %endif
 
 install -d -m 0755 %{buildroot}%{_sysconfdir}/sysconfig
@@ -920,7 +925,12 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/logrotate.d/samba
 %attr(0700,root,root) %dir /var/log/samba
 %attr(0700,root,root) %dir /var/log/samba/old
+# Make sure directories are real without systemd
+%if %with_systemd
 %ghost %dir /var/run/samba
+%else
+%attr(700,root,root) %dir /var/run/samba
+%endif
 %ghost %dir /var/run/winbindd
 %attr(700,root,root) %dir /var/lib/samba/private
 %attr(755,root,root) %dir %{_sysconfdir}/samba
@@ -1454,11 +1464,18 @@ rm -rf %{buildroot}
 %{_mandir}/man7/winbind_krb5_locator.7*
 
 %changelog
+* Wed Feb 20 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.2
+- Use /var/run/samba instead of /run for piddir.
+- Use /var/run/samba instad of /run/samba for sockets-dir.
+- Set permissions for init scripts without systemd.
+- Make /var/run/samba real directory
+
 * Fri Feb 08 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.1
 - Make sytemd optional with "with_systemd" as needed, apply init
   scripts for non systemd enabled OS's.
 - Update libtalloc to 2.0.8 and krb5-devel as needed for 4.0.3.
 - RHEL does not deal with pre-pushed docs, deploy at top of source tree.
+- Add ghost dir for /var/cache/samba.
 
 * Thu Feb 07 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.3-1
 - Update to Samba 4.0.3.
