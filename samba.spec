@@ -459,11 +459,11 @@ the local kerberos library to use the same KDC as samba and winbind use
 %setup -q -n samba-%{version}%{pre_release}
 
 # SysV compatible init scripts for RHEL 6 based layout
-mkdir -p packaging/init.d
-cp %{SOURCE100} packaging/init.d/.
-cp %{SOURCE101} packaging/init.d/.
-cp %{SOURCE102} packaging/init.d/.
-cp %{SOURCE103} packaging/init.d/.
+mkdir -p packaging/RHEL-rpm
+cp %{SOURCE100} packaging/RHEL-rpm/.
+cp %{SOURCE101} packaging/RHEL-rpm/.
+cp %{SOURCE102} packaging/RHEL-rpm/.
+cp %{SOURCE103} packaging/RHEL-rpm/.
 
 %patch0 -p1 -b .pidl_gcc48
 %patch1 -p1 -b .pdb_ldapsam
@@ -560,11 +560,11 @@ make %{?_smp_mflags}
 (cd pidl && %{__perl} Makefile.PL INSTALLDIRS=vendor )
 
 # Store init scripts for RHEL 6 backport
-mkdir -p packaging/init.d
-cp %{SOURCE100} packaging/init.d/smb.init
-cp %{SOURCE101} packaging/init.d/winbind.init
-cp %{SOURCE102} packaging/init.d/nmb.init
-cp %{SOURCE103} packaging/init.d/samba.sysconfig
+mkdir -p packaging/RHEL-rpm
+cp %{SOURCE100} packaging/RHEL-rpm/smb.init
+cp %{SOURCE101} packaging/RHEL-rpm/winbind.init
+cp %{SOURCE102} packaging/RHEL-rpm/nmb.init
+cp %{SOURCE103} packaging/RHEL-rpm/samba.sysconfig
 
 %install
 rm -rf %{buildroot}
@@ -625,16 +625,16 @@ install -m 0644 packaging/systemd/samba.sysconfig %{buildroot}%{_sysconfdir}/sys
 %else
 
 install -d -m 0755 %{buildroot}%{_sysconfdir}/sysconfig
-install -m 0644 packaging/init.d/samba.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/samba
+install -m 0644 %{SOURCE103} %{buildroot}%{_sysconfdir}/sysconfig/samba
 %endif
 
-# rpmbuild in RHEL 6 does not deal with pre-pushed docs this way well
-install -m 0644 %{SOURCE201} packaging/RHEL/README.downgrade
+# rpmbuild in RHEL 6 does not deal with pre-pushed docs
+install -m 0644 %{SOURCE201} packaging/RHEL-rpm/README.downgrade
 
 %if ! %with_dc
-# rpmbuild in RHEL 6 does not deal with pre-pushed docs this way well
-install -m 0644 %{SOURCE200} packaging/RHEL/README.dc
-install -m 0644 %{SOURCE200} packaging/RHEL/README.dc-libs
+# rpmbuild in RHEL 6 does not deal with pre-pushed docs
+install -m 0644 %{SOURCE200} packaging/RHEL-rpm/README.dc
+install -m 0644 %{SOURCE200} packaging/RHEL-rpm/README.dc-libs
 %endif
 
 %if %with_systemd
@@ -645,9 +645,9 @@ for i in nmb smb winbind ; do
 done
 %else
 install -d -m 0755 %{buildroot}%{_initrddir}
-for i in nmb smb winbind ; do
-    install -m755 packaging/$i.init %{buildroot}%{_initrddir}/$i
-done
+install -m 0755 %{SOURCE100} %{buildroot}%{_initrddir}/smb
+install -m 0755 %{SOURCE101} %{buildroot}%{_initrddir}/winbind
+install -m 0755 %{SOURCE102} %{buildroot}%{_initrddir}/nmb
 %endif
 
 # NetworkManager online/offline script
@@ -818,8 +818,8 @@ rm -rf %{buildroot}
 %attr(1777,root,root) %dir /var/spool/samba
 %dir %{_sysconfdir}/openldap/schema
 %{_sysconfdir}/openldap/schema/samba.schema
-# rpmbuild in RHEL 6 does not deal with pre-pushed docs this way well
-%doc packaging/RHEL/README.downgrade
+# rpmbuild in RHEL 6 does not deal with pre-pushed docs
+%doc packaging/RHEL-rpm/README.downgrade
 %{_mandir}/man1/smbstatus.1*
 %{_mandir}/man8/eventlogadm.8*
 %{_mandir}/man8/smbd.8*
@@ -984,7 +984,7 @@ rm -rf %{buildroot}
 %{_mandir}/man8/samba-tool.8.gz
 %else # with_dc
 # rpmbuild in RHEL 6 does not deal well with pre-instlaled log files
-%doc packaging/RHEL/README.dc
+%doc packaging/RHEL-rpm/README.dc
 %exclude %{_mandir}/man8/samba.8.gz
 %exclude %{_mandir}/man8/samba-tool.8.gz
 %endif # with_dc
@@ -1004,7 +1004,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/bind9/dlz_bind9_9.so
 %else
 # rpmbuild in RHEL 6 does not deal well with pre-instlaled log files
-%doc packaging/RHEL/README.dc-libs
+%doc packaging/RHEL-rpm/README.dc-libs
 %endif # with_dc
 
 ### DEVEL
@@ -1462,11 +1462,13 @@ rm -rf %{buildroot}
 %{_mandir}/man7/winbind_krb5_locator.7*
 
 %changelog
-* Wed Feb 20 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.2
+* Wed Feb 20 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.3
 - Use /var/run/samba instead of /run for piddir.
 - Use /var/run/samba instad of /run/samba for sockets-dir.
 - Set permissions for init scripts without systemd.
 - Make /var/run/samba real directory
+- Store init scripts, /etc/sysconfig/samba, and README.* files added by RPM
+  in packaging/RHEL-rpm/.
 
 * Fri Feb 08 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.1
 - Make sytemd optional with "with_systemd" as needed, apply init
