@@ -1,6 +1,0 @@
-
-Certain components need to be backported for RHEL 6 to build Samba 4.0.x.
-
-	libtdb-1.2.11
-	libldb-1.1.15
-	libtalloc-2.0.8
