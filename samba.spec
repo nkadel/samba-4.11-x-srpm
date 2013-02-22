@@ -2,7 +2,7 @@
 %bcond_with testsuite
 
 # Heavily tweaked to roll back Fedora 18 version for RHEL 6 compatibility
-%define main_release 0.2
+%define main_release 0.3
 
 %define samba_version 4.0.3
 %define talloc_version 2.0.8
@@ -81,11 +81,12 @@ Source4: smb.conf.default
 Source5: pam_winbind.conf
 Source6: samba.pamd
 
-# Red Hat specific init scripts, in case systemd not available
-Source100: smb.init
-Source101: winbind.init
-Source102: nmb.init
-Source103: samba.sysconfig
+# RHEL specific init scripts, in case systemd not available
+Source100: nmb.init
+Source101: smb.init
+Source102: winbind.init
+# RHEL specific sysconfig, in case systemd not available
+Source110: samba.sysconfig
 
 Source200: README.dc
 Source201: README.downgrade
@@ -463,7 +464,7 @@ mkdir -p packaging/RHEL-rpm
 cp %{SOURCE100} packaging/RHEL-rpm/.
 cp %{SOURCE101} packaging/RHEL-rpm/.
 cp %{SOURCE102} packaging/RHEL-rpm/.
-cp %{SOURCE103} packaging/RHEL-rpm/.
+cp %{SOURCE110} packaging/RHEL-rpm/.
 
 %patch0 -p1 -b .pidl_gcc48
 %patch1 -p1 -b .pdb_ldapsam
@@ -561,10 +562,10 @@ make %{?_smp_mflags}
 
 # Store init scripts for RHEL 6 backport
 mkdir -p packaging/RHEL-rpm
-cp %{SOURCE100} packaging/RHEL-rpm/smb.init
-cp %{SOURCE101} packaging/RHEL-rpm/winbind.init
-cp %{SOURCE102} packaging/RHEL-rpm/nmb.init
-cp %{SOURCE103} packaging/RHEL-rpm/samba.sysconfig
+cp %{SOURCE100} packaging/RHEL-rpm/nmb.init
+cp %{SOURCE101} packaging/RHEL-rpm/smb.init
+cp %{SOURCE102} packaging/RHEL-rpm/winbind.init
+cp %{SOURCE110} packaging/RHEL-rpm/samba.sysconfig
 
 %install
 rm -rf %{buildroot}
@@ -625,7 +626,7 @@ install -m 0644 packaging/systemd/samba.sysconfig %{buildroot}%{_sysconfdir}/sys
 %else
 
 install -d -m 0755 %{buildroot}%{_sysconfdir}/sysconfig
-install -m 0644 %{SOURCE103} %{buildroot}%{_sysconfdir}/sysconfig/samba
+install -m 0644 %{SOURCE110} %{buildroot}%{_sysconfdir}/sysconfig/samba
 %endif
 
 # rpmbuild in RHEL 6 does not deal with pre-pushed docs
@@ -645,9 +646,9 @@ for i in nmb smb winbind ; do
 done
 %else
 install -d -m 0755 %{buildroot}%{_initrddir}
-install -m 0755 %{SOURCE100} %{buildroot}%{_initrddir}/smb
-install -m 0755 %{SOURCE101} %{buildroot}%{_initrddir}/winbind
-install -m 0755 %{SOURCE102} %{buildroot}%{_initrddir}/nmb
+install -m 0755 %{SOURCE100} %{buildroot}%{_initrddir}/nmb
+install -m 0755 %{SOURCE101} %{buildroot}%{_initrddir}/smb
+install -m 0755 %{SOURCE102} %{buildroot}%{_initrddir}/winbind
 %endif
 
 # NetworkManager online/offline script
@@ -1462,7 +1463,11 @@ rm -rf %{buildroot}
 %{_mandir}/man7/winbind_krb5_locator.7*
 
 %changelog
-* Wed Feb 20 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.3
+* Fri Feb 22 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.4
+- Renumber init scrpt files in alphabetical order, for consistency
+  with samba4 package from RHEL 6.
+
+* Wed Feb 20 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.2
 - Use /var/run/samba instead of /run for piddir.
 - Use /var/run/samba instad of /run/samba for sockets-dir.
 - Set permissions for init scripts without systemd.
