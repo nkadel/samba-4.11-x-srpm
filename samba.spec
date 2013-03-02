@@ -889,10 +889,10 @@ rm -rf %{buildroot}
 %{_bindir}/tdbdump
 %{_bindir}/tdbrestore
 %{_bindir}/tdbtool
-%{_mandir}/man8/tdbbackup.8.gz
-%{_mandir}/man8/tdbdump.8.gz
-%{_mandir}/man8/tdbrestore.8.gz
-%{_mandir}/man8/tdbtool.8.gz
+%{_mandir}/man8/tdbbackup.8*
+%{_mandir}/man8/tdbdump.8*
+%{_mandir}/man8/tdbrestore.8*
+%{_mandir}/man8/tdbtool.8*
 %endif
 
 %if %with_ldb
@@ -902,12 +902,12 @@ rm -rf %{buildroot}
 %{_bindir}/ldbmodify
 %{_bindir}/ldbrename
 %{_bindir}/ldbsearch
-%{_mandir}/man1/ldbadd.1.gz
-%{_mandir}/man1/ldbdel.1.gz
-%{_mandir}/man1/ldbedit.1.gz
-%{_mandir}/man1/ldbmodify.1.gz
-%{_mandir}/man1/ldbrename.1.gz
-%{_mandir}/man1/ldbsearch.1.gz
+%{_mandir}/man1/ldbadd.1*
+%{_mandir}/man1/ldbdel.1*
+%{_mandir}/man1/ldbedit.1*
+%{_mandir}/man1/ldbmodify.1*
+%{_mandir}/man1/ldbrename.1*
+%{_mandir}/man1/ldbsearch.1*
 %endif
 
 ### COMMON
@@ -981,13 +981,13 @@ rm -rf %{buildroot}
 %{_libdir}/samba/gensec
 %dir /var/lib/samba/sysvol
 %{_datadir}/samba/setup
-%{_mandir}/man8/samba.8.gz
-%{_mandir}/man8/samba-tool.8.gz
+%{_mandir}/man8/samba.8*
+%{_mandir}/man8/samba-tool.8*
 %else # with_dc
 # rpmbuild in RHEL 6 does not deal well with pre-instlaled log files
 %doc packaging/RHEL-rpm/README.dc
-%exclude %{_mandir}/man8/samba.8.gz
-%exclude %{_mandir}/man8/samba-tool.8.gz
+%exclude %{_mandir}/man8/samba.8*
+%exclude %{_mandir}/man8/samba-tool.8*
 %endif # with_dc
 
 ### DC-LIBS
@@ -1450,7 +1450,7 @@ rm -rf %{buildroot}
 %{_libdir}/libnss_wins.so*
 %{_libdir}/security/pam_winbind.so
 %config(noreplace) %{_sysconfdir}/security/pam_winbind.conf
-%{_mandir}/man1/ntlm_auth.1.gz
+%{_mandir}/man1/ntlm_auth.1*
 %{_mandir}/man1/wbinfo.1*
 %{_mandir}/man5/pam_winbind.conf.5*
 %{_mandir}/man8/pam_winbind.8*
