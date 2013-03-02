@@ -7,9 +7,9 @@
 %define samba_version 4.0.3
 %define talloc_version 2.0.8
 %define ntdb_version 0.9
-%define tdb_version 1.2.10
+%define tdb_version 1.2.11
 %define tevent_version 0.9.17
-%define ldb_version 1.1.12
+%define ldb_version 1.1.15
 # This should be rc1 or nil
 %define pre_release %nil
 
