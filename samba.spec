@@ -22,21 +22,24 @@
 %global with_libsmbclient 1
 %global with_libwbclient 1
 
-%global with_pam_smbpass 0
+%global with_pam_smbpass 1
+
+# Librares installed from libtalloc, libtevent, etc.
 %global with_talloc 0
 %global with_tevent 0
 %global with_tdb 0
-%global with_ntdb 1
-%global with_ldb 1
+%global with_ldb 0
+
+# we don't build it for now
+%global with_ntdb 0
 
 %global with_dc 0
-
 %if %{with testsuite}
 # The testsuite only works with a full build right now.
 %global with_dc 1
 %endif
 
-# MIT kerberos does not currently work with DC enabled
+# DC currently requires Heimdal Kerberos, not MIT Kerberos
 %if %with_dc
 %global with_mitkrb5 0
 %else
@@ -1280,6 +1283,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libtdb_compat.so
 %{_libdir}/samba/libtrusts_util.so
 %{_libdir}/samba/libutil_cmdline.so
+# we don't build it for now
 #%{_libdir}/samba/libutil_ntdb.so
 %{_libdir}/samba/libutil_reg.so
 %{_libdir}/samba/libutil_setid.so
@@ -1310,29 +1314,22 @@ rm -rf %{buildroot}
 %endif
 
 %if %{with_ldb}
-%{_libdir}/samba/libldb.so.1
-%{_libdir}/samba/libldb.so.%{ldb_version}
-%{_libdir}/samba/libpyldb-util.so.1
-%{_libdir}/samba/libpyldb-util.so.%{ldb_version}
+%{_libdir}/samba/libldb.so.*
+%{_libdir}/samba/libpyldb-util.so.*
 %endif
 %if %{with_talloc}
-%{_libdir}/samba/libtalloc.so.2
-%{_libdir}/samba/libtalloc.so.%{talloc_version}
-%{_libdir}/samba/libpytalloc-util.so.2
-%{_libdir}/samba/libpytalloc-util.so.%{talloc_version}
+%{_libdir}/samba/libtalloc.so.*
+%{_libdir}/samba/libpytalloc-util.so.*
 %endif
 %if %{with_tevent}
-%{_libdir}/samba/libtevent.so.0
-%{_libdir}/samba/libtevent.so.%{tevent_version}
+%{_libdir}/samba/libtevent.so.*
 %endif
 %if %{with_tdb}
-%{_libdir}/samba/libtdb.so.1
-%{_libdir}/samba/libtdb.so.%{tdb_version}
+%{_libdir}/samba/libtdb.so*
 %endif
 ## we don't build it for now
 #%if %{with_ntdb}
-#%{_libdir}/samba/libntdb.so.0
-#%{_libdir}/samba/libntdb.so.%{ntdb_version}
+#%{_libdir}/samba/libntdb.so.*
 #%endif
 
 %if ! %with_libsmbclient
@@ -1482,6 +1479,8 @@ rm -rf %{buildroot}
 %changelog
 * Sat Mar  2 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.5
 - Enable with_ldb, with_tevent, with_dc, and others for full DC toolkits.
+- Make ntdb comments more clear and consistent.
+- Make with_mitkrb5 entirely reversed from with_dc value.
 
 * Fri Feb 22 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.4
 - Renumber init scrpt files in alphabetical order, for consistency
