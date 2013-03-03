@@ -29,13 +29,18 @@
 %global with_ntdb 1
 %global with_ldb 1
 
-%global with_mitkrb5 1
 %global with_dc 0
 
 %if %{with testsuite}
 # The testsuite only works with a full build right now.
-%global with_mitkrb5 0
 %global with_dc 1
+%endif
+
+# MIT kerberos does not currently work with DC enabled
+%if %with_dc
+%global with_mitkrb5 0
+%else
+%global with_mitkrb5 1
 %endif
 
 %global with_clustering_support 1
