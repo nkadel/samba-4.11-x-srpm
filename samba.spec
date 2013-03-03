@@ -5,11 +5,15 @@
 %define main_release 0.5
 
 %define samba_version 4.0.3
+
+# Versions for external lib[name] RPM dependencies
+# Note that internal talloc for samba-4.0.3 is 2.0.7
 %define talloc_version 2.0.8
 %define ntdb_version 0.9
 %define tdb_version 1.2.11
 %define tevent_version 0.9.17
 %define ldb_version 1.1.15
+
 # This should be rc1 or nil
 %define pre_release %nil
 
