@@ -2,7 +2,7 @@
 %bcond_with testsuite
 
 # Heavily tweaked to roll back Fedora 18 version for RHEL 6 compatibility
-%define main_release 0.3
+%define main_release 0.5
 
 %define samba_version 4.0.3
 %define talloc_version 2.0.8
@@ -27,7 +27,7 @@
 %global with_tevent 0
 %global with_tdb 0
 %global with_ntdb 1
-%global with_ldb 0
+%global with_ldb 1
 
 %global with_mitkrb5 1
 %global with_dc 0
@@ -159,7 +159,7 @@ BuildRequires: python-tevent >= %{libtevent_version}
 %endif
 
 %if ! %with_ldb
-%global libldb_version 1.1.11
+%global libldb_version 1.1.15
 
 BuildRequires: libldb-devel >= %{libldb_version}
 BuildRequires: pyldb-devel >= %{libldb_version}
@@ -952,6 +952,18 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libpopt_samba3.so
 %{_libdir}/samba/pdb
 
+%if %with_ldb
+%{_libdir}/samba/ldb/asq.so
+%{_libdir}/samba/ldb/paged_results.so
+%{_libdir}/samba/ldb/paged_searches.so
+%{_libdir}/samba/ldb/rdn_name.so
+%{_libdir}/samba/ldb/sample.so
+%{_libdir}/samba/ldb/server_sort.so
+%{_libdir}/samba/ldb/skel.so
+%{_libdir}/samba/ldb/tdb.so
+%{_mandir}/man3/ldb.3*
+%endif
+
 %if %with_pam_smbpass
 %{_libdir}/security/pam_smbpass.so
 %endif
@@ -1463,6 +1475,9 @@ rm -rf %{buildroot}
 %{_mandir}/man7/winbind_krb5_locator.7*
 
 %changelog
+* Sat Mar  2 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.5
+- Enable with_ldb, with_tevent, with_dc, and others for full DC toolkits.
+
 * Fri Feb 22 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.4
 - Renumber init scrpt files in alphabetical order, for consistency
   with samba4 package from RHEL 6.
