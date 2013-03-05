@@ -1,22 +1,10 @@
 # Set --with testsuite or %bcond_without to run the Samba torture testsuite.
 %bcond_with testsuite
 
-# Heavily tweaked to roll back Fedora 18 version for RHEL 6 compatibility
-%define main_release 0.5
-
 %define samba_version 4.0.3
-
-# Versions for external lib[name] RPM dependencies
-# Note that internal talloc for samba-4.0.3 is 2.0.7
-%define talloc_version 2.0.8
-%define ntdb_version 0.9
-%define tdb_version 1.2.11
-%define tevent_version 0.9.17
-%define ldb_version 1.1.15
-
+%define main_release 0.5
 # This should be rc1 or nil
 %define pre_release %nil
-
 %if "x%{?pre_release}" != "x"
 %define samba_release 0.%{main_release}.%{pre_release}%{?dist}
 %else
@@ -26,24 +14,32 @@
 %global with_libsmbclient 1
 %global with_libwbclient 1
 
-%global with_pam_smbpass 1
+%global with_pam_smbpass 0
 
-# Librares installed from libtalloc, libtevent, etc.
-%global with_talloc 0
-%global with_tevent 0
-%global with_tdb 0
-%global with_ldb 0
+# Versions for libraries if from external RPMs, not internal code
+%define ldb_version 1.1.15
+%define talloc_version 2.0.8
+%define tdb_version 1.2.11
+%define tevent_version 0.9.17
 
-# we don't build it for now
+# Librares normally installedd with libtalloc*.rpm, libtevent*.rpm, etc.
+%global with_internal_ldb 1
+%global with_internal_talloc 1
+%global with_internal_tdb 1
+%global with_internal_tevent 1
+
+# Not normally needed or built
 %global with_ntdb 0
 
+# Build domain controller
 %global with_dc 0
+
 %if %{with testsuite}
 # The testsuite only works with a full build right now.
 %global with_dc 1
 %endif
 
-# DC currently requires Heimdal Kerberos, not MIT Kerberos
+# Domain controller currently requires Heimdal Kerberos, not MIT Kerberos
 %if %with_dc
 %global with_mitkrb5 0
 %else
@@ -156,28 +152,28 @@ BuildRequires: sed
 BuildRequires: zlib-devel >= 1.2.3
 BuildRequires: libbsd-devel
 
-%if ! %with_talloc
+%if ! %with_internal_talloc
 %global libtalloc_version 2.0.8
 
 BuildRequires: libtalloc-devel >= %{libtalloc_version}
 BuildRequires: pytalloc-devel >= %{libtalloc_version}
 %endif
 
-%if ! %with_tevent
+%if ! %with_internal_tevent
 %global libtevent_version 0.9.17
 
 BuildRequires: libtevent-devel >= %{libtevent_version}
 BuildRequires: python-tevent >= %{libtevent_version}
 %endif
 
-%if ! %with_ldb
+%if ! %with_internal_ldb
 %global libldb_version 1.1.15
 
 BuildRequires: libldb-devel >= %{libldb_version}
 BuildRequires: pyldb-devel >= %{libldb_version}
 %endif
 
-%if ! %with_tdb
+%if ! %with_internal_tdb
 %global libtdb_version 1.2.11
 
 BuildRequires: libtdb-devel >= %{libtdb_version}
@@ -488,19 +484,19 @@ cp %{SOURCE110} packaging/RHEL-rpm/.
 %global _tdb_lib ,tdb,pytdb
 %global _ldb_lib ,ldb,pyldb
 
-%if ! %{with_talloc}
+%if ! %{with_internal_talloc}
 %global _talloc_lib ,!talloc,!pytalloc,!pytalloc-util
 %endif
 
-%if ! %{with_tevent}
+%if ! %{with_internal_tevent}
 %global _tevent_lib ,!tevent,!pytevent
 %endif
 
-%if ! %{with_tdb}
+%if ! %{with_internal_tdb}
 %global _tdb_lib ,!tdb,!pytdb
 %endif
 
-%if ! %{with_ldb}
+%if ! %{with_internal_ldb}
 %global _ldb_lib ,!ldb,!pyldb
 %endif
 
@@ -543,7 +539,9 @@ cp %{SOURCE110} packaging/RHEL-rpm/.
         --builtin-libraries=ccan \
         --bundled-libraries=%{_samba4_libraries} \
         --with-pam \
+%if ! %with_ntdb
         --disable-ntdb \
+%endif
 %if (! %with_libsmbclient) || (! %with_libwbclient)
         --private-libraries=%{_samba4_private_libraries} \
 %endif
@@ -889,14 +887,14 @@ rm -rf %{buildroot}
 %{_mandir}/man8/smbta-util.8*
 
 ## we don't build it for now
-#%if %{with_ntdb}
-#%{_bindir}/ntdbbackup
-#%{_bindir}/ntdbdump
-#%{_bindir}/ntdbrestore
-#%{_bindir}/ntdbtool
-#%endif
+%if %{with_ntdb}
+%{_bindir}/ntdbbackup
+%{_bindir}/ntdbdump
+%{_bindir}/ntdbrestore
+%{_bindir}/ntdbtool
+%endif
 
-%if %{with_tdb}
+%if %{with_internal_tdb}
 %{_bindir}/tdbbackup
 %{_bindir}/tdbdump
 %{_bindir}/tdbrestore
@@ -907,7 +905,7 @@ rm -rf %{buildroot}
 %{_mandir}/man8/tdbtool.8*
 %endif
 
-%if %with_ldb
+%if %with_internal_ldb
 %{_bindir}/ldbadd
 %{_bindir}/ldbdel
 %{_bindir}/ldbedit
@@ -964,7 +962,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libpopt_samba3.so
 %{_libdir}/samba/pdb
 
-%if %with_ldb
+%if %with_internal_ldb
 %{_libdir}/samba/ldb/asq.so
 %{_libdir}/samba/ldb/paged_results.so
 %{_libdir}/samba/ldb/paged_searches.so
@@ -1183,7 +1181,7 @@ rm -rf %{buildroot}
 %{_libdir}/pkgconfig/dcerpc_server.pc
 %endif
 
-%if %with_talloc
+%if %with_internal_talloc
 %{_includedir}/samba-4.0/pytalloc.h
 %endif
 
@@ -1287,8 +1285,9 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libtdb_compat.so
 %{_libdir}/samba/libtrusts_util.so
 %{_libdir}/samba/libutil_cmdline.so
-# we don't build it for now
-#%{_libdir}/samba/libutil_ntdb.so
+%if %with_ntdb
+%{_libdir}/samba/libutil_ntdb.so
+%endif
 %{_libdir}/samba/libutil_reg.so
 %{_libdir}/samba/libutil_setid.so
 %{_libdir}/samba/libutil_tdb.so
@@ -1317,24 +1316,24 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libwind-samba4.so.0.0.0
 %endif
 
-%if %{with_ldb}
+%if %{with_internal_ldb}
 %{_libdir}/samba/libldb.so.*
 %{_libdir}/samba/libpyldb-util.so.*
 %endif
-%if %{with_talloc}
+%if %{with_internal_talloc}
+%{_mandir}/man3/talloc.3*
 %{_libdir}/samba/libtalloc.so.*
 %{_libdir}/samba/libpytalloc-util.so.*
 %endif
-%if %{with_tevent}
+%if %{with_internal_tevent}
 %{_libdir}/samba/libtevent.so.*
 %endif
-%if %{with_tdb}
+%if %{with_internal_tdb}
 %{_libdir}/samba/libtdb.so*
 %endif
-## we don't build it for now
-#%if %{with_ntdb}
-#%{_libdir}/samba/libntdb.so.*
-#%endif
+%if %{with_ntdb}
+%{_libdir}/samba/libntdb.so.*
+%endif
 
 %if ! %with_libsmbclient
 %{_libdir}/samba/libsmbclient.so.*
@@ -1482,7 +1481,7 @@ rm -rf %{buildroot}
 
 %changelog
 * Sat Mar  2 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.5
-- Enable with_ldb, with_tevent, with_dc, and others for full DC toolkits.
+- Rename with_[lib] options to with_internal_lib, for clarity.
 - Make ntdb comments more clear and consistent.
 - Make with_mitkrb5 entirely reversed from with_dc value.
 
