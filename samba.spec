@@ -153,29 +153,21 @@ BuildRequires: zlib-devel >= 1.2.3
 BuildRequires: libbsd-devel
 
 %if ! %with_internal_talloc
-%global libtalloc_version 2.0.8
-
 BuildRequires: libtalloc-devel >= %{libtalloc_version}
 BuildRequires: pytalloc-devel >= %{libtalloc_version}
 %endif
 
 %if ! %with_internal_tevent
-%global libtevent_version 0.9.17
-
 BuildRequires: libtevent-devel >= %{libtevent_version}
 BuildRequires: python-tevent >= %{libtevent_version}
 %endif
 
 %if ! %with_internal_ldb
-%global libldb_version 1.1.15
-
 BuildRequires: libldb-devel >= %{libldb_version}
 BuildRequires: pyldb-devel >= %{libldb_version}
 %endif
 
 %if ! %with_internal_tdb
-%global libtdb_version 1.2.11
-
 BuildRequires: libtdb-devel >= %{libtdb_version}
 BuildRequires: python-tdb >= %{libtdb_version}
 %endif
