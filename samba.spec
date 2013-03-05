@@ -23,10 +23,10 @@
 %define tevent_version 0.9.17
 
 # Librares normally installedd with libtalloc*.rpm, libtevent*.rpm, etc.
-%global with_internal_ldb 1
-%global with_internal_talloc 1
-%global with_internal_tdb 1
-%global with_internal_tevent 1
+%global with_internal_ldb 0
+%global with_internal_talloc 0
+%global with_internal_tdb 0
+%global with_internal_tevent 0
 
 # Not normally needed or built
 %global with_ntdb 0
