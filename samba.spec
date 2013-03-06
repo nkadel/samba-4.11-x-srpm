@@ -476,19 +476,19 @@ cp %{SOURCE110} packaging/RHEL-rpm/.
 %global _tdb_lib ,tdb,pytdb
 %global _ldb_lib ,ldb,pyldb
 
-%if ! %{with_internal_talloc}
+%if ! %with_internal_talloc
 %global _talloc_lib ,!talloc,!pytalloc,!pytalloc-util
 %endif
 
-%if ! %{with_internal_tevent}
+%if ! %with_internal_tevent
 %global _tevent_lib ,!tevent,!pytevent
 %endif
 
-%if ! %{with_internal_tdb}
+%if ! %with_internal_tdb
 %global _tdb_lib ,!tdb,!pytdb
 %endif
 
-%if ! %{with_internal_ldb}
+%if ! %with_internal_ldb
 %global _ldb_lib ,!ldb,!pyldb
 %endif
 
@@ -583,8 +583,10 @@ install -d -m 0755 %{buildroot}/var/lib/samba/sysvol
 install -d -m 0755 %{buildroot}/var/log/samba/old
 install -d -m 0755 %{buildroot}/var/spool/samba
 install -d -m 0755 %{buildroot}/%{_datadir}/swat/using_samba
+%if ! %with_systemd
 install -d -m 0755 %{buildroot}/var/run/samba
 install -d -m 0755 %{buildroot}/var/run/winbindd
+%endif
 install -d -m 0755 %{buildroot}/%{_libdir}/samba
 install -d -m 0755 %{buildroot}/%{_libdir}/pkgconfig
 
@@ -811,7 +813,7 @@ rm -rf %{buildroot}
 %{_sbindir}/smbd
 %{_libdir}/samba/auth
 %{_libdir}/samba/vfs
-%if %{with_systemd}
+%if %with_systemd
 %{_unitdir}/nmb.service
 %{_unitdir}/smb.service
 %else
@@ -879,14 +881,14 @@ rm -rf %{buildroot}
 %{_mandir}/man8/smbta-util.8*
 
 ## we don't build it for now
-%if %{with_ntdb}
+%if %with_ntdb
 %{_bindir}/ntdbbackup
 %{_bindir}/ntdbdump
 %{_bindir}/ntdbrestore
 %{_bindir}/ntdbtool
 %endif
 
-%if %{with_internal_tdb}
+%if %with_internal_tdb
 %{_bindir}/tdbbackup
 %{_bindir}/tdbdump
 %{_bindir}/tdbrestore
@@ -929,9 +931,7 @@ rm -rf %{buildroot}
 %attr(0700,root,root) %dir /var/log/samba
 %attr(0700,root,root) %dir /var/log/samba/old
 # Make sure directories are real without systemd
-%if %with_systemd
-%ghost %dir /var/run/samba
-%else
+%if ! %with_systemd
 %attr(700,root,root) %dir /var/run/samba
 %endif
 %ghost %dir /var/run/winbindd
@@ -1308,22 +1308,22 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libwind-samba4.so.0.0.0
 %endif
 
-%if %{with_internal_ldb}
+%if %with_internal_ldb
 %{_libdir}/samba/libldb.so.*
 %{_libdir}/samba/libpyldb-util.so.*
 %endif
-%if %{with_internal_talloc}
+%if %with_internal_talloc
 %{_mandir}/man3/talloc.3*
 %{_libdir}/samba/libtalloc.so.*
 %{_libdir}/samba/libpytalloc-util.so.*
 %endif
-%if %{with_internal_tevent}
+%if %with_internal_tevent
 %{_libdir}/samba/libtevent.so.*
 %endif
-%if %{with_internal_tdb}
+%if %with_internal_tdb
 %{_libdir}/samba/libtdb.so*
 %endif
-%if %{with_ntdb}
+%if %with_ntdb
 %{_libdir}/samba/libntdb.so.*
 %endif
 
