@@ -217,6 +217,11 @@ Requires: logrotate
 Provides: samba4-common = %{samba_depver}
 Obsoletes: samba4-common < %{samba_depver}
 
+%if ! %with_dc
+Conflicts: samba-dc
+Conflicts: samba-dc-libs
+%endif
+
 %description common
 samba4-common provides files necessary for both the server and client
 packages of Samba.
