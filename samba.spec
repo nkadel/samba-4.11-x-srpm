@@ -32,7 +32,7 @@
 %global with_ntdb 0
 
 # Build domain controller
-%global with_dc 0
+%global with_dc 1
 
 %if %{with testsuite}
 # The testsuite only works with a full build right now.
@@ -636,9 +636,10 @@ install -m 0644 %{SOURCE110} %{buildroot}%{_sysconfdir}/sysconfig/samba
 # rpmbuild in RHEL 6 does not deal with pre-pushed docs
 install -m 0644 %{SOURCE201} packaging/RHEL-rpm/README.downgrade
 
-%if ! %with_dc
 # rpmbuild in RHEL 6 does not deal with pre-pushed docs
+%if %with_dc
 install -m 0644 %{SOURCE200} packaging/RHEL-rpm/README.dc
+%else
 install -m 0644 %{SOURCE200} packaging/RHEL-rpm/README.dc-libs
 %endif
 
@@ -912,6 +913,7 @@ rm -rf %{buildroot}
 %{_mandir}/man1/ldbmodify.1*
 %{_mandir}/man1/ldbrename.1*
 %{_mandir}/man1/ldbsearch.1*
+%{_mandir}/man3/ldb.3*
 %endif
 
 ### COMMON
@@ -963,7 +965,6 @@ rm -rf %{buildroot}
 %{_libdir}/samba/ldb/server_sort.so
 %{_libdir}/samba/ldb/skel.so
 %{_libdir}/samba/ldb/tdb.so
-%{_mandir}/man3/ldb.3*
 %endif
 
 %if %with_pam_smbpass
@@ -997,9 +998,9 @@ rm -rf %{buildroot}
 %{_datadir}/samba/setup
 %{_mandir}/man8/samba.8*
 %{_mandir}/man8/samba-tool.8*
-%else # with_dc
 # rpmbuild in RHEL 6 does not deal well with pre-instlaled log files
 %doc packaging/RHEL-rpm/README.dc
+%else # with_dc
 %exclude %{_mandir}/man8/samba.8*
 %exclude %{_mandir}/man8/samba-tool.8*
 %endif # with_dc
@@ -1017,6 +1018,46 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libntvfs.so
 %{_libdir}/samba/libposix_eadb.so
 %{_libdir}/samba/bind9/dlz_bind9_9.so
+
+# ldb libraries built with DC activated
+%{_libdir}/samba/ldb/acl.so
+%{_libdir}/samba/ldb/aclread.so
+%{_libdir}/samba/ldb/anr.so
+%{_libdir}/samba/ldb/descriptor.so
+%{_libdir}/samba/ldb/dirsync.so
+%{_libdir}/samba/ldb/extended_dn_in.so
+%{_libdir}/samba/ldb/extended_dn_out.so
+%{_libdir}/samba/ldb/extended_dn_store.so
+%{_libdir}/samba/ldb/instancetype.so
+%{_libdir}/samba/ldb/lazy_commit.so
+%{_libdir}/samba/ldb/linked_attributes.so
+%{_libdir}/samba/ldb/local_password.so
+%{_libdir}/samba/ldb/new_partition.so
+%{_libdir}/samba/ldb/objectclass.so
+%{_libdir}/samba/ldb/objectclass_attrs.so
+%{_libdir}/samba/ldb/objectguid.so
+%{_libdir}/samba/ldb/operational.so
+%{_libdir}/samba/ldb/partition.so
+%{_libdir}/samba/ldb/password_hash.so
+%{_libdir}/samba/ldb/ranged_results.so
+%{_libdir}/samba/ldb/repl_meta_data.so
+%{_libdir}/samba/ldb/resolve_oids.so
+%{_libdir}/samba/ldb/rootdse.so
+%{_libdir}/samba/ldb/samba3sam.so
+%{_libdir}/samba/ldb/samba3sid.so
+%{_libdir}/samba/ldb/samba_dsdb.so
+%{_libdir}/samba/ldb/samba_secrets.so
+%{_libdir}/samba/ldb/samldb.so
+%{_libdir}/samba/ldb/schema_data.so
+%{_libdir}/samba/ldb/schema_load.so
+%{_libdir}/samba/ldb/secrets_tdb_sync.so
+%{_libdir}/samba/ldb/show_deleted.so
+%{_libdir}/samba/ldb/simple_dn.so
+%{_libdir}/samba/ldb/simple_ldap_map.so
+%{_libdir}/samba/ldb/subtree_delete.so
+%{_libdir}/samba/ldb/subtree_rename.so
+%{_libdir}/samba/ldb/update_keytab.so
+%{_libdir}/samba/ldb/wins_ldb.so
 %else
 # rpmbuild in RHEL 6 does not deal well with pre-instlaled log files
 %doc packaging/RHEL-rpm/README.dc-libs
@@ -1476,6 +1517,7 @@ rm -rf %{buildroot}
 - Rename with_[lib] options to with_internal_lib, for clarity.
 - Make ntdb comments more clear and consistent.
 - Make with_mitkrb5 entirely reversed from with_dc value.
+- Activate with_dc, with _libdir/smaba/ldb/* components in dc-libs package.
 
 * Fri Feb 22 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.4
 - Renumber init scrpt files in alphabetical order, for consistency
