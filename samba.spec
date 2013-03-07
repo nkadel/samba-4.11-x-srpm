@@ -977,13 +977,13 @@ rm -rf %{buildroot}
 %endif
 
 ### DC
+%if %with_dc
 %files dc
 %defattr(-,root,root)
 %exclude %{_libdir}/samba/ldb/ildap.so
 %exclude %{_libdir}/samba/ldb/ldbsamba_extensions.so
 %exclude %{_libdir}/samba/libdfs_server_ad.so
 
-%if %with_dc
 %{_bindir}/samba-tool
 %{_sbindir}/samba
 %{_sbindir}/samba_kcc
@@ -1005,15 +1005,12 @@ rm -rf %{buildroot}
 %{_mandir}/man8/samba-tool.8*
 # rpmbuild in RHEL 6 does not deal well with pre-instlaled log files
 %doc packaging/RHEL-rpm/README.dc
-%else # with_dc
-%exclude %{_mandir}/man8/samba.8*
-%exclude %{_mandir}/man8/samba-tool.8*
 %endif # with_dc
 
 ### DC-LIBS
+%if %with_dc
 %files dc-libs
 %defattr(-,root,root)
-%if %with_dc
 %{_libdir}/samba/libprocess_model.so
 %{_libdir}/samba/libservice.so
 %{_libdir}/samba/process_model
@@ -1063,7 +1060,6 @@ rm -rf %{buildroot}
 %{_libdir}/samba/ldb/subtree_rename.so
 %{_libdir}/samba/ldb/update_keytab.so
 %{_libdir}/samba/ldb/wins_ldb.so
-%else
 # rpmbuild in RHEL 6 does not deal well with pre-instlaled log files
 %doc packaging/RHEL-rpm/README.dc-libs
 %endif # with_dc
