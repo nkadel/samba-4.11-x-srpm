@@ -227,6 +227,7 @@ samba4-common provides files necessary for both the server and client
 packages of Samba.
 
 ### DC
+%if %with_dc
 %package dc
 Summary: Samba AD Domain Controller
 Group: Applications/System
@@ -236,11 +237,15 @@ Requires: %{name}-python = %{samba_depver}
 
 Provides: samba4-dc = %{samba_depver}
 Obsoletes: samba4-dc < %{samba_depver}
+%endif # with_dc
 
+%if %with_dc
 %description dc
 The samba-dc package provides AD Domain Controller functionality
+%endif # with_dc
 
 ### DC-LIBS
+%if %with_dc
 %package dc-libs
 Summary: Samba AD Domain Controller Libraries
 Group: Applications/System
@@ -249,10 +254,13 @@ Requires: %{name}-libs = %{samba_depver}
 
 Provides: samba4-dc-libs = %{samba_depver}
 Obsoletes: samba4-dc-libs < %{samba_depver}
+%endif # with_dc
 
+%if %with_dc
 %description dc-libs
 The samba4-dc-libs package contains the libraries needed by the DC to
 link against the SMB, RPC and other protocols.
+%endif # with_dc
 
 ### DEVEL
 %package devel
@@ -642,11 +650,8 @@ install -m 0644 %{SOURCE110} %{buildroot}%{_sysconfdir}/sysconfig/samba
 install -m 0644 %{SOURCE201} packaging/RHEL-rpm/README.downgrade
 
 # rpmbuild in RHEL 6 does not deal with pre-pushed docs
-%if %with_dc
 install -m 0644 %{SOURCE200} packaging/RHEL-rpm/README.dc
-%else
 install -m 0644 %{SOURCE200} packaging/RHEL-rpm/README.dc-libs
-%endif
 
 %if %with_systemd
 install -d -m 0755 %{buildroot}%{_unitdir}
@@ -3056,4 +3061,3 @@ rm -rf %{buildroot}
 - Added a number of options to smb.conf file
 - Added smbadduser command (missed from all previous RPMs) - Doooh!
 - Added smbuser file and smb.conf file updates for username map
-
