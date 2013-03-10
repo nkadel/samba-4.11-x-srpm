@@ -17,9 +17,9 @@
 %global with_pam_smbpass 0
 
 # Versions for libraries if from external RPMs, not internal code
-%define ldb_version 1.1.15
-%define talloc_version 2.0.8
-%define tdb_version 1.2.11
+%define ldb_version 1.1.13
+%define talloc_version 2.0.7
+%define tdb_version 1.2.10
 %define tevent_version 0.9.17
 
 # Librares normally installedd with libtalloc*.rpm, libtevent*.rpm, etc.
@@ -227,7 +227,6 @@ samba4-common provides files necessary for both the server and client
 packages of Samba.
 
 ### DC
-%if %with_dc
 %package dc
 Summary: Samba AD Domain Controller
 Group: Applications/System
@@ -237,15 +236,11 @@ Requires: %{name}-python = %{samba_depver}
 
 Provides: samba4-dc = %{samba_depver}
 Obsoletes: samba4-dc < %{samba_depver}
-%endif # with_dc
 
-%if %with_dc
 %description dc
 The samba-dc package provides AD Domain Controller functionality
-%endif # with_dc
 
 ### DC-LIBS
-%if %with_dc
 %package dc-libs
 Summary: Samba AD Domain Controller Libraries
 Group: Applications/System
@@ -254,13 +249,10 @@ Requires: %{name}-libs = %{samba_depver}
 
 Provides: samba4-dc-libs = %{samba_depver}
 Obsoletes: samba4-dc-libs < %{samba_depver}
-%endif # with_dc
 
-%if %with_dc
 %description dc-libs
 The samba4-dc-libs package contains the libraries needed by the DC to
 link against the SMB, RPC and other protocols.
-%endif # with_dc
 
 ### DEVEL
 %package devel
@@ -703,7 +695,7 @@ if [ "$1" -ge "1" ]; then
     /sbin/service smb condrestart >/dev/null 2>&1 || :
     /sbin/service nmb condrestart >/dev/null 2>&1 || :
 fi
-%endif
+%endif # with_systemd
 
 %preun
 %if %with_systemd
@@ -717,20 +709,19 @@ if [ $1 = 0 ] ; then
     /sbin/chkconfig --del nmb
 fi
 exit 0
-%endif
+%endif # with_systemd
 
 %postun
 %if %with_systemd
-%else
 %systemd_postun_with_restart smb.service
 %systemd_postun_with_restart nmb.service
-%endif
+%endif # with_systemd
 
 %post common
 /sbin/ldconfig
 %if %with_systemd
 /usr/bin/systemd-tmpfiles --create %{_sysconfdir}/tmpfiles.d/samba.conf
-%endif
+%endif # with_systemd
 
 %postun common -p /sbin/ldconfig
 
@@ -875,7 +866,6 @@ rm -rf %{buildroot}
 %{_mandir}/man1/regpatch.1*
 %{_mandir}/man1/regshell.1*
 %{_mandir}/man1/regtree.1*
-%exclude %{_mandir}/man1/findsmb.1*
 %{_mandir}/man1/log2pcap.1*
 %{_mandir}/man1/nmblookup4.1*
 %{_mandir}/man1/rpcclient.1*
@@ -885,11 +875,14 @@ rm -rf %{buildroot}
 %{_mandir}/man1/smbcquotas.1*
 %{_mandir}/man1/smbget.1*
 %{_mandir}/man5/smbgetrc.5*
-%exclude %{_mandir}/man1/smbtar.1*
 %{_mandir}/man1/smbtree.1*
 %{_mandir}/man8/smbpasswd.8*
 %{_mandir}/man8/smbspool.8*
 %{_mandir}/man8/smbta-util.8*
+
+# exclude man pages for samba 3 packages that are no longer deployed
+%exclude %{_mandir}/man1/findsmb.1*
+%exclude %{_mandir}/man1/smbtar.1*
 
 ## we don't build it for now
 %if %with_ntdb
@@ -982,13 +975,9 @@ rm -rf %{buildroot}
 %endif
 
 ### DC
-%if %with_dc
 %files dc
 %defattr(-,root,root)
-%exclude %{_libdir}/samba/ldb/ildap.so
-%exclude %{_libdir}/samba/ldb/ldbsamba_extensions.so
-%exclude %{_libdir}/samba/libdfs_server_ad.so
-
+%if %with_dc
 %{_bindir}/samba-tool
 %{_sbindir}/samba
 %{_sbindir}/samba_kcc
@@ -998,12 +987,6 @@ rm -rf %{buildroot}
 %{_sbindir}/samba_upgradeprovision
 %{_libdir}/mit_samba.so
 %{_libdir}/samba/bind9/dlz_bind9.so
-%{_libdir}/samba/libheimntlm-samba4.so.1
-%{_libdir}/samba/libheimntlm-samba4.so.1.0.1
-%{_libdir}/samba/libkdc-samba4.so.2
-%{_libdir}/samba/libkdc-samba4.so.2.0.0
-%{_libdir}/samba/libpac.so
-%{_libdir}/samba/gensec
 %dir /var/lib/samba/sysvol
 %{_datadir}/samba/setup
 %{_mandir}/man8/samba.8*
@@ -1013,18 +996,26 @@ rm -rf %{buildroot}
 %endif # with_dc
 
 ### DC-LIBS
-%if %with_dc
 %files dc-libs
 %defattr(-,root,root)
+%if %with_dc
+%{_libdir}/libdcerpc-server.so.*
+
+%{_libdir}/samba/bind9/dlz_bind9_9.so
+%{_libdir}/samba/gensec
+%{_libdir}/samba/libdfs_server_ad.so
+%{_libdir}/samba/libdsdb-module.so
+%{_libdir}/samba/libheimntlm-samba4.so.1
+%{_libdir}/samba/libheimntlm-samba4.so.1.0.1
+%{_libdir}/samba/libkdc-samba4.so.2
+%{_libdir}/samba/libkdc-samba4.so.2.0.0
+%{_libdir}/samba/libntvfs.so
+%{_libdir}/samba/libpac.so
+%{_libdir}/samba/libposix_eadb.so
 %{_libdir}/samba/libprocess_model.so
 %{_libdir}/samba/libservice.so
 %{_libdir}/samba/process_model
 %{_libdir}/samba/service
-%{_libdir}/libdcerpc-server.so.*
-%{_libdir}/samba/libdsdb-module.so
-%{_libdir}/samba/libntvfs.so
-%{_libdir}/samba/libposix_eadb.so
-%{_libdir}/samba/bind9/dlz_bind9_9.so
 
 # ldb libraries built with DC activated
 %{_libdir}/samba/ldb/acl.so
@@ -1035,8 +1026,10 @@ rm -rf %{buildroot}
 %{_libdir}/samba/ldb/extended_dn_in.so
 %{_libdir}/samba/ldb/extended_dn_out.so
 %{_libdir}/samba/ldb/extended_dn_store.so
+%{_libdir}/samba/ldb/ildap.so
 %{_libdir}/samba/ldb/instancetype.so
 %{_libdir}/samba/ldb/lazy_commit.so
+%{_libdir}/samba/ldb/ldbsamba_extensions.so
 %{_libdir}/samba/ldb/linked_attributes.so
 %{_libdir}/samba/ldb/local_password.so
 %{_libdir}/samba/ldb/new_partition.so
@@ -1065,9 +1058,9 @@ rm -rf %{buildroot}
 %{_libdir}/samba/ldb/subtree_rename.so
 %{_libdir}/samba/ldb/update_keytab.so
 %{_libdir}/samba/ldb/wins_ldb.so
+%endif # with_dc
 # rpmbuild in RHEL 6 does not deal well with pre-instlaled log files
 %doc packaging/RHEL-rpm/README.dc-libs
-%endif # with_dc
 
 ### DEVEL
 %files devel
@@ -1524,6 +1517,8 @@ rm -rf %{buildroot}
 - Make ntdb comments more clear and consistent.
 - Make with_mitkrb5 entirely reversed from with_dc value.
 - Activate with_dc, with _libdir/smaba/ldb/* components in dc-libs package.
+- Move excluded libraries from samba-dc files to samba-dc-libs files,
+  especially libdfs_server_ad.so, required when compiling with with_dc enabled.
 
 * Fri Feb 22 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.4
 - Renumber init scrpt files in alphabetical order, for consistency
