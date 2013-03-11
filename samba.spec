@@ -17,9 +17,9 @@
 %global with_pam_smbpass 0
 
 # Versions for libraries if from external RPMs, not internal code
-%define ldb_version 1.1.13
-%define talloc_version 2.0.7
-%define tdb_version 1.2.10
+%define ldb_version 1.1.15
+%define talloc_version 2.0.8
+%define tdb_version 1.2.11
 %define tevent_version 0.9.17
 
 # Librares normally installedd with libtalloc*.rpm, libtevent*.rpm, etc.
@@ -31,8 +31,8 @@
 # Not normally needed or built
 %global with_ntdb 0
 
-# Build domain controller
-%global with_dc 1
+# Build domain controller, not fully tested
+%global with_dc 0
 
 %if %{with testsuite}
 # The testsuite only works with a full build right now.
@@ -465,11 +465,11 @@ the local kerberos library to use the same KDC as samba and winbind use
 %setup -q -n samba-%{version}%{pre_release}
 
 # SysV compatible init scripts for RHEL 6 based layout
-mkdir -p packaging/RHEL-rpm
-cp %{SOURCE100} packaging/RHEL-rpm/.
-cp %{SOURCE101} packaging/RHEL-rpm/.
-cp %{SOURCE102} packaging/RHEL-rpm/.
-cp %{SOURCE110} packaging/RHEL-rpm/.
+mkdir -p packaging/init.d
+cp %{SOURCE100} packaging/init.d/.
+cp %{SOURCE101} packaging/init.d/.
+cp %{SOURCE102} packaging/init.d/.
+cp %{SOURCE110} packaging/init.d/.
 
 %patch0 -p1 -b .pidl_gcc48
 %patch1 -p1 -b .pdb_ldapsam
@@ -567,13 +567,6 @@ make %{?_smp_mflags}
 # 'make proto' gets to it.
 (cd pidl && %{__perl} Makefile.PL INSTALLDIRS=vendor )
 
-# Store init scripts for RHEL 6 backport
-mkdir -p packaging/RHEL-rpm
-cp %{SOURCE100} packaging/RHEL-rpm/nmb.init
-cp %{SOURCE101} packaging/RHEL-rpm/smb.init
-cp %{SOURCE102} packaging/RHEL-rpm/winbind.init
-cp %{SOURCE110} packaging/RHEL-rpm/samba.sysconfig
-
 %install
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
@@ -638,12 +631,13 @@ install -d -m 0755 %{buildroot}%{_sysconfdir}/sysconfig
 install -m 0644 %{SOURCE110} %{buildroot}%{_sysconfdir}/sysconfig/samba
 %endif
 
-# rpmbuild in RHEL 6 does not deal with pre-pushed docs
-install -m 0644 %{SOURCE201} packaging/RHEL-rpm/README.downgrade
+install -d -m 0755 packaging/RHEL-rpms
+install -m 0644 %{SOURCE201} packaging/RHEL-rpms/README.downgrade
 
-# rpmbuild in RHEL 6 does not deal with pre-pushed docs
-install -m 0644 %{SOURCE200} packaging/RHEL-rpm/README.dc
-install -m 0644 %{SOURCE200} packaging/RHEL-rpm/README.dc-libs
+%if ! %with_dc
+install -m 0644 %{SOURCE200} packaging/RHEL-rpms/README.dc
+install -m 0644 %{SOURCE200} packaging/RHEL-rpms/README.dc-libs
+%endif
 
 %if %with_systemd
 install -d -m 0755 %{buildroot}%{_unitdir}
@@ -826,7 +820,7 @@ rm -rf %{buildroot}
 %dir %{_sysconfdir}/openldap/schema
 %{_sysconfdir}/openldap/schema/samba.schema
 # rpmbuild in RHEL 6 does not deal with pre-pushed docs
-%doc packaging/RHEL-rpm/README.downgrade
+%doc packaging/RHEL-rpms/README.downgrade
 %{_mandir}/man1/smbstatus.1*
 %{_mandir}/man8/eventlogadm.8*
 %{_mandir}/man8/smbd.8*
@@ -991,8 +985,8 @@ rm -rf %{buildroot}
 %{_datadir}/samba/setup
 %{_mandir}/man8/samba.8*
 %{_mandir}/man8/samba-tool.8*
-# rpmbuild in RHEL 6 does not deal well with pre-instlaled log files
-%doc packaging/RHEL-rpm/README.dc
+%else
+%doc packaging/RHEL-rpms/README.dc
 %endif # with_dc
 
 ### DC-LIBS
@@ -1058,9 +1052,9 @@ rm -rf %{buildroot}
 %{_libdir}/samba/ldb/subtree_rename.so
 %{_libdir}/samba/ldb/update_keytab.so
 %{_libdir}/samba/ldb/wins_ldb.so
+%else
+%doc packaging/RHEL-rpms/README.dc-libs
 %endif # with_dc
-# rpmbuild in RHEL 6 does not deal well with pre-instlaled log files
-%doc packaging/RHEL-rpm/README.dc-libs
 
 ### DEVEL
 %files devel
