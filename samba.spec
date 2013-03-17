@@ -1020,6 +1020,7 @@ rm -rf %{buildroot}
 %{_datadir}/samba/setup
 %{_mandir}/man8/samba.8*
 %{_mandir}/man8/samba-tool.8*
+%{_initrddir}/samba
 %else
 %doc packaging/RHEL-rpms/README.dc
 %exclude %{_mandir}/man8/samba.8*
