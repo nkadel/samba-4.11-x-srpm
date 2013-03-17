@@ -533,6 +533,7 @@ cp %{SOURCE110} packaging/init.d/.
         --with-modulesdir=%{_libdir}/samba \
         --with-pammodulesdir=%{_libdir}/security \
         --with-lockdir=/var/lib/samba \
+        --with-cachedir=/var/lib/samba \
         --disable-gnutls \
         --disable-rpath-install \
         --with-shared-modules=%{_samba4_modules} \
