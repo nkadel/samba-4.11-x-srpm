@@ -2,7 +2,7 @@
 %bcond_with testsuite
 
 %define samba_version 4.0.3
-%define main_release 0.5
+%define main_release 0.6
 # This should be rc1 or nil
 %define pre_release %nil
 %if "x%{?pre_release}" != "x"
@@ -644,7 +644,11 @@ install -m 0644 %{SOURCE200} packaging/RHEL-rpms/README.dc-libs
 
 %if %with_systemd
 install -d -m 0755 %{buildroot}%{_unitdir}
+%if %with_dc
+for i in nmb smb winbind dc ; do
+%else
 for i in nmb smb winbind ; do
+%endif # with_dc
     cat packaging/systemd/$i.service | sed -e 's@Type=forking@Type=forking\nEnvironment=KRB5CCNAME=/run/samba/krb5cc_samba@g' >tmp$i.service
     install -m 0644 tmp$i.service %{buildroot}%{_unitdir}/$i.service
 done
@@ -653,7 +657,10 @@ install -d -m 0755 %{buildroot}%{_initrddir}
 install -m 0755 %{SOURCE100} %{buildroot}%{_initrddir}/nmb
 install -m 0755 %{SOURCE101} %{buildroot}%{_initrddir}/smb
 install -m 0755 %{SOURCE102} %{buildroot}%{_initrddir}/winbind
+%if %with_dc
+install -m 0755 %{SOURCE103} %{buildroot}%{_initrddir}/samba
 %endif
+%endif # with_systemd
 
 # NetworkManager online/offline script
 install -d -m 0755 %{buildroot}%{_sysconfdir}/NetworkManager/dispatcher.d/
@@ -721,6 +728,30 @@ exit 0
 %endif # with_systemd
 
 %postun common -p /sbin/ldconfig
+
+%if %with_dc
+%post dc
+%if %with_systemd
+%systemd_post samba.service
+%else
+/sbin/chkconfig --add samba
+if [ "$1" -ge "1" ]; then
+    /sbin/service samba condrestart >/dev/null 2>&1 || :
+fi
+%endif # with_systemd
+
+%preun dc
+%if %with_systemd
+%systemd_preun samba.service
+%else
+if [ $1 = 0 ] ; then
+    /sbin/service samba stop >/dev/null 2>&1 || :
+    /sbin/chkconfig --del samba
+fi
+%endif
+
+%postun dc
+%endif # with_dc
 
 %if %with_dc
 %post dc-libs -p /sbin/ldconfig
@@ -1511,6 +1542,9 @@ rm -rf %{buildroot}
 %{_mandir}/man7/winbind_krb5_locator.7*
 
 %changelog
+* Sun Mar 17 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.6
+- Activate init scripts for domain controller.
+
 * Sat Mar  2 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.5
 - Rename with_[lib] options to with_internal_lib, for clarity.
 - Make ntdb comments more clear and consistent.
