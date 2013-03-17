@@ -32,7 +32,7 @@
 %global with_ntdb 0
 
 # Build domain controller, not fully tested
-%global with_dc 0
+%global with_dc 1
 
 %if %{with testsuite}
 # The testsuite only works with a full build right now.
@@ -93,6 +93,8 @@ Source6: samba.pamd
 Source100: nmb.init
 Source101: smb.init
 Source102: winbind.init
+Source103: samba.init
+
 # RHEL specific sysconfig, in case systemd not available
 Source110: samba.sysconfig
 
@@ -469,6 +471,7 @@ mkdir -p packaging/init.d
 cp %{SOURCE100} packaging/init.d/.
 cp %{SOURCE101} packaging/init.d/.
 cp %{SOURCE102} packaging/init.d/.
+cp %{SOURCE103} packaging/init.d/.
 cp %{SOURCE110} packaging/init.d/.
 
 %patch0 -p1 -b .pidl_gcc48
@@ -987,6 +990,8 @@ rm -rf %{buildroot}
 %{_mandir}/man8/samba-tool.8*
 %else
 %doc packaging/RHEL-rpms/README.dc
+%exclude %{_mandir}/man8/samba.8*
+%exclude %{_mandir}/man8/samba-tool.8*
 %endif # with_dc
 
 ### DC-LIBS

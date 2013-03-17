@@ -4,3 +4,5 @@ SMBDOPTIONS="-D"
 NMBDOPTIONS="-D"
 # Options for winbindd
 WINBINDOPTIONS=""
+# Options for samba
+SAMBAOPTIONS=""
