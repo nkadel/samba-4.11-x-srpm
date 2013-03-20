@@ -2,7 +2,7 @@
 %bcond_with testsuite
 
 %define samba_version 4.0.3
-%define main_release 0.6
+%define main_release 0.7
 # This should be rc1 or nil
 %define pre_release %nil
 %if "x%{?pre_release}" != "x"
@@ -32,7 +32,7 @@
 %global with_ntdb 0
 
 # Build domain controller, not fully tested
-%global with_dc 1
+%global with_dc 0
 
 %if %{with testsuite}
 # The testsuite only works with a full build right now.
@@ -218,11 +218,6 @@ Requires: logrotate
 
 Provides: samba4-common = %{samba_depver}
 Obsoletes: samba4-common < %{samba_depver}
-
-%if ! %with_dc
-Conflicts: samba-dc
-Conflicts: samba-dc-libs
-%endif
 
 %description common
 samba4-common provides files necessary for both the server and client
@@ -637,11 +632,8 @@ install -m 0644 %{SOURCE110} %{buildroot}%{_sysconfdir}/sysconfig/samba
 
 install -d -m 0755 packaging/RHEL-rpms
 install -m 0644 %{SOURCE201} packaging/RHEL-rpms/README.downgrade
-
-%if ! %with_dc
 install -m 0644 %{SOURCE200} packaging/RHEL-rpms/README.dc
 install -m 0644 %{SOURCE200} packaging/RHEL-rpms/README.dc-libs
-%endif
 
 %if %with_systemd
 install -d -m 0755 %{buildroot}%{_unitdir}
@@ -1058,7 +1050,6 @@ rm -rf %{buildroot}
 %{_libdir}/samba/ldb/extended_dn_in.so
 %{_libdir}/samba/ldb/extended_dn_out.so
 %{_libdir}/samba/ldb/extended_dn_store.so
-%{_libdir}/samba/ldb/ildap.so
 %{_libdir}/samba/ldb/instancetype.so
 %{_libdir}/samba/ldb/lazy_commit.so
 %{_libdir}/samba/ldb/ldbsamba_extensions.so
@@ -1090,8 +1081,13 @@ rm -rf %{buildroot}
 %{_libdir}/samba/ldb/subtree_rename.so
 %{_libdir}/samba/ldb/update_keytab.so
 %{_libdir}/samba/ldb/wins_ldb.so
+
 %else
 %doc packaging/RHEL-rpms/README.dc-libs
+# formerly excluded in files dc
+%exclude %{_libdir}/samba/ldb/ildap.so
+%exclude %{_libdir}/samba/ldb/ldbsamba_extensions.so
+%exclude %{_libdir}/samba/libdfs_server_ad.so
 %endif # with_dc
 
 ### DEVEL
@@ -1271,6 +1267,7 @@ rm -rf %{buildroot}
 %{_libdir}/libndr-standard.so.*
 %{_libdir}/libndr.so.*
 %{_libdir}/libnetapi.so.*
+%{_libdir}/libpdb.so.*
 %{_libdir}/libregistry.so.*
 %{_libdir}/libsamba-credentials.so.*
 %{_libdir}/libsamba-hostconfig.so.*
@@ -1279,9 +1276,8 @@ rm -rf %{buildroot}
 %{_libdir}/libsamdb.so.*
 %{_libdir}/libsmbclient-raw.so.*
 %{_libdir}/libsmbconf.so.*
-%{_libdir}/libtevent-util.so.*
-%{_libdir}/libpdb.so.*
 %{_libdir}/libsmbldap.so.*
+%{_libdir}/libtevent-util.so.*
 
 # libraries needed by the public libraries
 %dir %{_libdir}/samba
