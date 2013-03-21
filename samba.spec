@@ -1540,6 +1540,9 @@ rm -rf %{buildroot}
 %{_mandir}/man7/winbind_krb5_locator.7*
 
 %changelog
+* Wed Mar 20 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.7
+- Refine some document handling and library exclusions for non-DC compilation.
+
 * Sun Mar 17 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.6
 - Activate init scripts for domain controller.
 
