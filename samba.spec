@@ -1,8 +1,8 @@
 # Set --with testsuite or %bcond_without to run the Samba torture testsuite.
 %bcond_with testsuite
 
-%define samba_version 4.0.3
-%define main_release 0.7
+%define samba_version 4.0.4
+%define main_release 0.1
 # This should be rc1 or nil
 %define pre_release %nil
 %if "x%{?pre_release}" != "x"
@@ -18,7 +18,7 @@
 
 # Versions for libraries if from external RPMs, not internal code
 %define ldb_version 1.1.15
-%define talloc_version 2.0.8
+%define talloc_version 2.0.7
 %define tdb_version 1.2.11
 %define tevent_version 0.9.17
 
@@ -79,7 +79,7 @@ License:        GPLv3+ and LGPLv3+
 Group:          System Environment/Daemons
 URL:            http://www.samba.org/
 
-Source0:        samba-%{version}%{pre_release}.tar.bz2
+Source0:        http://www.samba.org/samba/ftp/stable/samba-%{version}%{pre_release}.tar.gz
 
 # Red Hat specific replacement-files
 Source1: samba.log
@@ -1540,31 +1540,21 @@ rm -rf %{buildroot}
 %{_mandir}/man7/winbind_krb5_locator.7*
 
 %changelog
-* Wed Mar 20 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.7
-- Refine some document handling and library exclusions for non-DC compilation.
-
-* Sun Mar 17 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.6
-- Activate init scripts for domain controller.
-
-* Sat Mar  2 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.5
-- Rename with_[lib] options to with_internal_lib, for clarity.
+* Thu Mar 21 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.4-0.1
+- Merge Nico patches on top of Rawhide 4.0.4 release
+- Add systemd and init scrips for domain controller when enabled.
 - Make ntdb comments more clear and consistent.
 - Make with_mitkrb5 entirely reversed from with_dc value.
 - Activate with_dc, with _libdir/smaba/ldb/* components in dc-libs package.
 - Move excluded libraries from samba-dc files to samba-dc-libs files,
   especially libdfs_server_ad.so, required when compiling with with_dc enabled.
-
-* Fri Feb 22 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.4
-- Renumber init scrpt files in alphabetical order, for consistency
-  with samba4 package from RHEL 6.
-
-* Wed Feb 20 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.2
 - Use /var/run/samba instead of /run for piddir.
 - Use /var/run/samba instad of /run/samba for sockets-dir.
 - Set permissions for init scripts without systemd.
-- Make /var/run/samba real directory
-- Store init scripts, /etc/sysconfig/samba, and README.* files added by RPM
-  in packaging/RHEL-rpm/.
+- Make /var/run/samba and /var/run/winbindd real directory for SysV init
+  scripts, not merely ghost for systemd
+- Store init scripts in packaging/init.d/.
+- Storea samba.sysconfig in packaging/systemd/.
 
 * Fri Feb 08 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.1
 - Make sytemd optional with "with_systemd" as needed, apply init
