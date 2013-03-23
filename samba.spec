@@ -630,10 +630,9 @@ install -d -m 0755 %{buildroot}%{_sysconfdir}/sysconfig
 install -m 0644 %{SOURCE110} %{buildroot}%{_sysconfdir}/sysconfig/samba
 %endif
 
-install -d -m 0755 packaging/RHEL-rpms
-install -m 0644 %{SOURCE201} packaging/RHEL-rpms/README.downgrade
-install -m 0644 %{SOURCE200} packaging/RHEL-rpms/README.dc
-install -m 0644 %{SOURCE200} packaging/RHEL-rpms/README.dc-libs
+install -m 0644 %{SOURCE201} packaging/README.downgrade
+install -m 0644 %{SOURCE200} packaging/README.dc
+install -m 0644 %{SOURCE200} packaging/README.dc-libs
 
 %if %with_systemd
 install -d -m 0755 %{buildroot}%{_unitdir}
@@ -847,7 +846,7 @@ rm -rf %{buildroot}
 %dir %{_sysconfdir}/openldap/schema
 %{_sysconfdir}/openldap/schema/samba.schema
 # rpmbuild in RHEL 6 does not deal with pre-pushed docs
-%doc packaging/RHEL-rpms/README.downgrade
+%doc packaging/README.downgrade
 %{_mandir}/man1/smbstatus.1*
 %{_mandir}/man8/eventlogadm.8*
 %{_mandir}/man8/smbd.8*
@@ -1014,7 +1013,7 @@ rm -rf %{buildroot}
 %{_mandir}/man8/samba-tool.8*
 %{_initrddir}/samba
 %else
-%doc packaging/RHEL-rpms/README.dc
+%doc packaging/README.dc
 %exclude %{_mandir}/man8/samba.8*
 %exclude %{_mandir}/man8/samba-tool.8*
 %endif # with_dc
@@ -1083,7 +1082,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/ldb/wins_ldb.so
 
 %else
-%doc packaging/RHEL-rpms/README.dc-libs
+%doc packaging/README.dc-libs
 # formerly excluded in files dc
 %exclude %{_libdir}/samba/ldb/ildap.so
 %exclude %{_libdir}/samba/ldb/ldbsamba_extensions.so
