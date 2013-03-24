@@ -558,7 +558,9 @@ cp %{SOURCE110} packaging/init.d/.
         --without-pam_smbpass
 %endif
 
-export WAFCACHE=/tmp/wafcache
+# Use "wafcache-100" to limit the cache size to 100 MBytes,
+# or it leaves excess debris between Samba rebuilds.
+export WAFCACHE=/tmp/wafcache-100
 mkdir -p $WAFCACHE
 make %{?_smp_mflags}
 
@@ -1021,12 +1023,18 @@ rm -rf %{buildroot}
 ### DC-LIBS
 %files dc-libs
 %defattr(-,root,root)
+# Built anyway but not needed without DC enabled.
+%exclude %{_libdir}/samba/ldb/ildap.so
+
 %if %with_dc
+# Needed for samba-libs if compiled with with_dc enabled
+%{_libdir}/samba/libdfs_server_ad.so
+%{_libdir}/samba/libposix_eadb.so
+
 %{_libdir}/libdcerpc-server.so.*
 
 %{_libdir}/samba/bind9/dlz_bind9_9.so
 %{_libdir}/samba/gensec
-%{_libdir}/samba/libdfs_server_ad.so
 %{_libdir}/samba/libdsdb-module.so
 %{_libdir}/samba/libheimntlm-samba4.so.1
 %{_libdir}/samba/libheimntlm-samba4.so.1.0.1
@@ -1034,7 +1042,6 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libkdc-samba4.so.2.0.0
 %{_libdir}/samba/libntvfs.so
 %{_libdir}/samba/libpac.so
-%{_libdir}/samba/libposix_eadb.so
 %{_libdir}/samba/libprocess_model.so
 %{_libdir}/samba/libservice.so
 %{_libdir}/samba/process_model
@@ -1084,7 +1091,6 @@ rm -rf %{buildroot}
 %else
 %doc packaging/README.dc-libs
 # formerly excluded in files dc
-%exclude %{_libdir}/samba/ldb/ildap.so
 %exclude %{_libdir}/samba/ldb/ldbsamba_extensions.so
 %exclude %{_libdir}/samba/libdfs_server_ad.so
 %endif # with_dc
@@ -1539,21 +1545,23 @@ rm -rf %{buildroot}
 %{_mandir}/man7/winbind_krb5_locator.7*
 
 %changelog
-* Thu Mar 21 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.4-0.1
+* Sun Mar 24 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.4-0.2
+- Change WAFCACHE to /tmp/wafcach3-100, to limit cache size to 100 MBytes.
+
+* Thu Mar 21 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.4-0.2
 - Merge Nico patches on top of Rawhide 4.0.4 release
-- Add systemd and init scrips for domain controller when enabled.
-- Make ntdb comments more clear and consistent.
-- Make with_mitkrb5 entirely reversed from with_dc value.
-- Activate with_dc, with _libdir/smaba/ldb/* components in dc-libs package.
 - Move excluded libraries from samba-dc files to samba-dc-libs files,
-  especially libdfs_server_ad.so, required when compiling with with_dc enabled.
-- Use /var/run/samba instead of /run for piddir.
-- Use /var/run/samba instad of /run/samba for sockets-dir.
-- Set permissions for init scripts without systemd.
-- Make /var/run/samba and /var/run/winbindd real directory for SysV init
-  scripts, not merely ghost for systemd
-- Store init scripts in packaging/init.d/.
-- Storea samba.sysconfig in packaging/systemd/.
+- Make with_ntdb comments more clear and consistent.
+- Make with_mitkrb5 flatly reversed from with_dc value.
+- Use /var/run/samba instead of /run for piddir without systemd.
+- Use /var/run/samba instad of /run/samba for sockets-dir without systemd.
+- Make /var/run/samba and /var/run/winbindd real directories without systemd.
+- Store samba.sysconfig for reference in packaging/systemd/.
+- Store README.* add-on files in packaging/, for safer use in %%doc.
+- Provide SysV init scripts in packaging/init.d/ without systemd.
+- Provide working with_dc configuraiton, especially with %%_libdir/smaba/ldb
+  components in dc-libs package.
+- Add systemd and init scrips for working with_dc configuration.
 
 * Fri Feb 08 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.1
 - Make sytemd optional with "with_systemd" as needed, apply init
