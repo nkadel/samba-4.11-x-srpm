@@ -20,7 +20,7 @@
 %define ldb_version 1.1.15
 %define talloc_version 2.0.7
 %define tdb_version 1.2.11
-%define tevent_version 0.9.17
+%define tevent_version 0.9.18
 
 # Librares normally installedd with libtalloc*.rpm, libtevent*.rpm, etc.
 %global with_internal_ldb 0
@@ -1538,6 +1538,7 @@ rm -rf %{buildroot}
 - Discard WAFCACHE manual setting, use built-in .libs.
 - Remove upstream integrated compilation patches from samba-4.0.3,
   fix_pidl, libreplace_linking, etc.
+- Update tevent_version requirement to 1.9.18.
 
 * Sun Mar 24 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.4-0.2
 - Change WAFCACHE to /tmp/wafcach3-100, to limit cache size to 100 MBytes.
