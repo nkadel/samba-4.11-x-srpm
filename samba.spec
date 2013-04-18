@@ -101,8 +101,6 @@ Source110: samba.sysconfig
 Source200: README.dc
 Source201: README.downgrade
 
-Patch2: samba-4.0.3-fix_libcmdline-credentials_linking.patch
-
 BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 Requires(pre): /usr/sbin/groupadd
@@ -466,8 +464,6 @@ cp %{SOURCE101} packaging/init.d/.
 cp %{SOURCE102} packaging/init.d/.
 cp %{SOURCE103} packaging/init.d/.
 cp %{SOURCE110} packaging/init.d/.
-
-%patch2 -p1 -b .libreplace_linking
 
 %build
 %global _talloc_lib ,talloc,pytalloc,pytalloc-util
@@ -1540,7 +1536,8 @@ rm -rf %{buildroot}
 * Thu Apr 18 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.5-0.1
 - Update to 4.0.5.
 - Discard WAFCACHE manual setting, use built-in .libs.
-- Remove upstream integrated patches from samba-4.0.3 for fix_pidl and fix_pdb.
+- Remove upstream integrated compilation patches from samba-4.0.3,
+  fix_pidl, libreplace_linking, etc.
 
 * Sun Mar 24 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.4-0.2
 - Change WAFCACHE to /tmp/wafcach3-100, to limit cache size to 100 MBytes.
