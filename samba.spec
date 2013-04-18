@@ -1,7 +1,7 @@
 # Set --with testsuite or %bcond_without to run the Samba torture testsuite.
 %bcond_with testsuite
 
-%define samba_version 4.0.4
+%define samba_version 4.0.5
 %define main_release 0.1
 # This should be rc1 or nil
 %define pre_release %nil
@@ -101,8 +101,6 @@ Source110: samba.sysconfig
 Source200: README.dc
 Source201: README.downgrade
 
-Patch0: samba-4.0.3-fix_pidl_with_gcc48.patch
-Patch1: samba-4.0.3-fix_pdb_ldapsam.patch
 Patch2: samba-4.0.3-fix_libcmdline-credentials_linking.patch
 
 BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
@@ -469,8 +467,6 @@ cp %{SOURCE102} packaging/init.d/.
 cp %{SOURCE103} packaging/init.d/.
 cp %{SOURCE110} packaging/init.d/.
 
-%patch0 -p1 -b .pidl_gcc48
-%patch1 -p1 -b .pdb_ldapsam
 %patch2 -p1 -b .libreplace_linking
 
 %build
@@ -558,10 +554,6 @@ cp %{SOURCE110} packaging/init.d/.
         --without-pam_smbpass
 %endif
 
-# Use "wafcache-100" to limit the cache size to 100 MBytes,
-# or it leaves excess debris between Samba rebuilds.
-export WAFCACHE=/tmp/wafcache-100
-mkdir -p $WAFCACHE
 make %{?_smp_mflags}
 
 # Build PIDL for installation into vendor directories before
@@ -1545,6 +1537,11 @@ rm -rf %{buildroot}
 %{_mandir}/man7/winbind_krb5_locator.7*
 
 %changelog
+* Thu Apr 18 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.5-0.1
+- Update to 4.0.5.
+- Discard WAFCACHE manual setting, use built-in .libs.
+- Remove upstream integrated patches from samba-4.0.3 for fix_pidl and fix_pdb.
+
 * Sun Mar 24 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.4-0.2
 - Change WAFCACHE to /tmp/wafcach3-100, to limit cache size to 100 MBytes.
 
