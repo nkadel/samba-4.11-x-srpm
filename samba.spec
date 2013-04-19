@@ -32,7 +32,7 @@
 %global with_ntdb 0
 
 # Build domain controller, not fully tested
-%global with_dc 0
+%global with_dc 1
 
 %if %{with testsuite}
 # The testsuite only works with a full build right now.
@@ -994,7 +994,6 @@ rm -rf %{buildroot}
 %{_sbindir}/samba_dnsupdate
 %{_sbindir}/samba_spnupdate
 %{_sbindir}/samba_upgradedns
-%{_sbindir}/samba_upgradeprovision
 %{_libdir}/mit_samba.so
 %{_libdir}/samba/bind9/dlz_bind9.so
 %dir /var/lib/samba/sysvol
@@ -1539,6 +1538,7 @@ rm -rf %{buildroot}
 - Remove upstream integrated compilation patches from samba-4.0.3,
   fix_pidl, libreplace_linking, etc.
 - Update tevent_version requirement to 1.9.18.
+- Discard samba_upgradeprovision, no longer installed by default
 
 * Sun Mar 24 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.4-0.2
 - Change WAFCACHE to /tmp/wafcach3-100, to limit cache size to 100 MBytes.
