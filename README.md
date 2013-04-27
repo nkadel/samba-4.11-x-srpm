@@ -1,4 +1,4 @@
-samba-4.0.3-srpm
+samba-4.0.5-srpm
 ================
 
 SRPM building tools for Samba 4 on RHEL 6.
@@ -14,7 +14,7 @@ installed in the following order.
 	libldb-1.1.15-srpm
 	libtevent-0.9.17-srpm
 
-	samba-4.0.3-srpm
+	samba-4.0.5-srpm
 
 The "make" command will do these steps.
 
