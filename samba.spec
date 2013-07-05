@@ -1,7 +1,7 @@
 # Set --with testsuite or %bcond_without to run the Samba torture testsuite.
 %bcond_with testsuite
 
-%define samba_version 4.0.5
+%define samba_version 4.0.7
 %define main_release 0.1
 # This should be rc1 or nil
 %define pre_release %nil
@@ -17,9 +17,9 @@
 %global with_pam_smbpass 0
 
 # Versions for libraries if from external RPMs, not internal code
-%define ldb_version 1.1.15
-%define talloc_version 2.0.7
-%define tdb_version 1.2.11
+%define ldb_version 1.1.16
+%define talloc_version 2.0.8
+%define tdb_version 1.2.12
 %define tevent_version 0.9.18
 
 # Librares normally installedd with libtalloc*.rpm, libtevent*.rpm, etc.
@@ -867,6 +867,7 @@ rm -rf %{buildroot}
 %{_bindir}/smbprint
 %{_bindir}/smbspool
 %{_bindir}/smbta-util
+%{_bindir}/smbtar
 %{_bindir}/smbtree
 %{_libdir}/samba/libldb-cmdline.so
 %{_mandir}/man1/dbwrap_tool.1*
@@ -1532,6 +1533,13 @@ rm -rf %{buildroot}
 %{_mandir}/man7/winbind_krb5_locator.7*
 
 %changelog
+* Thu Jul  4 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.7-0.1
+- Update to 4.0.7.
+- Add /usr/bin/smbtar file to samba-client.
+
+* Sun May 26 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.6-0.1
+- Update to 4.0.6.
+
 * Thu Apr 18 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.5-0.1
 - Update to 4.0.5.
 - Discard WAFCACHE manual setting, use built-in .libs.
