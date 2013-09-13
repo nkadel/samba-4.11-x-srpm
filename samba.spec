@@ -1,7 +1,7 @@
 # Set --with testsuite or %bcond_without to run the Samba torture testsuite.
 %bcond_with testsuite
 
-%define samba_version 4.0.7
+%define samba_version 4.0.9
 %define main_release 0.1
 # This should be rc1 or nil
 %define pre_release %nil
@@ -79,7 +79,7 @@ License:        GPLv3+ and LGPLv3+
 Group:          System Environment/Daemons
 URL:            http://www.samba.org/
 
-Source0:        http://www.samba.org/samba/ftp/stable/samba-%{version}%{pre_release}.tar.gz
+Source0:        https://www.samba.org/samba/ftp/stable/samba-%{version}%{pre_release}.tar.gz
 
 # Red Hat specific replacement-files
 Source1: samba.log
@@ -1533,6 +1533,12 @@ rm -rf %{buildroot}
 %{_mandir}/man7/winbind_krb5_locator.7*
 
 %changelog
+* Thu Sep 2 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.9-0.1
+- Update to 4.0.9.
+
+* Wed Aug 14 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.8-0.1
+- Update to 4.0.8.
+
 * Thu Jul  4 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.7-0.1
 - Update to 4.0.7.
 - Add /usr/bin/smbtar file to samba-client.
