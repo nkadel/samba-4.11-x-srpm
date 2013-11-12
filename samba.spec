@@ -1,7 +1,7 @@
 # Set --with testsuite or %bcond_without to run the Samba torture testsuite.
 %bcond_with testsuite
 
-%define samba_version 4.0.9
+%define samba_version 4.0.11
 %define main_release 0.1
 # This should be rc1 or nil
 %define pre_release %nil
@@ -1533,6 +1533,9 @@ rm -rf %{buildroot}
 %{_mandir}/man7/winbind_krb5_locator.7*
 
 %changelog
+* Tue Nov 12 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.11-0.1
+- Update to 4.0.11
+
 * Thu Sep 2 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.9-0.1
 - Update to 4.0.9.
 
