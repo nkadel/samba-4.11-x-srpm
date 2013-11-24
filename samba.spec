@@ -1949,7 +1949,7 @@ rm -rf %{buildroot}
 * Tue Feb 24 2009 Guenther Deschner <gdeschner@redhat.com> - 3.3.1-0.27
 - Update to 3.3.1
 
-* Thu Feb 21 2009 Simo Sorce <ssorce@redhat.com> - 3.3.0-0.26
+* Sat Feb 21 2009 Simo Sorce <ssorce@redhat.com> - 3.3.0-0.26
 - Rename ldb* tools to ldb3* to avoid conflicts with newer ldb releases
 
 * Tue Feb  3 2009 Guenther Deschner <gdeschner@redhat.com> - 3.3.0-0.25
@@ -2038,18 +2038,18 @@ rm -rf %{buildroot}
 - Autorebuild for GCC 4.3
 
 * Tue Dec 04 2007 Release Engineering <rel-eng at fedoraproject dot org> - 3.2.0-0.pre1.2
- - Rebuild for openldap bump
+- Rebuild for openldap bump
 
 * Thu Oct 18 2007 Guenther Deschner <gdeschner@redhat.com> 3.2.0-0.pre1.1.fc9
 - 32/64bit padding fix (affects multilib installations)
 
-* Wed Oct 8 2007 Simo Sorce <ssorce@redhat.com> 3.2.0-0.pre1.fc9
+* Mon Oct 8 2007 Simo Sorce <ssorce@redhat.com> 3.2.0-0.pre1.fc9
 - New major relase, minor switched from 0 to 2
 - License change, the code is now GPLv3+
 - Numerous improvements and bugfixes included
 - package libsmbsharemodes too
 - remove smbldap-tools as they are already packaged separately in Fedora
-- Fix bug 245506 
+- Fix bug 245506
 
 * Tue Oct 2 2007 Simo Sorce <ssorce@redhat.com> 3.0.26a-1.fc8
 - rebuild with AD DNS Update support
@@ -2058,7 +2058,7 @@ rm -rf %{buildroot}
 - upgrade to the latest upstream realease
 - includes security fixes released today in 3.0.26
 
-* Tue Aug 24 2007 Simo Sorce <ssorce@redhat.com> 3.0.25c-4.fc8
+* Fri Aug 24 2007 Simo Sorce <ssorce@redhat.com> 3.0.25c-4.fc8
 - add fix reported upstream for heavy idmap_ldap memleak
 
 * Tue Aug 21 2007 Simo Sorce <ssorce@redhat.com> 3.0.25c-3.fc8
@@ -2071,7 +2071,7 @@ rm -rf %{buildroot}
 * Tue Aug 21 2007 Guenther Deschner <gdeschner@redhat.com> 3.0.25c-0.fc8
 - update to 3.0.25c
 
-* Tue Jun 29 2007 Simo Sorce <ssorce@redhat.com> 3.0.25b-3.fc8
+* Fri Jun 29 2007 Simo Sorce <ssorce@redhat.com> 3.0.25b-3.fc8
 - handle cases defined in #243766
 
 * Tue Jun 26 2007 Simo Sorce <ssorce@redhat.com> 3.0.25b-2.fc8
@@ -2224,7 +2224,7 @@ rm -rf %{buildroot}
 * Fri Dec 09 2005 Jesse Keating <jkeating@redhat.com>
 - rebuilt
 
-* Mon Nov 13 2005 Jay Fenlason <fenlason@redhat.com> 3.0.20b-2
+* Sun Nov 13 2005 Jay Fenlason <fenlason@redhat.com> 3.0.20b-2
 - turn on -DLDAP_DEPRECATED to allow access to ldap functions that have
   been depricated in 2.3.11, but which don't have well-documented
   replacements (ldap_simple_bind_s(), for example).
@@ -2400,7 +2400,7 @@ rm -rf %{buildroot}
 - Modify this spec file to put libsmbclient.{a,so} in the right place on
   x86_64 machines.
 
-* Wed Aug  5 2004 Jason Vas Dias <jvdias@redhat.com> 3.0.5-3
+* Thu Aug  5 2004 Jason Vas Dias <jvdias@redhat.com> 3.0.5-3
 - Removed '-pie' patch - 3.0.5 uses -fPIC/-PIC, and the combination
 - resulted in executables getting corrupt stacks, causing smbmnt to
 - get a SIGBUS in the mount() call (bug 127420).
@@ -2451,7 +2451,7 @@ rm -rf %{buildroot}
   bugzilla #121356
 
 * Mon Apr 5 2004 Jay Fenlason <fenlason@redhat.com> 3.0.3-2.pre2
-- New upstream version  
+- New upstream version
 - Updated configure line to remove --with-fhs and to explicitly set all
   the directories that --with-fhs was setting.  We were overriding most of
   them anyway.  This closes #118598
@@ -2469,7 +2469,7 @@ rm -rf %{buildroot}
 * Mon Feb 16 2004 Jay Fenlason <fenlason@redhat.com> 3.0.2a-1
 - Upgrade to 3.0.2a
 
-* Mon Feb 16 2004 Karsten Hopp <karsten@redhat.de> 3.0.2-7 
+* Mon Feb 16 2004 Karsten Hopp <karsten@redhat.de> 3.0.2-7
 - fix ownership in -common package
 
 * Fri Feb 13 2004 Elliot Lee <sopwith@redhat.com>
@@ -2522,7 +2522,7 @@ rm -rf %{buildroot}
 - (Remove obsolete samba-3.0.0beta2.tar.bz2.md5 file)
 - (Move libsmbclient to the -common package (#99449))
 
-* Tue Jun 22 2003 Nalin Dahyabhai <nalin@redhat.com> 2.2.8a-4
+* Sun Jun 22 2003 Nalin Dahyabhai <nalin@redhat.com> 2.2.8a-4
 - rebuild
 
 * Wed Jun 04 2003 Elliot Lee <sopwith@redhat.com>
@@ -2605,7 +2605,7 @@ rm -rf %{buildroot}
 
 * Fri Jul 26 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.5-7
 - Enable VFS support and compile the "recycling" module (#69796)
-- more selective includes of the examples dir 
+- more selective includes of the examples dir
 
 * Tue Jul 23 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.5-6
 - Fix the lpq parser for better handling of LPRng systems (#69352)
@@ -2626,11 +2626,11 @@ rm -rf %{buildroot}
 - 2.2.5
 
 * Fri Jun 14 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.4-5
-- Move the post/preun of winbind into the -common subpackage, 
+- Move the post/preun of winbind into the -common subpackage,
   where the script is (#66128)
 
 * Tue Jun  4 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.4-4
-- Fix pidfile locations so it runs properly again (2.2.4 
+- Fix pidfile locations so it runs properly again (2.2.4
   added a new directtive - #65007)
 
 * Thu May 23 2002 Tim Powers <timp@redhat.com>
@@ -2651,7 +2651,7 @@ rm -rf %{buildroot}
 - Add libsmbclient.a w/headerfile for KDE (#62202)
 
 * Tue Mar 26 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.3a-4
-- Make the logrotate script look the correct place for the pid files 
+- Make the logrotate script look the correct place for the pid files
 
 * Thu Mar 14 2002 Nalin Dahyabhai <nalin@redhat.com> 2.2.3a-3
 - include interfaces.o in pam_smbpass.so, which needs symbols from interfaces.o
@@ -2674,12 +2674,12 @@ rm -rf %{buildroot}
 
 * Tue Nov 13 2001 Trond Eivind Glomsrød <teg@redhat.com> 2.2.2-6
 - Move winbind files to samba-common. Add separate initscript for
-  winbind 
+  winbind
 - Fixes for winbind - protect global variables with mutex, use
   more secure getenv
 
 * Thu Nov  8 2001 Trond Eivind Glomsrød <teg@redhat.com> 2.2.2-5
-- Teach smbadduser about "getent passwd" 
+- Teach smbadduser about "getent passwd"
 - Fix more pid-file references
 - Add (conditional) winbindd startup to the initscript, configured in
   /etc/sysconfig/samba
@@ -2710,8 +2710,8 @@ rm -rf %{buildroot}
   encrypted passwords off the choice is available. (#31351)
 
 * Wed Aug  8 2001 Trond Eivind Glomsrød <teg@redhat.com>
-- Use /var/cache/samba instead of /var/lock/samba 
-- Remove "domain controller" keyword from smb.conf, it's 
+- Use /var/cache/samba instead of /var/lock/samba
+- Remove "domain controller" keyword from smb.conf, it's
   deprecated (from #13704)
 - Sync some examples with smb.conf.default
 - Fix password synchronization (#16987)
@@ -2736,9 +2736,9 @@ rm -rf %{buildroot}
 - Add improvements to the smb.conf as suggested in #16931
 
 * Tue Jun 19 2001 Trond Eivind Glomsrød <teg@redhat.com>
-  (these changes are from the non-head version)
+- (these changes are from the non-head version)
 - Don't include /usr/sbin/samba, it's the same as the initscript
-- unset TMPDIR, as samba can't write into a TMPDIR owned 
+- unset TMPDIR, as samba can't write into a TMPDIR owned
   by root (#41193)
 - Add pidfile: lines for smbd and nmbd and a config: line
   in the initscript  (#15343)
@@ -2751,26 +2751,26 @@ rm -rf %{buildroot}
 * Fri Jun  8 2001 Preston Brown <pbrown@redhat.com>
 - enable encypted passwords by default
 
-* Thu Jun  7 2001 Helge Deller <hdeller@redhat.de> 
+* Thu Jun  7 2001 Helge Deller <hdeller@redhat.de>
 - build as 2.2.0-1 release
 - skip the documentation-directories docbook, manpages and yodldocs
 - don't include *.sgml documentation in package
 - moved codepage-directory to /usr/share/samba/codepages
-- make it compile with glibc-2.2.3-10 and kernel-headers-2.4.2-2   
+- make it compile with glibc-2.2.3-10 and kernel-headers-2.4.2-2
 
-* Mon May 21 2001 Helge Deller <hdeller@redhat.de> 
+* Mon May 21 2001 Helge Deller <hdeller@redhat.de>
 - updated to samba 2.2.0
 - moved codepages to %%{_datadir}/samba/codepages
 - use all available CPUs for building rpm packages
 - use %%{_xxx} defines at most places in spec-file
 - "License:" replaces "Copyright:"
 - dropped excludearch sparc
-- de-activated japanese patches 100 and 200 for now 
+- de-activated japanese patches 100 and 200 for now
   (they need to be fixed and tested wth 2.2.0)
 - separated swat.desktop file from spec-file and added
   german translations
 - moved /etc/sysconfig/samba to a separate source-file
-- use htmlview instead of direct call to netscape in 
+- use htmlview instead of direct call to netscape in
   swat.desktop-file
 
 * Mon May  7 2001 Bill Nottingham <notting@redhat.com>
@@ -2860,7 +2860,7 @@ rm -rf %{buildroot}
 
 * Sat Jul 15 2000 Bill Nottingham <notting@redhat.com>
 - move initscript back
-- remove 'Using Samba' book from %%doc 
+- remove 'Using Samba' book from %%doc
 - move stuff to /etc/samba (#13708)
 - default configuration tweaks (#13704)
 - some logrotate tweaks
@@ -2964,7 +2964,7 @@ rm -rf %{buildroot}
 * Tue Sep 28 1999 Bill Nottingham <notting@redhat.com>
 - initscript oopsie. killproc <name> -HUP, not other way around.
 
-* Sat Sep 26 1999 Bill Nottingham <notting@redhat.com>
+* Sun Sep 26 1999 Bill Nottingham <notting@redhat.com>
 - script cleanups. Again.
 
 * Wed Sep 22 1999 Bill Nottingham <notting@redhat.com>
@@ -3039,7 +3039,7 @@ rm -rf %{buildroot}
 * Tue Mar 23 1999 Bill Nottingham <notting@redhat.com>
 - logrotate changes
 
-* Sun Mar 21 1999 Cristian Gafton <gafton@redhat.com> 
+* Sun Mar 21 1999 Cristian Gafton <gafton@redhat.com>
 - auto rebuild in the new build environment (release 3)
 
 * Fri Mar 19 1999 Preston Brown <pbrown@redhat.com>
