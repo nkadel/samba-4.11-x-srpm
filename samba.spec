@@ -46,6 +46,10 @@
 %global with_mitkrb5 1
 %endif
 
+# SWAT been deprecated and removed from samba
+Conflicts: samba-swat
+Conflicts: samba4-swat
+
 %global with_clustering_support 1
 
 # Use systemd, not SysV init scripts, as appropriate
@@ -213,7 +217,12 @@ Requires(post): /sbin/chkconfig, /sbin/service
 Requires: logrotate
 
 Provides: samba4-common = %{samba_depver}
-Obsoletes: samba4-common < %{samba_depver}
+Conflicts: samba4-common < %{samba_depver}
+
+# This is for upgrading from F17 to F18
+Obsoletes: samba-doc
+Obsoletes: samba-domainjoin-gui
+Obsoletes: samba-swat
 
 %description common
 samba4-common provides files necessary for both the server and client
@@ -346,23 +355,6 @@ Obsoletes: samba4-pidl < %{samba_depver}
 %description pidl
 The samba4-pidl package contains the Perl IDL compiler used by Samba
 and Wireshark to parse IDL and similar protocols
-
-### SWAT
-%package swat
-Summary: The Samba SMB server Web configuration program
-Group: Applications/System
-Requires: %{name} = %{samba_depver}
-Requires: %{name}-common = %{samba_depver}
-Requires: %{name}-libs = %{samba_depver}
-Requires: xinetd
-
-Provides: samba4-swat = %{samba_depver}
-Obsoletes: samba4-swat < %{samba_depver}
-
-%description swat
-The samba-swat package includes the new SWAT (Samba Web Administration
-Tool), for remotely managing Samba's smb.conf file using your favorite
-Web browser.
 
 ### TEST
 %package test
@@ -569,7 +561,6 @@ install -d -m 0755 %{buildroot}/var/lib/samba/scripts
 install -d -m 0755 %{buildroot}/var/lib/samba/sysvol
 install -d -m 0755 %{buildroot}/var/log/samba/old
 install -d -m 0755 %{buildroot}/var/spool/samba
-install -d -m 0755 %{buildroot}/%{_datadir}/swat/using_samba
 %if ! %with_systemd
 install -d -m 0755 %{buildroot}/var/run/samba
 install -d -m 0755 %{buildroot}/var/run/winbindd
@@ -593,18 +584,11 @@ install -m 0644 %{SOURCE4} %{buildroot}%{_sysconfdir}/samba/smb.conf
 install -d -m 0755 %{buildroot}%{_sysconfdir}/security
 install -m 0644 %{SOURCE5} %{buildroot}%{_sysconfdir}/security/pam_winbind.conf
 
-# Install pam file for swat
-install -d -m 0755 %{buildroot}%{_sysconfdir}/pam.d
-install -m 0644 %{SOURCE6} %{buildroot}%{_sysconfdir}/pam.d/samba
-
 echo 127.0.0.1 localhost > %{buildroot}%{_sysconfdir}/samba/lmhosts
 
 # openLDAP database schema
 install -d -m 0755 %{buildroot}%{_sysconfdir}/openldap/schema
 install -m644 examples/LDAP/samba.schema %{buildroot}%{_sysconfdir}/openldap/schema/samba.schema
-
-install -d -m 0755 %{buildroot}%{_sysconfdir}/xinetd.d
-install -m644 %{SOURCE2} %{buildroot}%{_sysconfdir}/xinetd.d/swat
 
 install -m 0744 packaging/printing/smbprint %{buildroot}%{_bindir}/smbprint
 
@@ -1285,6 +1269,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libauth_sam_reply.so
 %{_libdir}/samba/libauth_unix_token.so
 %{_libdir}/samba/libauthkrb5.so
+%{_libdir}/samba/libccan.so
 %{_libdir}/samba/libcli-ldap-common.so
 %{_libdir}/samba/libcli-ldap.so
 %{_libdir}/samba/libcli-nbt.so
@@ -1382,7 +1367,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libtevent.so.*
 %endif
 %if %with_internal_tdb
-%{_libdir}/samba/libtdb.so*
+%{_libdir}/samba/libtdb.so.*
 %endif
 %if %with_ntdb
 %{_libdir}/samba/libntdb.so.*
@@ -1445,16 +1430,6 @@ rm -rf %{buildroot}
 %files python
 %defattr(-,root,root,-)
 %{python_sitearch}/*
-
-### SWAT
-%files swat
-%defattr(-,root,root)
-%config(noreplace) %{_sysconfdir}/xinetd.d/swat
-%config(noreplace) %{_sysconfdir}/pam.d/samba
-%{_datadir}/samba/swat
-%{_sbindir}/swat
-%{_mandir}/man8/swat.8*
-#%attr(755,root,root) %{_libdir}/samba/*.msg
 
 ### TEST
 %files test
@@ -1536,18 +1511,96 @@ rm -rf %{buildroot}
 * Tue Nov 12 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.11-0.1
 - Update to 4.0.11
 
-* Thu Sep 2 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.9-0.1
-- Update to 4.0.9.
+* Fri Nov 15 2013 - Andreas Schneider <asn@redhat.com> - 4.1.1-2
+- related: #884169 - Fix strict aliasing warnings.
 
-* Wed Aug 14 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.8-0.1
-- Update to 4.0.8.
+* Mon Nov 11 2013 - Andreas Schneider <asn@redhat.com> - 4.1.1-1
+- resolves: #1024544 - Fix CVE-2013-4475.
+- Update to Samba 4.1.1.
 
-* Thu Jul  4 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.7-0.1
-- Update to 4.0.7.
+* Mon Nov 11 2013 - Andreas Schneider <asn@redhat.com> - 4.1.0-5
+- related: #884169 - Fix the upgrade path.
+
+* Wed Oct 30 2013 - Andreas Schneider <asn@redhat.com> - 4.1.0-4
+- related: #884169 - Add direct dependency to samba-libs in the
+                     glusterfs package.
+- resolves: #996567 - Fix userPrincipalName composition.
+- related: #884169 - Fix memset call with zero length in in ntdb.
+
+* Fri Oct 18 2013 - Andreas Schneider <asn@redhat.com> - 4.1.0-3
+- resolves: #1020329 - Build glusterfs VFS plguin.
+
+* Tue Oct 15 2013 - Andreas Schneider <asn@redhat.com> - 4.1.0-2
+- resolves: #1018856 - Fix installation of pam_winbind after upgrade.
+- related: #1010722 - Split out a samba-winbind-modules package.
+- related: #985609
+
+* Fri Oct 11 2013 - Andreas Schneider <asn@redhat.com> - 4.1.0-1
+- related: #985609 - Update to Samba 4.1.0.
+
+* Tue Oct 01 2013 - Andreas Schneider <asn@redhat.com> - 2:4.1.0-0.8
+- related: #985609 - Update to Samba 4.1.0rc4.
+- resolves: #1010722 - Split out a samba-winbind-modules package.
+
+* Wed Sep 11 2013 - Andreas Schneider <asn@redhat.com> - 2:4.1.0-0.7
+- related: #985609 - Update to Samba 4.1.0rc3.
+- resolves: #1005422 - Add support for KEYRING ccache type in pam_winbindd.
+
+* Wed Sep 04 2013 - Andreas Schneider <asn@redhat.com> - 2:4.1.0-0.6
+- resolves: #717484 - Enable profiling data support.
+
+* Thu Aug 22 2013 - Guenther Deschner <gdeschner@redhat.com> - 2:4.1.0-0.5
+- resolves: #996160 - Fix winbind with trusted domains.
+
+* Wed Aug 14 2013 - Andreas Schneider <asn@redhat.com> 2:4.1.0-0.4
+- resolves: #996160 - Fix winbind nbt name lookup segfault.
+
+* Mon Aug 12 2013 - Andreas Schneider <asn@redhat.com> - 2:4.1.0-0.3
+- related: #985609 - Update to Samba 4.1.0rc2.
+
+* Sat Aug 03 2013 Petr Pisar <ppisar@redhat.com> - 2:4.1.0-0.2.rc1.1
+- Perl 5.18 rebuild
+
+* Wed Jul 24 2013 - Andreas Schneider <asn@redhat.com> - 2:4.1.0-0.2
+- resolves: #985985 - Fix file conflict between samba and wine.
+- resolves: #985107 - Add support for new default location for Kerberos
+                      credential caches.
+
+* Sat Jul 20 2013 Petr Pisar <ppisar@redhat.com> - 2:4.1.0-0.1.rc1.1
+- Perl 5.18 rebuild
+
+* Wed Jul 17 2013 - Andreas Schneider <asn@redhat.com> - 2:4.1.0-0.1
+- Update to Samba 4.1.0rc1.
+
+* Mon Jul 15 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.7-2
+- resolves: #972692 - Build with PIE and full RELRO.
+- resolves: #884169 - Add explicit dependencies suggested by rpmdiff.
+- resolves: #981033 - Local user's krb5cc deleted by winbind.
+- resolves: #984331 - Fix samba-common tmpfiles configuration file in wrong
+                      directory.
+
+* Thu Jul 04 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.7-0.1
 - Add /usr/bin/smbtar file to samba-client.
 
-* Sun May 26 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.6-0.1
-- Update to 4.0.6.
+* Wed Jul 03 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.7-1
+- Update to Samba 4.0.7.
+
+* Fri Jun 07 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.6-3
+- Add UPN enumeration to passdb internal API (bso #9779).
+
+* Wed May 22 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.6-2
+- resolves: #966130 - Fix build with MIT Kerberos.
+- List vfs modules in spec file.
+
+* Tue May 21 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.6-1
+- Update to Samba 4.0.6.
+- Remove SWAT.
+
+* Wed Apr 10 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.5-1
+- Update to Samba 4.0.5.
+- Add UPN enumeration to passdb internal API (bso #9779).
+- resolves: #928947 - samba-doc is obsolete now.
+- resolves: #948606 - LogRotate should be optional, and not a hard "Requires".
 
 * Thu Apr 18 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.5-0.1
 - Update to 4.0.5.
@@ -1575,7 +1628,29 @@ rm -rf %{buildroot}
   components in dc-libs package.
 - Add systemd and init scrips for working with_dc configuration.
 
-* Fri Feb 08 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 0:4.0.3-0.1
+* Fri Mar 22 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.4-3
+- resolves: #919405 - Fix and improve large_readx handling for broken clients.
+- resolves: #924525 - Don't use waf caching.
+
+* Wed Mar 20 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.4-2
+- resolves: #923765 - Improve packaging of README files.
+
+* Wed Mar 20 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.4-1
+- Update to Samba 4.0.4.
+
+* Mon Mar 11 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.3-4
+- resolves: #919333 - Create /run/samba too.
+
+* Mon Mar 04 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.3-3
+- Fix the cache dir to be /var/lib/samba to support upgrades.
+
+* Thu Feb 14 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.3-2
+- resolves: #907915 - libreplace.so => not found
+
+* Fri Feb 08 2013 - Nico Kadel-Garcia <* Thu Feb 14 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.3-2
+- resolves: #907915 - libreplace.so => not found
+
+nkadel@gmail.com> - 0:4.0.3-0.1
 - Make sytemd optional with "with_systemd" as needed, apply init
   scripts for non systemd enabled OS's.
 - Update libtalloc to 2.0.8 and krb5-devel as needed for 4.0.3.
