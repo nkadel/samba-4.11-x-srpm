@@ -12,16 +12,16 @@
 %define samba_release %{main_release}%{?dist}
 %endif
 
+%global with_libsmbclient 1
+%global with_libwbclient 1
+
+%global with_pam_smbpass 0
+
 %define ldb_version 1.1.16
 %define ntdb_version 1.0
 %define talloc_version 2.1.0
 %define tdb_version 1.2.12
 %define tevent_version 0.9.19
-
-%global with_libsmbclient 1
-%global with_libwbclient 1
-
-%global with_pam_smbpass 0
 
 # Versions for libraries if from external RPMs, not internal code
 %global with_internal_ldb 0
@@ -1099,10 +1099,8 @@ rm -rf %{buildroot}
 %{_libdir}/mit_samba.so
 %{_libdir}/samba/auth/samba4.so
 %{_libdir}/samba/bind9/dlz_bind9.so
-%{_libdir}/samba/libheimntlm-samba4.so.1
-%{_libdir}/samba/libheimntlm-samba4.so.1.0.1
-%{_libdir}/samba/libkdc-samba4.so.2
-%{_libdir}/samba/libkdc-samba4.so.2.0.0
+%{_libdir}/samba/libheimntlm-samba4.so.*
+%{_libdir}/samba/libkdc-samba4.so.*
 %{_libdir}/samba/libpac.so
 %{_libdir}/samba/gensec
 %{_libdir}/samba/ldb/acl.so
@@ -1362,6 +1360,7 @@ rm -rf %{buildroot}
 %{_libdir}/libndr-standard.so.*
 %{_libdir}/libndr.so.*
 %{_libdir}/libnetapi.so.*
+%{_libdir}/libpdb.so.*
 %{_libdir}/libregistry.so.*
 %{_libdir}/libsamba-credentials.so.*
 %{_libdir}/libsamba-hostconfig.so.*
@@ -1370,9 +1369,8 @@ rm -rf %{buildroot}
 %{_libdir}/libsamdb.so.*
 %{_libdir}/libsmbclient-raw.so.*
 %{_libdir}/libsmbconf.so.*
-%{_libdir}/libtevent-util.so.*
-%{_libdir}/libpdb.so.*
 %{_libdir}/libsmbldap.so.*
+%{_libdir}/libtevent-util.so.*
 
 # libraries needed by the public libraries
 %dir %{_libdir}/samba
@@ -1453,51 +1451,35 @@ rm -rf %{buildroot}
 %if %with_dc
 %{_libdir}/samba/libdb-glue.so
 %{_libdir}/samba/libHDB_SAMBA4.so
-%{_libdir}/samba/libasn1-samba4.so.8
-%{_libdir}/samba/libasn1-samba4.so.8.0.0
-%{_libdir}/samba/libgssapi-samba4.so.2
-%{_libdir}/samba/libgssapi-samba4.so.2.0.0
-%{_libdir}/samba/libhcrypto-samba4.so.5
-%{_libdir}/samba/libhcrypto-samba4.so.5.0.1
-%{_libdir}/samba/libhdb-samba4.so.11
-%{_libdir}/samba/libhdb-samba4.so.11.0.2
-%{_libdir}/samba/libheimbase-samba4.so.1
-%{_libdir}/samba/libheimbase-samba4.so.1.0.0
-%{_libdir}/samba/libhx509-samba4.so.5
-%{_libdir}/samba/libhx509-samba4.so.5.0.0
-%{_libdir}/samba/libkrb5-samba4.so.26
-%{_libdir}/samba/libkrb5-samba4.so.26.0.0
-%{_libdir}/samba/libroken-samba4.so.19
-%{_libdir}/samba/libroken-samba4.so.19.0.1
-%{_libdir}/samba/libwind-samba4.so.0
-%{_libdir}/samba/libwind-samba4.so.0.0.0
+%{_libdir}/samba/libasn1-samba4.so.*
+%{_libdir}/samba/libgssapi-samba4.so.*
+%{_libdir}/samba/libhcrypto-samba4.so.*
+%{_libdir}/samba/libhdb-samba4.so.*
+%{_libdir}/samba/libheimbase-samba4.so.*
+%{_libdir}/samba/libhx509-samba4.so.*
+%{_libdir}/samba/libkrb5-samba4.so.*
+%{_libdir}/samba/libroken-samba4.so.*
+%{_libdir}/samba/libwind-samba4.so.*
 %endif
 
 %if %{with_internal_ldb}
-%{_libdir}/samba/libldb.so.1
-%{_libdir}/samba/libldb.so.%{ldb_version}
-%{_libdir}/samba/libpyldb-util.so.1
-%{_libdir}/samba/libpyldb-util.so.%{ldb_version}
+%{_libdir}/samba/libldb.so.*
+%{_libdir}/samba/libpyldb-util.so.*
 %{_mandir}/man3/ldb.3*
 %endif
 %if %with_internal_talloc
-%{_libdir}/samba/libtalloc.so.2
-%{_libdir}/samba/libtalloc.so.%{talloc_version}
-%{_libdir}/samba/libpytalloc-util.so.2
-%{_libdir}/samba/libpytalloc-util.so.%{talloc_version}
+%{_libdir}/samba/libtalloc.so.*
+%{_libdir}/samba/libpytalloc-util.so.*
 %{_mandir}/man3/talloc.3*
 %endif
 %if %{with_internal_tevent}
-%{_libdir}/samba/libtevent.so.0
-%{_libdir}/samba/libtevent.so.%{tevent_version}
+%{_libdir}/samba/libtevent.so.*
 %endif
 %if %{with_internal_tdb}
-%{_libdir}/samba/libtdb.so.1
-%{_libdir}/samba/libtdb.so.%{tdb_version}
+%{_libdir}/samba/libtdb.so.*
 %endif
 %if %{with_internal_ntdb}
-%{_libdir}/samba/libntdb.so.0
-%{_libdir}/samba/libntdb.so.%{ntdb_version}
+%{_libdir}/samba/libntdb.so.*
 %endif
 
 %if ! %with_libsmbclient
