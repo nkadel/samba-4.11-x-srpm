@@ -12,11 +12,11 @@
 %define samba_release %{main_release}%{?dist}
 %endif
 
-%define talloc_version 2.0.8
-%define ntdb_version 1.0
-%define tdb_version 1.2.12
-%define tevent_version 0.9.18
 %define ldb_version 1.1.16
+%define ntdb_version 1.0
+%define talloc_version 2.1.0
+%define tdb_version 1.2.12
+%define tevent_version 0.9.19
 
 %global with_libsmbclient 1
 %global with_libwbclient 1
@@ -165,31 +165,23 @@ BuildRequires: glusterfs-devel >= 3.4.0.16
 %endif
 
 %if ! %with_internal_talloc
-%global libtalloc_version 2.0.7
-
-BuildRequires: libtalloc-devel >= %{libtalloc_version}
-BuildRequires: pytalloc-devel >= %{libtalloc_version}
+BuildRequires: libtalloc-devel >= %{talloc_version}
+BuildRequires: pytalloc-devel >= %{talloc_version}
 %endif
 
 %if ! %with_internal_tevent
-%global libtevent_version 0.9.17
-
-BuildRequires: libtevent-devel >= %{libtevent_version}
-BuildRequires: python-tevent >= %{libtevent_version}
+BuildRequires: libtevent-devel >= %{tevent_version}
+BuildRequires: python-tevent >= %{tevent_version}
 %endif
 
 %if ! %with_internal_ldb
-%global libldb_version 1.1.11
-
-BuildRequires: libldb-devel >= %{libldb_version}
-BuildRequires: pyldb-devel >= %{libldb_version}
+BuildRequires: libldb-devel >= %{ldb_version}
+BuildRequires: pyldb-devel >= %{ldb_version}
 %endif
 
 %if ! %with_internal_tdb
-%global libtdb_version 1.2.10
-
-BuildRequires: libtdb-devel >= %{libtdb_version}
-BuildRequires: python-tdb >= %{libtdb_version}
+BuildRequires: libtdb-devel >= %{tdb_version}
+BuildRequires: python-tdb >= %{tdb_version}
 %endif
 
 %if %{with testsuite}
