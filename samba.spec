@@ -1,7 +1,7 @@
 # Set --with testsuite or %bcond_without to run the Samba torture testsuite.
 %bcond_with testsuite
 
-%define samba_version 4.1.2
+%define samba_version 4.1.3
 %define main_release 0.1
 # This should be rc1 or nil
 %define pre_release %nil
@@ -1621,6 +1621,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/pam_winbind.8*
 
 %changelog
+* Sat Dec 14 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.3-0.1
+- Update to 4.1.3
+
 * Sun Nov 24 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.2-0.1
 - Update to 4.1.2
 - Discard memset-in-ntdb and fix_strict_aliasing,patch, now in upstream
