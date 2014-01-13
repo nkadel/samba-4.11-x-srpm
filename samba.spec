@@ -1,7 +1,7 @@
 # Set --with testsuite or %bcond_without to run the Samba torture testsuite.
 %bcond_with testsuite
 
-%define samba_version 4.1.3
+%define samba_version 4.1.4
 %define main_release 0.1
 # This should be rc1 or nil
 %define pre_release %nil
@@ -98,8 +98,6 @@ Source110: samba.sysconfig
 
 Source200: README.dc
 Source201: README.downgrade
-
-Patch1: samba-4.1.0-upn.patch
 
 BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
@@ -504,8 +502,6 @@ module necessary to communicate to the Winbind Daemon
 
 %prep
 %setup -q -n samba-%{version}%{pre_release}
-
-%patch1 -p1 -b .samba-4.1.0-upn.patch
 
 %build
 %global _talloc_lib ,talloc,pytalloc,pytalloc-util
@@ -1621,6 +1617,10 @@ rm -rf %{buildroot}
 %{_mandir}/man8/pam_winbind.8*
 
 %changelog
+* Sun Jan 12 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.4-0.1
+- Update to 4.1.4
+- Discard samba-4.1.0-upn.patch, included upstream
+
 * Sat Dec 14 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.3-0.1
 - Update to 4.1.3
 
