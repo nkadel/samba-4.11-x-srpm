@@ -960,7 +960,6 @@ rm -rf %{buildroot}
 %{_mandir}/man1/smbclient.1*
 %{_mandir}/man1/smbcquotas.1*
 %{_mandir}/man1/smbget.1*
-%{_mandir}/man3/ntdb.3*
 %{_mandir}/man5/smbgetrc.5*
 %{_mandir}/man1/smbtar.1*
 %{_mandir}/man1/smbtree.1*
@@ -970,6 +969,7 @@ rm -rf %{buildroot}
 %{_mandir}/man8/smbta-util.8*
 
 %if %{with_internal_ntdb}
+%{_mandir}/man3/ntdb.3*
 %{_mandir}/man8/ntdbbackup.8*
 %{_mandir}/man8/ntdbdump.8*
 %{_mandir}/man8/ntdbrestore.8*
