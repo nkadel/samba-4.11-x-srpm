@@ -1,4 +1,4 @@
-samba-4.0.x-srpm
+samba-4.1.x-srpm
 ================
 
 SRPM building tools for Samba 4 on RHEL 6.
@@ -6,7 +6,6 @@ SRPM building tools for Samba 4 on RHEL 6.
 These are built from Fedora rawhide releases, and need to be built and
 installed in the following order.
 
-	krb5-srpm
 	iniparser-srpm
 
 	libtalloc-srpm
@@ -14,7 +13,7 @@ installed in the following order.
 	libldb-srpm
 	libtevent-srpm
 
-	samba-4.0.x-srpm
+	samba-4.1.x-srpm
 
 The "make" command will do these steps.
 
