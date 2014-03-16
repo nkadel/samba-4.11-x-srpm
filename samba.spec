@@ -1,7 +1,7 @@
 # Set --with testsuite or %bcond_without to run the Samba torture testsuite.
 %bcond_with testsuite
 
-%define samba_version 4.1.5
+%define samba_version 4.1.6
 %define main_release 0.1
 # This should be rc1 or nil
 %define pre_release %nil
@@ -25,6 +25,7 @@
 
 # Versions for libraries if from external RPMs, not internal code
 %global with_internal_ldb 0
+# ntdb does not yet have its own RPM
 %global with_internal_ntdb 1
 %global with_internal_talloc 0
 %global with_internal_tdb 0
@@ -175,6 +176,10 @@ BuildRequires: python-tevent >= %{tevent_version}
 %if ! %with_internal_ldb
 BuildRequires: libldb-devel >= %{ldb_version}
 BuildRequires: pyldb-devel >= %{ldb_version}
+%endif
+
+%if ! %with_internal_ntdb
+BuildRequires: libntdb-devel >= %{ntdb_version}
 %endif
 
 %if ! %with_internal_tdb
@@ -849,41 +854,13 @@ rm -rf %{buildroot}
 %{_libdir}/samba/auth/unix.so
 %{_libdir}/samba/auth/wbc.so
 %dir %{_libdir}/samba/vfs
-%{_libdir}/samba/vfs/acl_tdb.so
-%{_libdir}/samba/vfs/acl_xattr.so
-%{_libdir}/samba/vfs/aio_fork.so
-%{_libdir}/samba/vfs/aio_linux.so
-%{_libdir}/samba/vfs/aio_posix.so
-%{_libdir}/samba/vfs/aio_pthread.so
-%{_libdir}/samba/vfs/audit.so
-%{_libdir}/samba/vfs/btrfs.so
-%{_libdir}/samba/vfs/cap.so
-%{_libdir}/samba/vfs/catia.so
-%{_libdir}/samba/vfs/commit.so
-%{_libdir}/samba/vfs/crossrename.so
-%{_libdir}/samba/vfs/default_quota.so
-%{_libdir}/samba/vfs/dirsort.so
-%{_libdir}/samba/vfs/expand_msdfs.so
-%{_libdir}/samba/vfs/extd_audit.so
-%{_libdir}/samba/vfs/fake_perms.so
-%{_libdir}/samba/vfs/fileid.so
-%{_libdir}/samba/vfs/full_audit.so
-%{_libdir}/samba/vfs/linux_xfs_sgid.so
-%{_libdir}/samba/vfs/media_harmony.so
-%{_libdir}/samba/vfs/netatalk.so
-%{_libdir}/samba/vfs/preopen.so
-%{_libdir}/samba/vfs/readahead.so
-%{_libdir}/samba/vfs/readonly.so
-%{_libdir}/samba/vfs/recycle.so
-%{_libdir}/samba/vfs/scannedonly.so
-%{_libdir}/samba/vfs/shadow_copy.so
-%{_libdir}/samba/vfs/shadow_copy2.so
-%{_libdir}/samba/vfs/smb_traffic_analyzer.so
-%{_libdir}/samba/vfs/streams_depot.so
-%{_libdir}/samba/vfs/streams_xattr.so
-%{_libdir}/samba/vfs/syncops.so
-%{_libdir}/samba/vfs/time_audit.so
-%{_libdir}/samba/vfs/xattr_tdb.so
+%{_libdir}/samba/vfs/*.so
+%if %{with_vfs_glusterfs}
+%exdlude %{_libdir}/samba/vfs/glusterfs.so
+%endif
+%if %{with_dc}
+%exclude %{_libdir}/samba/vfs/posix_eadb.so
+%endif
 
 %if %with_systemd
 %{_unitdir}/nmb.service
@@ -987,17 +964,16 @@ rm -rf %{buildroot}
 %{_mandir}/man5/smbgetrc.5*
 %{_mandir}/man1/smbtar.1*
 %{_mandir}/man1/smbtree.1*
-%{_mandir}/man8/ntdbbackup.8*
-%{_mandir}/man8/ntdbdump.8*
-%{_mandir}/man8/ntdbrestore.8*
-%{_mandir}/man8/ntdbtool.8*
 %{_mandir}/man8/samba-regedit.8*
 %{_mandir}/man8/smbpasswd.8*
 %{_mandir}/man8/smbspool.8*
 %{_mandir}/man8/smbta-util.8*
 
-## we don't build it for now
 %if %{with_internal_ntdb}
+%{_mandir}/man8/ntdbbackup.8*
+%{_mandir}/man8/ntdbdump.8*
+%{_mandir}/man8/ntdbrestore.8*
+%{_mandir}/man8/ntdbtool.8*
 %{_bindir}/ntdbbackup
 %{_bindir}/ntdbdump
 %{_bindir}/ntdbrestore
@@ -1617,6 +1593,10 @@ rm -rf %{buildroot}
 %{_mandir}/man8/pam_winbind.8*
 
 %changelog
+* Sun Mar 16 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.6-0.1
+- Update to 4.1.6
+- Improve handling of with_ntdb_internal, especially man pages
+
 * Fri Feb 21 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.5-0.1
 - Update to 4.1.5
 
