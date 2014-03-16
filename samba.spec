@@ -1,7 +1,7 @@
 # Set --with testsuite or %bcond_without to run the Samba torture testsuite.
 %bcond_with testsuite
 
-%define samba_version 4.1.4
+%define samba_version 4.1.5
 %define main_release 0.1
 # This should be rc1 or nil
 %define pre_release %nil
@@ -78,7 +78,7 @@ License:        GPLv3+ and LGPLv3+
 Group:          System Environment/Daemons
 URL:            http://www.samba.org/
 
-Source0:        https://www.samba.org/samba/ftp/stable/samba-%{version}%{pre_release}.tar.gz
+Source0:        http://ftp.samba.org/samba/ftp/stable/samba-%{version}%{pre_release}.tar.gz
 
 # Red Hat specific replacement-files
 Source1: samba.log
@@ -1617,6 +1617,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/pam_winbind.8*
 
 %changelog
+* Fri Feb 21 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.5-0.1
+- Update to 4.1.5
+
 * Sun Jan 12 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.4-0.1
 - Update to 4.1.4
 - Discard samba-4.1.0-upn.patch, included upstream
