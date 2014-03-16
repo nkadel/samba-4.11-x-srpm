@@ -1,11 +1,6 @@
 MIT Kerberos 5 Support
 =======================
 
-====================================================================
-Note: this package is a placeholder until Samba domain controller is
-compatible with the MIT Kerberos used in Fedora and RHEL.
-====================================================================
-
 Fedora is using MIT Kerberos implementation as its Kerberos infrastructure of
 choice. The Samba build in Fedora is using MIT Kerberos implementation in order
 to allow system-wide interoperability between both desktop and server
