@@ -1,7 +1,7 @@
 # Set --with testsuite or %bcond_without to run the Samba torture testsuite.
 %bcond_with testsuite
 
-%define samba_version 4.1.9
+%define samba_version 4.1.11
 %define main_release 0.1
 # This should be rc1 or nil
 %define pre_release %nil
@@ -943,7 +943,7 @@ rm -rf %{buildroot}
 %{_bindir}/smbta-util
 %{_bindir}/smbtar
 %{_bindir}/smbtree
-%{_libdir}/samba/libldb-cmdline.so
+#%{_libdir}/samba/libldb-cmdline.so
 %{_mandir}/man1/dbwrap_tool.1*
 %{_mandir}/man1/nmblookup.1*
 %{_mandir}/man1/oLschema2ldif.1*
@@ -1593,6 +1593,10 @@ rm -rf %{buildroot}
 %{_mandir}/man8/pam_winbind.8*
 
 %changelog
+* Sun Aug 10 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.10-0.1
+- Update to 4.1.11
+- Stop including libldb-cmdline.so
+
 * Mon Jun 23 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.9-0.1
 - Update to 4.1.9
 - Update libtdb, libtalloc, etc. dependencies
