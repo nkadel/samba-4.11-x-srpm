@@ -1,7 +1,7 @@
 # Set --with testsuite or %bcond_without to run the Samba torture testsuite.
 %bcond_with testsuite
 
-%define samba_version 4.1.6
+%define samba_version 4.1.9
 %define main_release 0.1
 # This should be rc1 or nil
 %define pre_release %nil
@@ -17,11 +17,11 @@
 
 %global with_pam_smbpass 0
 
-%define ldb_version 1.1.16
+%define ldb_version 1.1.17
 %define ntdb_version 1.0
-%define talloc_version 2.1.0
-%define tdb_version 1.2.12
-%define tevent_version 0.9.19
+%define talloc_version 2.1.1
+%define tdb_version 1.3.0
+%define tevent_version 0.9.21
 
 # Versions for libraries if from external RPMs, not internal code
 %global with_internal_ldb 0
@@ -79,7 +79,7 @@ License:        GPLv3+ and LGPLv3+
 Group:          System Environment/Daemons
 URL:            http://www.samba.org/
 
-Source0:        http://ftp.samba.org/samba/ftp/stable/samba-%{version}%{pre_release}.tar.gz
+Source0:        https://ftp.samba.org/samba/ftp/stable/samba-%{version}%{pre_release}.tar.gz
 
 # Red Hat specific replacement-files
 Source1: samba.log
@@ -1593,6 +1593,13 @@ rm -rf %{buildroot}
 %{_mandir}/man8/pam_winbind.8*
 
 %changelog
+* Mon Jun 23 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.9-0.1
+- Update to 4.1.9
+- Update libtdb, libtalloc, etc. dependencies
+
+* Sat Apr 19 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.7-0.1
+- Update to 4.1.7
+
 * Sun Mar 16 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.6-0.1
 - Update to 4.1.6
 - Improve handling of with_ntdb_internal, especially man pages
