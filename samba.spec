@@ -1,7 +1,7 @@
 # Set --with testsuite or %bcond_without to run the Samba torture testsuite.
 %bcond_with testsuite
 
-%define samba_version 4.1.11
+%define samba_version 4.1.12
 %define main_release 0.1
 # This should be rc1 or nil
 %define pre_release %nil
@@ -1046,6 +1046,8 @@ rm -rf %{buildroot}
 
 # common libraries
 %{_libdir}/samba/libpopt_samba3.so
+# new with 4.1.12, review package inclusion
+%{_libdir}/samba/libdnsserver_common.so
 
 %dir %{_libdir}/samba/pdb
 %{_libdir}/samba/pdb/ldapsam.so
@@ -1593,7 +1595,10 @@ rm -rf %{buildroot}
 %{_mandir}/man8/pam_winbind.8*
 
 %changelog
-* Sun Aug 10 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.10-0.1
+* Thu Sep 11 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.12-0.1
+- Update to 4.1.12
+
+* Sun Aug 10 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.11-0.1
 - Update to 4.1.11
 - Stop including libldb-cmdline.so
 
