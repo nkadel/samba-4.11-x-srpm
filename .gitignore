@@ -1,5 +1,6 @@
-\#*
 *.rpm
 *.tar.*
 *~
+\#*
+samba-*[0-9]/
 samba4repo-*
