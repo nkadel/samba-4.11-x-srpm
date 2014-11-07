@@ -37,13 +37,19 @@
 %global with_vfs_glusterfs 0
 %endif
 
-%global with_mitkrb5 1
-%global with_dc 0
+%global with_dc 1
 
 %if %{with testsuite}
 # The testsuite only works with a full build right now.
-%global with_mitkrb5 0
 %global with_dc 1
+%endif
+
+# Domain controller cannot compile with mitkrb5
+# Consider supporting heimdal compilation
+%if 0%{with_dc}
+%global with_mitkrb5 0
+%else
+%global with_mitkrb5 1
 %endif
 
 %global with_clustering_support 1
@@ -1595,8 +1601,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/pam_winbind.8*
 
 %changelog
-* Fri Nov  7 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.13-0.1
+* Fri Nov  7 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.13-0.1
 - Update to 4.1.13
+- Update with_dc logic to deduce use of with_mitkrb5
 
 * Thu Sep 11 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.12-0.1
 - Update to 4.1.12
