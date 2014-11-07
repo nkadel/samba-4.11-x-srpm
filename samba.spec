@@ -1,7 +1,7 @@
 # Set --with testsuite or %bcond_without to run the Samba torture testsuite.
 %bcond_with testsuite
 
-%define samba_version 4.1.12
+%define samba_version 4.1.13
 %define main_release 0.1
 # This should be rc1 or nil
 %define pre_release %nil
@@ -20,8 +20,8 @@
 %define ldb_version 1.1.17
 %define ntdb_version 1.0
 %define talloc_version 2.1.1
-%define tdb_version 1.3.0
-%define tevent_version 0.9.21
+%define tdb_version 1.3.1
+%define tevent_version 0.9.22
 
 # Versions for libraries if from external RPMs, not internal code
 %global with_internal_ldb 0
@@ -79,7 +79,7 @@ License:        GPLv3+ and LGPLv3+
 Group:          System Environment/Daemons
 URL:            http://www.samba.org/
 
-Source0:        http://ftp.samba.org/samba/ftp/stable/samba-%{version}%{pre_release}.tar.gz
+Source0:        http://www.samba.org/ftp/samba/samba-%{version}%{pre_release}.tar.gz
 
 # Red Hat specific replacement-files
 Source1: samba.log
@@ -1595,6 +1595,9 @@ rm -rf %{buildroot}
 %{_mandir}/man8/pam_winbind.8*
 
 %changelog
+* Fri Nov  7 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.13-0.1
+- Update to 4.1.13
+
 * Thu Sep 11 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.12-0.1
 - Update to 4.1.12
 
