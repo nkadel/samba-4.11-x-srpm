@@ -1128,13 +1128,15 @@ rm -rf %{buildroot}
 %{_datadir}/samba/setup
 %{_mandir}/man8/samba.8*
 %{_mandir}/man8/samba-tool.8*
+%if ! %{with_systemd}
+%{_initrddir}/samba
+%endif
 %else # with_dc
 %doc packaging/README.dc
 %exclude %{_mandir}/man8/samba.8*
 %exclude %{_mandir}/man8/samba-tool.8*
 %exclude %{_libdir}/samba/ldb/ildap.so
 %exclude %{_libdir}/samba/ldb/ldbsamba_extensions.so
-
 %endif # with_dc
 
 ### DC-LIBS
