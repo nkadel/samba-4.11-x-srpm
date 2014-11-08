@@ -1,8 +1,20 @@
-# Set --with testsuite or %bcond_without to run the Samba torture testsuite.
+# rpmbuild --rebuild --with testsuite --without clustering samba.src.rpm
+#
+# The testsuite is disabled by default. Set --with testsuite or %bcond_without
+# to run the Samba torture testsuite.
 %bcond_with testsuite
 
-%define samba_version 4.1.13
+# ctdb is enabled by default, you can disable it with: --without clustering
+%bcond_without clustering
+
 %define main_release 0.1
+
+%define samba_version 4.1.13
+%define talloc_version 2.1.1
+%define ntdb_version 1.0
+%define tdb_version 1.3.1
+%define tevent_version 0.9.22
+%define ldb_version 1.1.17
 # This should be rc1 or nil
 %define pre_release %nil
 
@@ -16,25 +28,21 @@
 %global with_libwbclient 1
 
 %global with_pam_smbpass 0
-
-%define ldb_version 1.1.17
-%define ntdb_version 1.0
-%define talloc_version 2.1.1
-%define tdb_version 1.3.1
-%define tevent_version 0.9.22
-
-# Versions for libraries if from external RPMs, not internal code
-%global with_internal_ldb 0
+%global with_internal_talloc 0
+%global with_internal_tevent 0
+%global with_internal_tdb 0
 # ntdb does not yet have its own RPM
 %global with_internal_ntdb 1
-%global with_internal_talloc 0
-%global with_internal_tdb 0
-%global with_internal_tevent 0
+%global with_internal_ldb 0
 
 %global with_profiling 1
 %global with_vfs_glusterfs 1
 %if 0%{?rhel}
 %global with_vfs_glusterfs 0
+# Only enable on x86_64
+%ifarch x86_64
+%global with_vfs_glusterfs 1
+%endif
 %endif
 
 %global with_dc 1
