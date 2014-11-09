@@ -47,7 +47,7 @@
 
 %global with_dc 1
 
-%if %{with testsuite}
+%if %with testsuite
 # The testsuite only works with a full build right now.
 %global with_dc 1
 %endif
@@ -117,7 +117,7 @@ Source201: README.downgrade
 BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 Requires(pre): /usr/sbin/groupadd
-%if %with_systemd
+%if %{with_systemd}
 Requires(post): systemd
 Requires(preun): systemd
 Requires(postun): systemd
@@ -129,7 +129,7 @@ Requires(postun): /sbin/chkconfig, /sbin/service
 
 Requires(pre): %{name}-common = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -144,7 +144,7 @@ Obsoletes: samba-domainjoin-gui
 Obsoletes: samba-swat
 Obsoletes: samba4-swat
 
-%if %with_clustering_support
+%if %{with_clustering_support}
 BuildRequires: ctdb-devel
 %endif
 BuildRequires: cups-devel
@@ -177,31 +177,31 @@ BuildRequires: glusterfs-api-devel >= 3.4.0.16
 BuildRequires: glusterfs-devel >= 3.4.0.16
 %endif
 
-%if ! %with_internal_talloc
+%if ! %{with_internal_talloc}
 BuildRequires: libtalloc-devel >= %{talloc_version}
 BuildRequires: pytalloc-devel >= %{talloc_version}
 %endif
 
-%if ! %with_internal_tevent
+%if ! %{with_internal_tevent}
 BuildRequires: libtevent-devel >= %{tevent_version}
 BuildRequires: python-tevent >= %{tevent_version}
 %endif
 
-%if ! %with_internal_ldb
+%if ! %{with_internal_ldb}
 BuildRequires: libldb-devel >= %{ldb_version}
 BuildRequires: pyldb-devel >= %{ldb_version}
 %endif
 
-%if ! %with_internal_ntdb
+%if ! %{with_internal_ntdb}
 BuildRequires: libntdb-devel >= %{ntdb_version}
 %endif
 
-%if ! %with_internal_tdb
+%if ! %{with_internal_tdb}
 BuildRequires: libtdb-devel >= %{tdb_version}
 BuildRequires: python-tdb >= %{tdb_version}
 %endif
 
-%if %{with testsuite}
+%if %with testsuite
 BuildRequires: ldb-tools
 %endif
 
@@ -222,7 +222,7 @@ Summary: Samba client programs
 Group: Applications/System
 Requires: %{name}-common = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
-%if %with_libsmbclient
+%if %{with_libsmbclient}
 Requires: libsmbclient = %{samba_depver}
 %endif
 
@@ -239,10 +239,10 @@ of SMB/CIFS shares and printing to SMB/CIFS printers.
 Summary: Files used by both Samba servers and clients
 Group: Applications/System
 Requires: %{name}-libs = %{samba_depver}
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
-%if %with_systemd
+%if %{with_systemd}
 Requires(post): systemd
 %else
 Requires(post): /sbin/chkconfig, /sbin/service
@@ -325,7 +325,7 @@ Samba VFS module for GlusterFS integration.
 Summary: Samba libraries
 Group: Applications/System
 Requires: krb5-libs >= 1.10
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -337,7 +337,7 @@ The samba4-libs package contains the libraries needed by programs that
 link against the SMB, RPC and other protocols provided by the Samba suite.
 
 ### LIBSMBCLIENT
-%if %with_libsmbclient
+%if %{with_libsmbclient}
 %package -n libsmbclient
 Summary: The SMB client library
 Group: Applications/System
@@ -358,7 +358,7 @@ develop programs that link against the SMB client library in the Samba suite.
 %endif # with_libsmbclient
 
 ### LIBWBCLIENT
-%if %with_libwbclient
+%if %{with_libwbclient}
 %package -n libwbclient
 Summary: The winbind client library
 Group: Applications/System
@@ -415,15 +415,15 @@ Summary: Testing tools for Samba servers and clients
 Group: Applications/System
 Requires: %{name} = %{samba_depver}
 Requires: %{name}-common = %{samba_depver}
-%if %with_dc
+%if %{with_dc}
 Requires: %{name}-dc-libs = %{samba_depver}
 %endif
 Requires: %{name}-libs = %{samba_depver}
 Requires: %{name}-winbind = %{samba_depver}
-%if %with_libsmbclient
+%if %{with_libsmbclient}
 Requires: libsmbclient = %{samba_depver}
 %endif
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -467,7 +467,7 @@ Group: Applications/System
 Requires: %{name}-common = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
 Requires: %{name}-winbind = %{samba_depver}
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -482,7 +482,7 @@ tool.
 %package winbind-krb5-locator
 Summary: Samba winbind krb5 locator
 Group: Applications/System
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 Requires: %{name}-winbind = %{samba_depver}
 %else
@@ -510,7 +510,7 @@ the local kerberos library to use the same KDC as samba and winbind use
 Summary: Samba winbind modules
 Group: Applications/System
 Requires: %{name}-libs = %{samba_depver}
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 Requires: pam
@@ -528,7 +528,7 @@ module necessary to communicate to the Winbind Daemon
 %global _tdb_lib ,tdb,pytdb
 %global _ldb_lib ,ldb,pyldb
 
-%if ! %with_internal_talloc
+%if ! %{with_internal_talloc}
 %global _talloc_lib ,!talloc,!pytalloc,!pytalloc-util
 %endif
 
@@ -555,11 +555,11 @@ module necessary to communicate to the Winbind Daemon
 %global _libsmbclient %nil
 %global _libwbclient %nil
 
-%if ! %with_libsmbclient
+%if ! %{with_libsmbclient}
 %global _libsmbclient smbclient,smbsharemodes,
 %endif
 
-%if ! %with_libwbclient
+%if ! %{with_libwbclient}
 %global _libwbclient wbclient,
 %endif
 
@@ -568,7 +568,7 @@ module necessary to communicate to the Winbind Daemon
 LDFLAGS="-Wl,-z,relro,-z,now" \
 %configure \
         --enable-fhs \
-%if %with_systemd
+%if %{with_systemd}
         --with-piddir=/run \
         --with-sockets-dir=/run/samba \
 %else
@@ -584,29 +584,29 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
         --with-shared-modules=%{_samba4_modules} \
         --bundled-libraries=%{_samba4_libraries} \
         --with-pam \
-%if (! %with_libsmbclient) || (! %with_libwbclient)
+%if (! %{with_libsmbclient}) || (! %{with_libwbclient})
         --private-libraries=%{_samba4_private_libraries} \
 %endif
-%if %with_mitkrb5
+%if %{with_mitkrb5}
         --with-system-mitkrb5 \
 %endif
-%if ! %with_dc
+%if ! %{with_dc}
         --without-ad-dc \
 %endif
-%if ! %with_vfs_glusterfs
+%if ! %{with_vfs_glusterfs}
         --disable-glusterfs \
 %endif
-%if %with_clustering_support
+%if %{with_clustering_support}
         --with-cluster-support \
         --enable-old-ctdb \
 %endif
-%if %with_profiling
+%if %{with_profiling}
         --with-profiling-data \
 %endif
-%if %{with testsuite}
+%if %with testsuite
         --enable-selftest \
 %endif
-%if ! %with_pam_smbpass
+%if ! %{with_pam_smbpass}
         --without-pam_smbpass
 %endif
 
@@ -629,7 +629,7 @@ install -d -m 0755 %{buildroot}/var/lib/samba/scripts
 install -d -m 0755 %{buildroot}/var/lib/samba/sysvol
 install -d -m 0755 %{buildroot}/var/log/samba/old
 install -d -m 0755 %{buildroot}/var/spool/samba
-%if ! %with_systemd
+%if ! %{with_systemd}
 install -d -m 0755 %{buildroot}/var/run/samba
 install -d -m 0755 %{buildroot}/var/run/winbindd
 %endif
@@ -660,7 +660,7 @@ install -m644 examples/LDAP/samba.schema %{buildroot}%{_sysconfdir}/openldap/sch
 
 install -m 0744 packaging/printing/smbprint %{buildroot}%{_bindir}/smbprint
 
-%if %with_systemd
+%if %{with_systemd}
 install -d -m 0755 %{buildroot}%{_prefix}/lib/tmpfiles.d/
 install -m644 packaging/systemd/samba.conf.tmp %{buildroot}%{_sysconfdir}/tmpfiles.d/samba.conf
 # create /run/samba too.
@@ -677,14 +677,14 @@ install -m 0644 %{SOURCE110} %{buildroot}%{_sysconfdir}/sysconfig/samba
 
 install -m 0644 %{SOURCE201} packaging/README.downgrade
 
-%if ! %with_dc
+%if ! %{with_dc}
 install -m 0644 %{SOURCE200} packaging/README.dc
 install -m 0644 %{SOURCE200} packaging/README.dc-libs
 %endif
 
-%if %with_systemd
+%if %{with_systemd}
 install -d -m 0755 %{buildroot}%{_unitdir}
-%if %with_dc
+%if %{with_dc}
 for i in nmb smb winbind dc ; do
 %else
 for i in nmb smb winbind ; do
@@ -697,7 +697,7 @@ install -d -m 0755 %{buildroot}%{_initrddir}
 install -m 0755 %{SOURCE100} %{buildroot}%{_initrddir}/nmb
 install -m 0755 %{SOURCE101} %{buildroot}%{_initrddir}/smb
 install -m 0755 %{SOURCE102} %{buildroot}%{_initrddir}/winbind
-%if %with_dc
+%if %{with_dc}
 install -m 0755 %{SOURCE103} %{buildroot}%{_initrddir}/samba
 %endif
 %endif # with_systemd
@@ -723,13 +723,13 @@ rm -rf %{buildroot}%{perl_vendorlib}/Parse/Yapp
 # Fix up permission on perl install.
 %{_fixperms} %{buildroot}%{perl_vendorlib}
 
-%if %{with testsuite}
+%if %with testsuite
 %check
 TDB_NO_FSYNC=1 make %{?_smp_mflags} test
 %endif
 
 %post
-%if %with_systemd
+%if %{with_systemd}
 %systemd_post smb.service
 %systemd_post nmb.service
 %else
@@ -742,7 +742,7 @@ fi
 %endif # with_systemd
 
 %preun
-%if %with_systemd
+%if %{with_systemd}
 %systemd_preun smb.service
 %systemd_preun nmb.service
 if [ $1 = 0 ] ; then
@@ -770,7 +770,7 @@ fi
 
 %postun common -p /sbin/ldconfig
 
-%if %with_dc
+%if %{with_dc}
 %post dc-libs -p /sbin/ldconfig
 
 %postun dc-libs -p /sbin/ldconfig
@@ -780,13 +780,13 @@ fi
 
 %postun libs -p /sbin/ldconfig
 
-%if %with_libsmbclient
+%if %{with_libsmbclient}
 %post -n libsmbclient -p /sbin/ldconfig
 
 %postun -n libsmbclient -p /sbin/ldconfig
 %endif # with_libsmbclient
 
-%if %with_libwbclient
+%if %{with_libwbclient}
 %post -n libwbclient -p /sbin/ldconfig
 
 %postun -n libwbclient -p /sbin/ldconfig
@@ -800,7 +800,7 @@ fi
 /usr/sbin/groupadd -g 88 wbpriv >/dev/null 2>&1 || :
 
 %post winbind
-%if %with_systemd
+%if %{with_systemd}
 %systemd_post winbind.service
 %else
 /sbin/chkconfig --add winbind
@@ -810,7 +810,7 @@ fi
 %endif
 
 %preun winbind
-%if %with_systemd
+%if %{with_systemd}
 %systemd_preun winbind.service
 %else
 if [ $1 = 0 ] ; then
@@ -820,7 +820,7 @@ fi
 %endif
 
 %postun winbind
-%if %with_systemd
+%if %{with_systemd}
 %systemd_postun_with_restart smb.service
 %systemd_postun_with_restart nmb.service
 %endif
@@ -870,13 +870,13 @@ rm -rf %{buildroot}
 %dir %{_libdir}/samba/vfs
 %{_libdir}/samba/vfs/*.so
 %if %{with_vfs_glusterfs}
-%exdlude %{_libdir}/samba/vfs/glusterfs.so
+%exclude %{_libdir}/samba/vfs/glusterfs.so
 %endif
 %if %{with_dc}
 %exclude %{_libdir}/samba/vfs/posix_eadb.so
 %endif
 
-%if %with_systemd
+%if %{with_systemd}
 %{_unitdir}/nmb.service
 %{_unitdir}/smb.service
 %else
@@ -1005,7 +1005,7 @@ rm -rf %{buildroot}
 %{_mandir}/man8/tdbtool.8*
 %endif
 
-%if %with_internal_ldb
+%if %{with_internal_ldb}
 %{_bindir}/ldbadd
 %{_bindir}/ldbdel
 %{_bindir}/ldbedit
@@ -1025,7 +1025,7 @@ rm -rf %{buildroot}
 %files common
 %defattr(-,root,root)
 #%{_libdir}/samba/charset ???
-%if %with_systemd
+%if %{with_systemd}
 %{_prefix}/lib/tmpfiles.d/samba.conf
 %endif
 %{_bindir}/net
@@ -1039,7 +1039,7 @@ rm -rf %{buildroot}
 %attr(0700,root,root) %dir /var/log/samba
 %attr(0700,root,root) %dir /var/log/samba/old
 # Make sure directories are real without systemd
-%if ! %with_systemd
+%if ! %{with_systemd}
 %attr(700,root,root) %dir /var/run/samba
 %endif
 %ghost %dir /var/run/winbindd
@@ -1069,7 +1069,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/pdb/tdbsam.so
 %{_libdir}/samba/pdb/wbc_sam.so
 
-%if %with_pam_smbpass
+%if %{with_pam_smbpass}
 %{_libdir}/security/pam_smbpass.so
 %endif
 
@@ -1077,7 +1077,7 @@ rm -rf %{buildroot}
 %files dc
 %defattr(-,root,root)
 
-%if %with_dc
+%if %{with_dc}
 %{_bindir}/samba-tool
 %{_sbindir}/samba
 %{_sbindir}/samba_kcc
@@ -1150,7 +1150,7 @@ rm -rf %{buildroot}
 ### DC-LIBS
 %files dc-libs
 %defattr(-,root,root)
-%if %with_dc
+%if %{with_dc}
 %{_libdir}/samba/libprocess_model.so
 %{_libdir}/samba/libservice.so
 %{_libdir}/samba/process_model
@@ -1312,22 +1312,22 @@ rm -rf %{buildroot}
 %{_libdir}/libpdb.so
 %{_libdir}/libsmbldap.so
 
-%if %with_dc
+%if %{with_dc}
 %{_includedir}/samba-4.0/dcerpc_server.h
 %{_libdir}/libdcerpc-server.so
 %{_libdir}/pkgconfig/dcerpc_server.pc
 %endif
 
-%if %with_internal_talloc
+%if %{with_internal_talloc}
 %{_includedir}/samba-4.0/pytalloc.h
 %endif
 
-%if ! %with_libsmbclient
+%if ! %{with_libsmbclient}
 %{_includedir}/samba-4.0/libsmbclient.h
 %{_includedir}/samba-4.0/smb_share_modes.h
 %endif # ! with_libsmbclient
 
-%if ! %with_libwbclient
+%if ! %{with_libwbclient}
 %{_includedir}/samba-4.0/wbclient.h
 %endif # ! with_libwbclient
 
@@ -1438,7 +1438,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libutil_tdb.so
 %{_libdir}/samba/libxattr_tdb.so
 
-%if %with_dc
+%if %{with_dc}
 %{_libdir}/samba/libdb-glue.so
 %{_libdir}/samba/libHDB_SAMBA4.so
 %{_libdir}/samba/libasn1-samba4.so.*
@@ -1457,7 +1457,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libpyldb-util.so.*
 %{_mandir}/man3/ldb.3*
 %endif
-%if %with_internal_talloc
+%if %{with_internal_talloc}
 %{_libdir}/samba/libtalloc.so.*
 %{_libdir}/samba/libpytalloc-util.so.*
 %{_mandir}/man3/talloc.3*
@@ -1472,19 +1472,19 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libntdb.so.*
 %endif
 
-%if ! %with_libsmbclient
+%if ! %{with_libsmbclient}
 %{_libdir}/samba/libsmbclient.so.*
 %{_libdir}/samba/libsmbsharemodes.so.*
 %{_mandir}/man7/libsmbclient.7*
 %endif # ! with_libsmbclient
 
-%if ! %with_libwbclient
+%if ! %{with_libwbclient}
 %{_libdir}/samba/libwbclient.so.*
 %{_libdir}/samba/libwinbind-client.so
 %endif # ! with_libwbclient
 
 ### LIBSMBCLIENT
-%if %with_libsmbclient
+%if %{with_libsmbclient}
 %files -n libsmbclient
 %defattr(-,root,root)
 %{_libdir}/libsmbclient.so.*
@@ -1503,7 +1503,7 @@ rm -rf %{buildroot}
 %endif # with_libsmbclient
 
 ### LIBWBCLIENT
-%if %with_libwbclient
+%if %{with_libwbclient}
 %files -n libwbclient
 %defattr(-,root,root)
 %{_libdir}/libwbclient.so.*
@@ -1540,7 +1540,7 @@ rm -rf %{buildroot}
 %{_bindir}/smbtorture
 %{_libdir}/libtorture.so.*
 %{_libdir}/samba/libsubunit.so
-%if %with_dc
+%if %{with_dc}
 %{_libdir}/samba/libdlz_bind9_for_torture.so
 %else
 %{_libdir}/samba/libdsdb-module.so
@@ -1552,7 +1552,7 @@ rm -rf %{buildroot}
 %{_mandir}/man1/smbtorture.1*
 %{_mandir}/man1/vfstest.1*
 
-%if %{with testsuite}
+%if %with testsuite
 # files to ignore in testsuite mode
 %{_libdir}/samba/libnss_wrapper.so
 %{_libdir}/samba/libsocket_wrapper.so
@@ -1576,7 +1576,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libidmap.so
 %{_sbindir}/winbindd
 %attr(750,root,wbpriv) %dir /var/lib/samba/winbindd_privileged
-%if %with_systemd
+%if %{with_systemd}
 %{_unitdir}/winbind.service
 %else
 %{_initrddir}/winbind
