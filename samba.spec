@@ -183,6 +183,9 @@ BuildRequires: glusterfs-api-devel >= 3.4.0.16
 BuildRequires: glusterfs-devel >= 3.4.0.16
 %endif
 
+# pidl requirements
+BuildRequires: perl(Parse::Yapp)
+
 %if ! %{with_internal_talloc}
 BuildRequires: libtalloc-devel >= %{talloc_version}
 BuildRequires: pytalloc-devel >= %{talloc_version}
@@ -236,7 +239,7 @@ Provides: samba4-client = %{samba_depver}
 Obsoletes: samba4-client < %{samba_depver}
 
 %description client
-The samba4-client package provides some SMB/CIFS clients to complement
+The %{name}-client package provides some SMB/CIFS clients to complement
 the built-in SMB/CIFS filesystem in Linux. These clients allow access
 of SMB/CIFS shares and printing to SMB/CIFS printers.
 
@@ -264,7 +267,7 @@ Obsoletes: samba-domainjoin-gui
 Obsoletes: samba-swat
 
 %description common
-samba4-common provides files necessary for both the server and client
+%{name}-common provides files necessary for both the server and client
 packages of Samba.
 
 ### DC
@@ -292,7 +295,7 @@ Provides: samba4-dc-libs = %{samba_depver}
 Obsoletes: samba4-dc-libs < %{samba_depver}
 
 %description dc-libs
-The samba4-dc-libs package contains the libraries needed by the DC to
+The %{name}-dc-libs package contains the libraries needed by the DC to
 link against the SMB, RPC and other protocols.
 
 ### DEVEL
@@ -305,7 +308,7 @@ Provides: samba4-devel = %{samba_depver}
 Obsoletes: samba4-devel < %{samba_depver}
 
 %description devel
-The samba4-devel package contains the header files for the libraries
+The %{name}-devel package contains the header files for the libraries
 needed to develop programs that link against the SMB, RPC and other
 libraries in the Samba suite.
 
@@ -339,7 +342,7 @@ Provides: samba4-libs = %{samba_depver}
 Obsoletes: samba4-libs < %{samba_depver}
 
 %description libs
-The samba4-libs package contains the libraries needed by programs that
+The %{name}-libs package contains the libraries needed by programs that
 link against the SMB, RPC and other protocols provided by the Samba suite.
 
 ### LIBSMBCLIENT
@@ -398,7 +401,7 @@ Provides: samba4-python = %{samba_depver}
 Obsoletes: samba4-python < %{samba_depver}
 
 %description python
-The samba4-python package contains the Python libraries needed by programs
+The %{name}-python package contains the Python libraries needed by programs
 that use SMB, RPC and other Samba provided protocols in Python programs.
 
 ### PIDL
@@ -412,7 +415,7 @@ Provides: samba4-pidl = %{samba_depver}
 Obsoletes: samba4-pidl < %{samba_depver}
 
 %description pidl
-The samba4-pidl package contains the Perl IDL compiler used by Samba
+The %{name}-pidl package contains the Perl IDL compiler used by Samba
 and Wireshark to parse IDL and similar protocols
 
 ### TEST
@@ -437,7 +440,7 @@ Provides: samba4-test = %{samba_depver}
 Obsoletes: samba4-test < %{samba_depver}
 
 %description test
-samba4-test provides testing tools for both the server and client
+%{name}-test provides testing tools for both the server and client
 packages of Samba.
 
 ### TEST-DEVEL
@@ -1292,6 +1295,7 @@ rm -rf %{buildroot}
 %{_libdir}/libndr-standard.so
 %{_libdir}/libndr.so
 %{_libdir}/libnetapi.so
+%{_libdir}/libpdb.so
 %{_libdir}/libregistry.so
 %{_libdir}/libsamba-credentials.so
 %{_libdir}/libsamba-hostconfig.so
@@ -1300,6 +1304,7 @@ rm -rf %{buildroot}
 %{_libdir}/libsamdb.so
 %{_libdir}/libsmbclient-raw.so
 %{_libdir}/libsmbconf.so
+%{_libdir}/libsmbldap.so
 %{_libdir}/libtevent-util.so
 %{_libdir}/pkgconfig/dcerpc.pc
 %{_libdir}/pkgconfig/dcerpc_atsvc.pc
@@ -1317,8 +1322,6 @@ rm -rf %{buildroot}
 %{_libdir}/pkgconfig/samba-util.pc
 %{_libdir}/pkgconfig/samdb.pc
 %{_libdir}/pkgconfig/smbclient-raw.pc
-%{_libdir}/libpdb.so
-%{_libdir}/libsmbldap.so
 
 %if %{with_dc}
 %{_includedir}/samba-4.0/dcerpc_server.h
