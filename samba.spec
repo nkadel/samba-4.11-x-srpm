@@ -30,7 +30,7 @@
 %global with_internal_talloc 0
 %global with_internal_tevent 0
 %global with_internal_tdb 0
-# ntdb does not yet have its own RPM
+## we don't build it for now
 %global with_internal_ntdb 1
 %global with_internal_ldb 0
 
@@ -256,7 +256,9 @@ Requires(post): systemd
 %else
 Requires(post): /sbin/chkconfig, /sbin/service
 %endif
+%if ! %{with_systemd}
 Requires: logrotate
+%endif
 
 Provides: samba4-common = %{samba_depver}
 Obsoletes: samba4-common < %{samba_depver}
@@ -410,6 +412,7 @@ Summary: Perl IDL compiler
 Group: Development/Tools
 Requires: perl(Parse::Yapp)
 Requires: perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
+BuildArch: noarch
 
 Provides: samba4-pidl = %{samba_depver}
 Obsoletes: samba4-pidl < %{samba_depver}
@@ -604,7 +607,9 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
 %if ! %{with_dc}
         --without-ad-dc \
 %endif
-%if ! %{with_vfs_glusterfs}
+%if %{with_vfs_glusterfs}
+        --enable-glusterfs \
+%else
         --disable-glusterfs \
 %endif
 %if %{with_clustering_support}
@@ -673,7 +678,7 @@ install -m 0744 packaging/printing/smbprint %{buildroot}%{_bindir}/smbprint
 
 %if %{with_systemd}
 install -d -m 0755 %{buildroot}%{_prefix}/lib/tmpfiles.d/
-install -m644 packaging/systemd/samba.conf.tmp %{buildroot}%{_sysconfdir}/tmpfiles.d/samba.conf
+install -m644 packaging/systemd/samba.conf.tmp %{buildroot}%{_prefix}/lib/tmpfiles.d/samba.conf
 # create /run/samba too.
 echo "d /run/samba  755 root root" >> %{buildroot}%{_prefix}/lib/tmpfiles.d/samba.conf
 
@@ -700,7 +705,7 @@ for i in nmb smb winbind dc ; do
 %else
 for i in nmb smb winbind ; do
 %endif # with_dc
-    cat packaging/systemd/$i.service | sed -e 's@Type=forking@Type=forking\nEnvironment=KRB5CCNAME=/run/samba/krb5cc_samba@g' >tmp$i.service
+    cat packaging/systemd/$i.service | sed -e 's@\[Service\]@[Service]\nEnvironment=KRB5CCNAME=FILE:/run/samba/krb5cc_samba@g' >tmp$i.service
     install -m 0644 tmp$i.service %{buildroot}%{_unitdir}/$i.service
 done
 %else
@@ -756,6 +761,7 @@ fi
 %if %{with_systemd}
 %systemd_preun smb.service
 %systemd_preun nmb.service
+%else
 if [ $1 = 0 ] ; then
     /sbin/service smb stop >/dev/null 2>&1 || :
     /sbin/service nmb stop >/dev/null 2>&1 || :
@@ -766,8 +772,10 @@ exit 0
 %endif # with_systemd
 
 %postun
+%if %{with_systemd}
 %systemd_postun_with_restart smb.service
 %systemd_postun_with_restart nmb.service
+%endif
 
 %post common
 /sbin/ldconfig
@@ -993,6 +1001,7 @@ rm -rf %{buildroot}
 %{_mandir}/man8/smbspool.8*
 %{_mandir}/man8/smbta-util.8*
 
+## we don't build it for now
 %if %{with_internal_ntdb}
 %{_mandir}/man3/ntdb.3*
 %{_mandir}/man8/ntdbbackup.8*
@@ -1049,10 +1058,7 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/logrotate.d/samba
 %attr(0700,root,root) %dir /var/log/samba
 %attr(0700,root,root) %dir /var/log/samba/old
-# Make sure directories are real without systemd
-%if ! %{with_systemd}
-%attr(700,root,root) %dir /var/run/samba
-%endif
+%ghost %dir /var/run/samba
 %ghost %dir /var/run/winbindd
 %attr(700,root,root) %dir /var/lib/samba/private
 %attr(755,root,root) %dir %{_sysconfdir}/samba
@@ -1071,8 +1077,6 @@ rm -rf %{buildroot}
 
 # common libraries
 %{_libdir}/samba/libpopt_samba3.so
-# new with 4.1.12, review package inclusion
-%{_libdir}/samba/libdnsserver_common.so
 
 %dir %{_libdir}/samba/pdb
 %{_libdir}/samba/pdb/ldapsam.so
@@ -1156,6 +1160,7 @@ rm -rf %{buildroot}
 %exclude %{_mandir}/man8/samba-tool.8*
 %exclude %{_libdir}/samba/ldb/ildap.so
 %exclude %{_libdir}/samba/ldb/ldbsamba_extensions.so
+
 %endif # with_dc
 
 ### DC-LIBS
@@ -1168,6 +1173,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/service
 %{_libdir}/libdcerpc-server.so.*
 %{_libdir}/samba/libdfs_server_ad.so
+%{_libdir}/samba/libdnsserver_common.so
 %{_libdir}/samba/libdsdb-module.so
 %{_libdir}/samba/libntvfs.so
 %{_libdir}/samba/libposix_eadb.so
@@ -1175,6 +1181,7 @@ rm -rf %{buildroot}
 %else
 %doc packaging/README.dc-libs
 %exclude %{_libdir}/samba/libdfs_server_ad.so
+%exclude %{_libdir}/samba/libdnsserver_common.so
 %endif # with_dc
 
 ### DEVEL
@@ -1531,10 +1538,12 @@ rm -rf %{buildroot}
 ### PIDL
 %files pidl
 %defattr(-,root,root,-)
-%{perl_vendorlib}/Parse/Pidl*
+%attr(755,root,root) %{_bindir}/pidl
+%dir %{perl_vendorlib}/Parse
+%{perl_vendorlib}/Parse/Pidl.pm
+%{perl_vendorlib}/Parse/Pidl
 %{_mandir}/man1/pidl*
 %{_mandir}/man3/Parse::Pidl*
-%attr(755,root,root) %{_bindir}/pidl
 
 ### PYTHON
 %files python
@@ -1625,12 +1634,11 @@ rm -rf %{buildroot}
 * Fri Nov  7 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.13-0.1
 - Update to 4.1.13
 - Update with_dc logic to deduce use of with_mitkrb5
-- Update libtdb, libtalloc, etc. dependencies
-- Discard samba-4.1.0-upn.patch, included upstream
-- Discard memset-in-ntdb and fix_strict_aliasing,patch, now in upstream
-- Update ntdb version to 1.0
+- Update libtdb, libtalloc, ntdb, libtevent versions and dependencies
 - Stop including libldb-cmdline.so
 - Improve handling of with_ntdb_internal, especially man pages
+- Activate with_sytemd and init scripts
+- Set 'with_dc' to be on by default, using Heimdal internal Kerberos
 
 * Tue Oct 07 2014 - Andreas Schneider <asn@redhat.com> - 4.1.12-5
 - resolves: #1033595 - Fix segfault in winbind.
