@@ -909,45 +909,7 @@ rm -rf %{buildroot}
 %{_mandir}/man8/eventlogadm.8*
 %{_mandir}/man8/smbd.8*
 %{_mandir}/man8/nmbd.8*
-#%{_mandir}/man8/vfs_*.8*
-%{_mandir}/man8/vfs_acl_tdb.8*
-%{_mandir}/man8/vfs_acl_xattr.8*
-%{_mandir}/man8/vfs_aio_fork.8*
-%{_mandir}/man8/vfs_aio_linux.8*
-%{_mandir}/man8/vfs_aio_pthread.8*
-%{_mandir}/man8/vfs_audit.8*
-%{_mandir}/man8/vfs_btrfs.8*
-%{_mandir}/man8/vfs_cacheprime.8*
-%{_mandir}/man8/vfs_cap.8*
-%{_mandir}/man8/vfs_catia.8*
-%{_mandir}/man8/vfs_commit.8*
-%{_mandir}/man8/vfs_crossrename.8*
-%{_mandir}/man8/vfs_default_quota.8*
-%{_mandir}/man8/vfs_dirsort.8*
-%{_mandir}/man8/vfs_extd_audit.8*
-%{_mandir}/man8/vfs_fake_perms.8*
-%{_mandir}/man8/vfs_fileid.8*
-%{_mandir}/man8/vfs_full_audit.8*
-%{_mandir}/man8/vfs_gpfs.8*
-%{_mandir}/man8/vfs_linux_xfs_sgid.8*
-%{_mandir}/man8/vfs_media_harmony.8*
-%{_mandir}/man8/vfs_netatalk.8*
-%{_mandir}/man8/vfs_notify_fam.8*
-%{_mandir}/man8/vfs_prealloc.8*
-%{_mandir}/man8/vfs_preopen.8*
-%{_mandir}/man8/vfs_readahead.8*
-%{_mandir}/man8/vfs_readonly.8*
-%{_mandir}/man8/vfs_recycle.8*
-%{_mandir}/man8/vfs_scannedonly.8*
-%{_mandir}/man8/vfs_shadow_copy.8*
-%{_mandir}/man8/vfs_shadow_copy2.8*
-%{_mandir}/man8/vfs_smb_traffic_analyzer.8*
-%{_mandir}/man8/vfs_streams_depot.8*
-%{_mandir}/man8/vfs_streams_xattr.8*
-%{_mandir}/man8/vfs_syncops.8*
-%{_mandir}/man8/vfs_time_audit.8*
-%{_mandir}/man8/vfs_tsmsm.8*
-%{_mandir}/man8/vfs_xattr_tdb.8*
+%{_mandir}/man8/vfs_*.8*
 
 ### CLIENT
 %files client
@@ -1633,12 +1595,13 @@ rm -rf %{buildroot}
 %changelog
 * Fri Nov  7 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.13-0.1
 - Update to 4.1.13
-- Update with_dc logic to deduce use of with_mitkrb5
 - Update libtdb, libtalloc, ntdb, libtevent versions and dependencies
-- Stop including libldb-cmdline.so
 - Improve handling of with_ntdb_internal, especially man pages
-- Activate with_sytemd and init scripts
+- Simply listings for PIDL components
+- Simply listings for vfs man pages
 - Set 'with_dc' to be on by default, using Heimdal internal Kerberos
+- Eanble 'with_mitkrb5' based only on 'with_dc'
+- Activate 'with_sytemd' option and init scripts for older RHEL 6
 
 * Tue Oct 07 2014 - Andreas Schneider <asn@redhat.com> - 4.1.12-5
 - resolves: #1033595 - Fix segfault in winbind.
