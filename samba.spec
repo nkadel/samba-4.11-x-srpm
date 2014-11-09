@@ -3,7 +3,6 @@
 # The testsuite is disabled by default. Set --with testsuite or %bcond_without
 # to run the Samba torture testsuite.
 %bcond_with testsuite
-
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
 
@@ -54,13 +53,17 @@
 
 # Domain controller cannot compile with mitkrb5
 # Consider supporting heimdal compilation
-%if 0%{with_dc}
+%if %{with_dc}
 %global with_mitkrb5 0
 %else
 %global with_mitkrb5 1
 %endif
 
+%global with_clustering_support 0
+
+%if %{with clustering}
 %global with_clustering_support 1
+%endif
 
 # Use systemd, not SysV init scripts, as appropriate
 %if 0%{?fedora} > 15 || 0%{?rhel} > 6
@@ -574,9 +577,11 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
 %if %{with_systemd}
         --with-piddir=/run \
         --with-sockets-dir=/run/samba \
+        --with-systemd \
 %else
-	--with-piddir=/var/run/samba \
-	--with-sockets-dir=/var/run/samba \
+        --with-piddir=/var/run/samba \
+        --with-sockets-dir=/var/run/samba \
+        --without-systemd \
 %endif
         --with-modulesdir=%{_libdir}/samba \
         --with-pammodulesdir=%{_libdir}/security \
