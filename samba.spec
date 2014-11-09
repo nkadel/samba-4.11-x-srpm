@@ -169,6 +169,9 @@ BuildRequires: python-devel
 BuildRequires: python-tevent
 BuildRequires: quota-devel
 BuildRequires: readline-devel
+%if %{with_systemd}
+BuildRequires: systemd-devel
+%endif
 BuildRequires: sed
 BuildRequires: zlib-devel >= 1.2.3
 BuildRequires: libbsd-devel
@@ -1614,39 +1617,78 @@ rm -rf %{buildroot}
 * Fri Nov  7 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.13-0.1
 - Update to 4.1.13
 - Update with_dc logic to deduce use of with_mitkrb5
-
-* Thu Sep 11 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.12-0.1
-- Update to 4.1.12
-
-* Sun Aug 10 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.11-0.1
-- Update to 4.1.11
-- Stop including libldb-cmdline.so
-
-* Mon Jun 23 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.9-0.1
-- Update to 4.1.9
 - Update libtdb, libtalloc, etc. dependencies
-
-* Sat Apr 19 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.7-0.1
-- Update to 4.1.7
-
-* Sun Mar 16 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.6-0.1
-- Update to 4.1.6
-- Improve handling of with_ntdb_internal, especially man pages
-
-* Fri Feb 21 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.5-0.1
-- Update to 4.1.5
-
-* Sun Jan 12 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.4-0.1
-- Update to 4.1.4
 - Discard samba-4.1.0-upn.patch, included upstream
-
-* Sat Dec 14 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.3-0.1
-- Update to 4.1.3
-
-* Sun Nov 24 2013 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.2-0.1
-- Update to 4.1.2
 - Discard memset-in-ntdb and fix_strict_aliasing,patch, now in upstream
 - Update ntdb version to 1.0
+- Stop including libldb-cmdline.so
+- Improve handling of with_ntdb_internal, especially man pages
+
+* Tue Oct 07 2014 - Andreas Schneider <asn@redhat.com> - 4.1.12-5
+- resolves: #1033595 - Fix segfault in winbind.
+
+* Wed Sep 24 2014 - Andreas Schneider <asn@redhat.com> - 4.1.12-1
+- Update to Samba 4.1.12.
+
+* Tue Sep 09 2014 Jitka Plesnikova <jplesnik@redhat.com> - 2:4.1.11-1.4
+- Perl 5.20 mass
+
+* Wed Aug 27 2014 Jitka Plesnikova <jplesnik@redhat.com> - 2:4.1.11-1.3
+- Perl 5.20 rebuild
+
+* Wed Aug 20 2014 Kalev Lember <kalevlember@gmail.com> - 2:4.1.11-1.2
+- Rebuilt for rpm dependency generator failure (#1131892)
+
+* Mon Aug 18 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:4.1.11-1.1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
+* Fri Aug 1 2014 - Jared Smith <jsmith@fedoraproject.org> - 4.1.11-1
+- Update to upstream Samba 4.1.11 release
+- resolves: #1126015 - Fix CVE-2014-3560
+
+* Mon Jun 23 2014 - Guenther Deschner <gdeschner@redhat.com> - 4.1.9-3
+- Update to Samba 4.1.9.
+- resolves: #1112251 - Fix CVE-2014-0244 and CVE-2014-3493.
+
+* Wed Jun 11 2014 - Guenther Deschner <gdeschner@redhat.com> - 4.1.8-3
+- Update to Samba 4.1.8.
+- resolves: #1102528 - CVE-2014-0178.
+
+* Sun Jun 08 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2:4.1.6-3.1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
+* Thu Apr 03 2014 - Andreas Schneider <asn@redhat.com> - 4.1.6-3
+- Add systemd integration to the service daemons.
+
+* Tue Mar 18 2014 - Andreas Schneider <asn@redhat.com> - 4.1.6-2
+- Created a samba-test-libs package.
+
+* Tue Mar 11 2014 - Andreas Schneider <asn@redhat.com> - 4.1.6-1
+- Fix CVE-2013-4496 and CVE-2013-6442.
+- Fix installation of pidl.
+
+* Fri Feb 21 2014 - Andreas Schneider <asn@redhat.com> - 4.1.5-1
+- Update to Samba 4.1.5.
+
+* Fri Feb 07 2014 - Andreas Schneider <asn@redhat.com> - 4.1.4-1
+- Update to Samba 4.1.4.
+
+* Wed Jan 08 2014 - Andreas Schneider <asn@redhat.com> - 4.1.3-3
+- resolves: #1042845 - Do not build with libbsd.
+
+* Tue Dec 10 2013 - Guenther Deschner <gdeschner@redhat.com> - 4.1.3-2
+- resolves: #1019469 - Fix winbind debug message NULL pointer derreference.
+
+* Mon Dec 09 2013 - Andreas Schneider <asn@redhat.com> - 4.1.3-1
+- Update to Samba 4.1.3.
+- resolves: #1039454 - CVE-2013-4408.
+- resolves: #1039500 - CVE-2012-6150.
+
+* Mon Nov 25 2013 - Andreas Schneider <asn@redhat.com> - 4.1.2-1
+- Update to Samba 4.1.2.
+
+* Mon Nov 18 2013 - Guenther Deschner <gdeschner@redhat.com> - 4.1.1-3
+- resolves: #948509 - Fix manpage correctness.
 
 * Fri Nov 15 2013 - Andreas Schneider <asn@redhat.com> - 4.1.1-2
 - related: #884169 - Fix strict aliasing warnings.
