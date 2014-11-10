@@ -373,6 +373,7 @@ develop programs that link against the SMB client library in the Samba suite.
 %package -n libwbclient
 Summary: The winbind client library
 Group: Applications/System
+Requires: %{name}-libs = %{samba_depver}
 
 %description -n libwbclient
 The libwbclient package contains the winbind client library from the Samba suite.
@@ -427,11 +428,13 @@ Summary: Testing tools for Samba servers and clients
 Group: Applications/System
 Requires: %{name} = %{samba_depver}
 Requires: %{name}-common = %{samba_depver}
+Requires: %{name}-winbind = %{samba_depver}
+
+Requires: %{name}-libs = %{samba_depver}
+Requires: %{name}-test-libs = %{samba_depver}
 %if %{with_dc}
 Requires: %{name}-dc-libs = %{samba_depver}
 %endif
-Requires: %{name}-libs = %{samba_depver}
-Requires: %{name}-winbind = %{samba_depver}
 %if %{with_libsmbclient}
 Requires: libsmbclient = %{samba_depver}
 %endif
@@ -446,11 +449,21 @@ Obsoletes: samba4-test < %{samba_depver}
 %{name}-test provides testing tools for both the server and client
 packages of Samba.
 
+### TEST-LIBS
+%package test-libs
+Summary: Libraries need by teh testing tools for Samba servers and clients
+Group: Applications/System
+Requires: %{name}-libs = %{samba_depver}
+
+%description test-libs
+%{name}-test-libs provides libraries required by the testing tools.
+
 ### TEST-DEVEL
 %package test-devel
 Summary: Testing devel files for Samba servers and clients
 Group: Applications/System
-Requires: %{name}-test = %{samba_depver}
+Requires: %{name}-libs = %{samba_depver}
+Requires: %{name}-test-libs = %{samba_depver}
 
 %description test-devel
 samba-test-devel provides testing devel files for both the server and client
@@ -593,11 +606,13 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
         --with-pammodulesdir=%{_libdir}/security \
         --with-lockdir=/var/lib/samba \
         --with-cachedir=/var/lib/samba \
+        --with-perl-lib-install-dir=%{perl_vendorlib} \
         --disable-gnutls \
         --disable-rpath-install \
         --with-shared-modules=%{_samba4_modules} \
         --bundled-libraries=%{_samba4_libraries} \
         --with-pam \
+        --without-fam \
 %if (! %{with_libsmbclient}) || (! %{with_libwbclient})
         --private-libraries=%{_samba4_private_libraries} \
 %endif
@@ -628,10 +643,6 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
 
 make %{?_smp_mflags}
 
-# Build PIDL for installation into vendor directories before
-# 'make proto' gets to it.
-(cd pidl && %{__perl} Makefile.PL INSTALLDIRS=vendor )
-
 %install
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
@@ -651,13 +662,6 @@ install -d -m 0755 %{buildroot}/var/run/winbindd
 %endif
 install -d -m 0755 %{buildroot}/%{_libdir}/samba
 install -d -m 0755 %{buildroot}/%{_libdir}/pkgconfig
-
-# Undo the PIDL install, we want to try again with the right options.
-rm -rf %{buildroot}/%{_libdir}/perl5
-rm -rf %{buildroot}/%{_datadir}/perl5
-
-# Install PIDL.
-( cd pidl && make install PERL_INSTALL_ROOT=%{buildroot} )
 
 # Install other stuff
 install -d -m 0755 %{buildroot}%{_sysconfdir}/logrotate.d
@@ -727,17 +731,9 @@ install -m 0755 packaging/NetworkManager/30-winbind-systemd \
 install -d -m 0755 %{buildroot}%{_libdir}/krb5/plugins/libkrb5
 touch %{buildroot}%{_libdir}/krb5/plugins/libkrb5/winbind_krb5_locator.so
 
-# Clean out crap left behind by the PIDL install.
-find %{buildroot} -type f -name .packlist -exec rm -f {} \;
-rm -f %{buildroot}%{perl_vendorlib}/wscript_build
-rm -rf %{buildroot}%{perl_vendorlib}/Parse/Yapp
-
 # This makes the right links, as rpmlint requires that
 # the ldconfig-created links be recorded in the RPM.
 /sbin/ldconfig -N -n %{buildroot}%{_libdir}
-
-# Fix up permission on perl install.
-%{_fixperms} %{buildroot}%{perl_vendorlib}
 
 %if %with testsuite
 %check
@@ -819,34 +815,14 @@ fi
 /usr/sbin/groupadd -g 88 wbpriv >/dev/null 2>&1 || :
 
 %post winbind
-%if %{with_systemd}
 %systemd_post winbind.service
-%else
-/sbin/chkconfig --add winbind
-if [ "$1" -ge "1" ]; then
-    /sbin/service winbind condrestart >/dev/null 2>&1 || :
-fi
-%endif
 
 %preun winbind
-%if %{with_systemd}
 %systemd_preun winbind.service
-%else
-if [ $1 = 0 ] ; then
-    /sbin/service winbind stop >/dev/null 2>&1 || :
-    /sbin/chkconfig --del winbind
-fi
-%endif
 
 %postun winbind
-%if %{with_systemd}
 %systemd_postun_with_restart smb.service
 %systemd_postun_with_restart nmb.service
-%endif
-
-%post winbind-clients -p /sbin/ldconfig
-
-%postun winbind-clients -p /sbin/ldconfig
 
 %postun winbind-krb5-locator
 if [ "$1" -ge "1" ]; then
@@ -938,7 +914,6 @@ rm -rf %{buildroot}
 %{_bindir}/smbta-util
 %{_bindir}/smbtar
 %{_bindir}/smbtree
-#%{_libdir}/samba/libldb-cmdline.so
 %{_mandir}/man1/dbwrap_tool.1*
 %{_mandir}/man1/nmblookup.1*
 %{_mandir}/man1/oLschema2ldif.1*
@@ -1520,13 +1495,6 @@ rm -rf %{buildroot}
 %{_bindir}/masktest
 %{_bindir}/ndrdump
 %{_bindir}/smbtorture
-%{_libdir}/libtorture.so.*
-%{_libdir}/samba/libsubunit.so
-%if %{with_dc}
-%{_libdir}/samba/libdlz_bind9_for_torture.so
-%else
-%{_libdir}/samba/libdsdb-module.so
-%endif
 %{_mandir}/man1/gentest.1*
 %{_mandir}/man1/locktest.1*
 %{_mandir}/man1/masktest.1*
@@ -1539,6 +1507,17 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libnss_wrapper.so
 %{_libdir}/samba/libsocket_wrapper.so
 %{_libdir}/samba/libuid_wrapper.so
+%endif
+
+### TEST-LIBS
+%files test-libs
+%defattr(-,root,root)
+%{_libdir}/libtorture.so.*
+%{_libdir}/samba/libsubunit.so
+%if %{with_dc}
+%{_libdir}/samba/libdlz_bind9_for_torture.so
+%else
+%{_libdir}/samba/libdsdb-module.so
 %endif
 
 ### TEST-DEVEL
@@ -1595,6 +1574,7 @@ rm -rf %{buildroot}
 %changelog
 * Fri Nov  7 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.13-0.1
 - Update to 4.1.13
+- Strip dangling whitespace from .spec file
 - Update libtdb, libtalloc, ntdb, libtevent versions and dependencies
 - Improve handling of with_ntdb_internal, especially man pages
 - Simply listings for PIDL components
