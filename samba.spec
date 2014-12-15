@@ -8,12 +8,12 @@
 
 %define main_release 0.1
 
-%define samba_version 4.1.13
+%define samba_version 4.1.14
 %define talloc_version 2.1.1
 %define ntdb_version 1.0
-%define tdb_version 1.3.1
+%define tdb_version 1.3.3
 %define tevent_version 0.9.22
-%define ldb_version 1.1.17
+%define ldb_version 1.1.18
 # This should be rc1 or nil
 %define pre_release %nil
 
@@ -606,7 +606,6 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
         --with-pammodulesdir=%{_libdir}/security \
         --with-lockdir=/var/lib/samba \
         --with-cachedir=/var/lib/samba \
-        --with-perl-lib-install-dir=%{perl_vendorlib} \
         --disable-gnutls \
         --disable-rpath-install \
         --with-shared-modules=%{_samba4_modules} \
@@ -640,6 +639,10 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
 %if ! %{with_pam_smbpass}
         --without-pam_smbpass
 %endif
+
+# Eliminated with 4.1.14
+#        --with-perl-lib-install-dir=%{perl_vendorlib}
+
 
 make %{?_smp_mflags}
 
@@ -1572,6 +1575,11 @@ rm -rf %{buildroot}
 %{_mandir}/man8/pam_winbind.8*
 
 %changelog
+* Sun Dec 14  2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.14-0.1
+- Update to 4.1.14
+- Update libtdb and libldb versions and dependencies
+- Wliminate --with-perl-lib-install-dir option
+
 * Fri Nov  7 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.13-0.1
 - Update to 4.1.13
 - Strip dangling whitespace from .spec file
