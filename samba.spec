@@ -606,7 +606,6 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
         --with-pammodulesdir=%{_libdir}/security \
         --with-lockdir=/var/lib/samba \
         --with-cachedir=/var/lib/samba \
-        --with-perl-lib-install-dir=%{perl_vendorlib} \
         --disable-gnutls \
         --disable-rpath-install \
         --with-shared-modules=%{_samba4_modules} \
@@ -640,6 +639,9 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
 %if ! %{with_pam_smbpass}
         --without-pam_smbpass
 %endif
+
+# Disabled with 4.1.14
+#        --with-perl-lib-install-dir=%{perl_vendorlib}
 
 make %{?_smp_mflags}
 
@@ -1569,6 +1571,11 @@ rm -rf %{buildroot}
 %{_mandir}/man8/pam_winbind.8*
 
 %changelog
+* Mon Dec 15 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.14-0.1
+- Update to 4.1.14
+- Update tdb_version ldb_version
+- Discard --with-perl-lib-install-dir option, disabled in 4.1.14
+
 * Fri Nov  7 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.13-0.1
 - Update to 4.1.13
 - Strip dangling whitespace from .spec file
