@@ -606,6 +606,7 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
         --with-pammodulesdir=%{_libdir}/security \
         --with-lockdir=/var/lib/samba \
         --with-cachedir=/var/lib/samba \
+        --with-perl-lib-install-dir=%{perl_vendorlib} \
         --disable-gnutls \
         --disable-rpath-install \
         --with-shared-modules=%{_samba4_modules} \
@@ -639,10 +640,6 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
 %if ! %{with_pam_smbpass}
         --without-pam_smbpass
 %endif
-
-# Eliminated with 4.1.14
-#        --with-perl-lib-install-dir=%{perl_vendorlib}
-
 
 make %{?_smp_mflags}
 
@@ -699,11 +696,8 @@ install -m 0644 %{SOURCE110} %{buildroot}%{_sysconfdir}/sysconfig/samba
 %endif
 
 install -m 0644 %{SOURCE201} packaging/README.downgrade
-
-%if ! %{with_dc}
 install -m 0644 %{SOURCE200} packaging/README.dc
 install -m 0644 %{SOURCE200} packaging/README.dc-libs
-%endif
 
 %if %{with_systemd}
 install -d -m 0755 %{buildroot}%{_unitdir}
@@ -1031,6 +1025,7 @@ rm -rf %{buildroot}
 ### DC
 %files dc
 %defattr(-,root,root)
+%doc packaging/README.dc
 
 %if %{with_dc}
 %{_bindir}/samba-tool
@@ -1095,7 +1090,6 @@ rm -rf %{buildroot}
 %{_initrddir}/samba
 %endif
 %else # with_dc
-%doc packaging/README.dc
 %exclude %{_mandir}/man8/samba.8*
 %exclude %{_mandir}/man8/samba-tool.8*
 %exclude %{_libdir}/samba/ldb/ildap.so
@@ -1106,6 +1100,7 @@ rm -rf %{buildroot}
 ### DC-LIBS
 %files dc-libs
 %defattr(-,root,root)
+%doc packaging/README.dc-libs
 %if %{with_dc}
 %{_libdir}/samba/libprocess_model.so
 %{_libdir}/samba/libservice.so
@@ -1119,7 +1114,6 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libposix_eadb.so
 %{_libdir}/samba/bind9/dlz_bind9_9.so
 %else
-%doc packaging/README.dc-libs
 %exclude %{_libdir}/samba/libdfs_server_ad.so
 %exclude %{_libdir}/samba/libdnsserver_common.so
 %endif # with_dc
@@ -1575,11 +1569,6 @@ rm -rf %{buildroot}
 %{_mandir}/man8/pam_winbind.8*
 
 %changelog
-* Sun Dec 14  2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.14-0.1
-- Update to 4.1.14
-- Update libtdb and libldb versions and dependencies
-- Wliminate --with-perl-lib-install-dir option
-
 * Fri Nov  7 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.13-0.1
 - Update to 4.1.13
 - Strip dangling whitespace from .spec file
