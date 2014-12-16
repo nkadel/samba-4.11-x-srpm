@@ -1114,7 +1114,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libdsdb-module.so
 %{_libdir}/samba/libntvfs.so
 %{_libdir}/samba/libposix_eadb.so
-%{_libdir}/samba/bind9/dlz_bind9_9.so
+%{_libdir}/samba/bind9/dlz_bind9_10.so
 %else
 %exclude %{_libdir}/samba/libdfs_server_ad.so
 %exclude %{_libdir}/samba/libdnsserver_common.so
@@ -1575,6 +1575,7 @@ rm -rf %{buildroot}
 - Update to 4.1.14
 - Update tdb_version ldb_version
 - Discard --with-perl-lib-install-dir option, disabled in 4.1.14
+- Update dlz_bind9_9.so to dlz_bind9_10.so
 
 * Fri Nov  7 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.13-0.1
 - Update to 4.1.13
