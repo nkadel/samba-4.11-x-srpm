@@ -8,12 +8,12 @@
 
 %define main_release 0.1
 
-%define samba_version 4.1.14
+%define samba_version 4.1.16
 %define talloc_version 2.1.1
 %define ntdb_version 1.0
-%define tdb_version 1.3.3
+%define tdb_version 1.3.4
 %define tevent_version 0.9.22
-%define ldb_version 1.1.18
+%define ldb_version 1.1.19
 # This should be rc1 or nil
 %define pre_release %nil
 
@@ -1114,7 +1114,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libdsdb-module.so
 %{_libdir}/samba/libntvfs.so
 %{_libdir}/samba/libposix_eadb.so
-%{_libdir}/samba/bind9/dlz_bind9_10.so
+%{_libdir}/samba/bind9/dlz_bind9_*.so
 %else
 %exclude %{_libdir}/samba/libdfs_server_ad.so
 %exclude %{_libdir}/samba/libdnsserver_common.so
@@ -1571,6 +1571,11 @@ rm -rf %{buildroot}
 %{_mandir}/man8/pam_winbind.8*
 
 %changelog
+* Sat Jan 24 2015 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.16-0.1
+- Update to 4.1.16
+- Update tdb_version ldb_version
+- Update dlz_bind9_10.so inclusion to dlz_bind9_*.so
+
 * Mon Dec 15 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.14-0.1
 - Update to 4.1.14
 - Update tdb_version ldb_version
