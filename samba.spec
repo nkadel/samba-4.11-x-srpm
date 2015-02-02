@@ -94,9 +94,9 @@ Epoch:          2
 Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+
 Group:          System Environment/Daemons
-URL:            http://www.samba.org/
+URL:            https://www.samba.org/
 
-Source0:        http://www.samba.org/ftp/samba/samba-%{version}%{pre_release}.tar.gz
+Source0:        https://www.samba.org/ftp/samba/samba-%{version}%{pre_release}.tar.gz
 
 # Red Hat specific replacement-files
 Source1: samba.log
