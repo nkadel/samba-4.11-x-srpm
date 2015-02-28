@@ -8,12 +8,12 @@
 
 %define main_release 0.1
 
-%define samba_version 4.1.16
+%define samba_version 4.1.17
 %define talloc_version 2.1.1
 %define ntdb_version 1.0
 %define tdb_version 1.3.4
-%define tevent_version 0.9.22
-%define ldb_version 1.1.19
+%define tevent_version 0.9.23
+%define ldb_version 1.1.20
 # This should be rc1 or nil
 %define pre_release %nil
 
@@ -1571,6 +1571,10 @@ rm -rf %{buildroot}
 %{_mandir}/man8/pam_winbind.8*
 
 %changelog
+* Sat Feb 28 2015 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.17-0.1
+- Update to 4.1.17
+- Update tdb_version ldb_version
+
 * Sat Jan 24 2015 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.16-0.1
 - Update to 4.1.16
 - Update tdb_version ldb_version
