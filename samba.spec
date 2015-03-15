@@ -46,7 +46,7 @@
 
 %global with_dc 1
 
-%if %with testsuite
+%if %{with testsuite}
 # The testsuite only works with a full build right now.
 %global with_dc 1
 %endif
@@ -210,7 +210,7 @@ BuildRequires: libtdb-devel >= %{tdb_version}
 BuildRequires: python-tdb >= %{tdb_version}
 %endif
 
-%if %with testsuite
+%if %{with testsuite}
 BuildRequires: ldb-tools
 %endif
 
@@ -633,7 +633,7 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
 %if %{with_profiling}
         --with-profiling-data \
 %endif
-%if %with testsuite
+%if %{with testsuite}
         --enable-selftest \
 %endif
 %if ! %{with_pam_smbpass}
@@ -734,7 +734,7 @@ touch %{buildroot}%{_libdir}/krb5/plugins/libkrb5/winbind_krb5_locator.so
 # the ldconfig-created links be recorded in the RPM.
 /sbin/ldconfig -N -n %{buildroot}%{_libdir}
 
-%if %with testsuite
+%if %{with testsuite}
 %check
 TDB_NO_FSYNC=1 make %{?_smp_mflags} test
 %endif
@@ -1501,7 +1501,7 @@ rm -rf %{buildroot}
 %{_mandir}/man1/smbtorture.1*
 %{_mandir}/man1/vfstest.1*
 
-%if %with testsuite
+%if %{with testsuite}
 # files to ignore in testsuite mode
 %{_libdir}/samba/libnss_wrapper.so
 %{_libdir}/samba/libsocket_wrapper.so
@@ -1575,32 +1575,47 @@ rm -rf %{buildroot}
 - Update to 4.1.17
 - Update tdb_version ldb_version
 
-* Sat Jan 24 2015 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.16-0.1
-- Update to 4.1.16
-- Update tdb_version ldb_version
-- Update dlz_bind9_10.so inclusion to dlz_bind9_*.so
 
-* Mon Dec 15 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.14-0.1
-- Update to 4.1.14
-- Update tdb_version ldb_version
-- Discard --with-perl-lib-install-dir option, disabled in 4.1.14
-- Update dlz_bind9_9.so to dlz_bind9_10.so
+* Mon Jan 12 2015 Guenther Deschner <gdeschner@redhat.com> - 4.2.0-0.6.rc3
+- Fix awk as a dependency (and require gawk)
 
-* Fri Nov  7 2014 - Nico Kadel-Garcia <nkadel@gmail.com> - 4.1.13-0.1
-- Update to 4.1.13
-- Strip dangling whitespace from .spec file
-- Update libtdb, libtalloc, ntdb, libtevent versions and dependencies
-- Improve handling of with_ntdb_internal, especially man pages
-- Simply listings for PIDL components
-- Simply listings for vfs man pages
-- Set 'with_dc' to be on by default, using Heimdal internal Kerberos
-- Eanble 'with_mitkrb5' based only on 'with_dc'
-- Activate 'with_sytemd' option and init scripts for older RHEL 6
+* Mon Jan 12 2015 Michael Adam <madam@redhat.com> - 4.2.0-0.5.rc3
+- Add dependencies for ctdb.
 
-* Tue Oct 07 2014 - Andreas Schneider <asn@redhat.com> - 4.1.12-5
+* Fri Jan 09 2015 Stephen Gallagher <sgallagh@redhat.com> 4.2.0-0.4.rc3
+- Apply the DEBUG patch
+
+* Fri Jan 09 2015 Andreas Schneider <asn@redhat.com> - 4.2.0-0.3.rc3
+- Fix issues with conflicting DEBUG macros.
+
+* Tue Jan 06 2015 Michael Adam <madam@redhat.com> - 4.2.0-0.2.rc3
+- Improve dependencies of vfs-glusterfs and vfs-cephfs.
+- Remove unused python_libdir.
+- Fix malformed changelog entries.
+
+* Tue Jan 06 2015 Guenther Deschner <gdeschner@redhat.com> - 4.2.0-0.2.rc3
+- Fix ctdb and libcephfs dependencies.
+
+* Mon Jan 05 2015 Andreas Schneider <asn@redhat.com> - 4.2.0-0.1.rc3
+- Update to Samba 4.2.0rc3
+  + Samba provides ctdb packages now.
+
+* Tue Dec 16 2014 Andreas Schneider <asn@redhat.com> - 4.2.0-0.3.rc2
+- resolves: #1174412 - Build VFS Ceph module.
+- resolves: #1169067 - Move libsamba-cluster-support.so to samba-libs package.
+- resolves: #1016122 - Move smbpasswd to samba-common package.
+
+* Fri Nov 21 2014 Andreas Schneider <asn@redhat.com> - 4.2.0-0.2.rc2
+- Use alternatives for libwbclient.
+- Add cwrap to BuildRequires.
+
+* Wed Nov 12 2014 Andreas Schneider <asn@redhat.com> - 4.2.0-0.1.rc2
+- Update to Samba 4.2.0rc2.
+
+* Tue Oct 07 2014 Andreas Schneider <asn@redhat.com> - 4.1.12-5
 - resolves: #1033595 - Fix segfault in winbind.
 
-* Wed Sep 24 2014 - Andreas Schneider <asn@redhat.com> - 4.1.12-1
+* Wed Sep 24 2014 Andreas Schneider <asn@redhat.com> - 4.1.12-1
 - Update to Samba 4.1.12.
 
 * Tue Sep 09 2014 Jitka Plesnikova <jplesnik@redhat.com> - 2:4.1.11-1.4
@@ -1615,105 +1630,105 @@ rm -rf %{buildroot}
 * Mon Aug 18 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0:4.1.11-1.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 
-* Fri Aug 1 2014 - Jared Smith <jsmith@fedoraproject.org> - 4.1.11-1
+* Fri Aug 1 2014 Jared Smith <jsmith@fedoraproject.org> - 4.1.11-1
 - Update to upstream Samba 4.1.11 release
 - resolves: #1126015 - Fix CVE-2014-3560
 
-* Mon Jun 23 2014 - Guenther Deschner <gdeschner@redhat.com> - 4.1.9-3
+* Mon Jun 23 2014 Guenther Deschner <gdeschner@redhat.com> - 4.1.9-3
 - Update to Samba 4.1.9.
 - resolves: #1112251 - Fix CVE-2014-0244 and CVE-2014-3493.
 
-* Wed Jun 11 2014 - Guenther Deschner <gdeschner@redhat.com> - 4.1.8-3
+* Wed Jun 11 2014 Guenther Deschner <gdeschner@redhat.com> - 4.1.8-3
 - Update to Samba 4.1.8.
 - resolves: #1102528 - CVE-2014-0178.
 
 * Sun Jun 08 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 2:4.1.6-3.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
 
-* Thu Apr 03 2014 - Andreas Schneider <asn@redhat.com> - 4.1.6-3
+* Thu Apr 03 2014 Andreas Schneider <asn@redhat.com> - 4.1.6-3
 - Add systemd integration to the service daemons.
 
-* Tue Mar 18 2014 - Andreas Schneider <asn@redhat.com> - 4.1.6-2
+* Tue Mar 18 2014 Andreas Schneider <asn@redhat.com> - 4.1.6-2
 - Created a samba-test-libs package.
 
-* Tue Mar 11 2014 - Andreas Schneider <asn@redhat.com> - 4.1.6-1
+* Tue Mar 11 2014 Andreas Schneider <asn@redhat.com> - 4.1.6-1
 - Fix CVE-2013-4496 and CVE-2013-6442.
 - Fix installation of pidl.
 
-* Fri Feb 21 2014 - Andreas Schneider <asn@redhat.com> - 4.1.5-1
+* Fri Feb 21 2014 Andreas Schneider <asn@redhat.com> - 4.1.5-1
 - Update to Samba 4.1.5.
 
-* Fri Feb 07 2014 - Andreas Schneider <asn@redhat.com> - 4.1.4-1
+* Fri Feb 07 2014 Andreas Schneider <asn@redhat.com> - 4.1.4-1
 - Update to Samba 4.1.4.
 
-* Wed Jan 08 2014 - Andreas Schneider <asn@redhat.com> - 4.1.3-3
+* Wed Jan 08 2014 Andreas Schneider <asn@redhat.com> - 4.1.3-3
 - resolves: #1042845 - Do not build with libbsd.
 
-* Tue Dec 10 2013 - Guenther Deschner <gdeschner@redhat.com> - 4.1.3-2
+* Tue Dec 10 2013 Guenther Deschner <gdeschner@redhat.com> - 4.1.3-2
 - resolves: #1019469 - Fix winbind debug message NULL pointer derreference.
 
-* Mon Dec 09 2013 - Andreas Schneider <asn@redhat.com> - 4.1.3-1
+* Mon Dec 09 2013 Andreas Schneider <asn@redhat.com> - 4.1.3-1
 - Update to Samba 4.1.3.
 - resolves: #1039454 - CVE-2013-4408.
 - resolves: #1039500 - CVE-2012-6150.
 
-* Mon Nov 25 2013 - Andreas Schneider <asn@redhat.com> - 4.1.2-1
+* Mon Nov 25 2013 Andreas Schneider <asn@redhat.com> - 4.1.2-1
 - Update to Samba 4.1.2.
 
-* Mon Nov 18 2013 - Guenther Deschner <gdeschner@redhat.com> - 4.1.1-3
+* Mon Nov 18 2013 Guenther Deschner <gdeschner@redhat.com> - 4.1.1-3
 - resolves: #948509 - Fix manpage correctness.
 
-* Fri Nov 15 2013 - Andreas Schneider <asn@redhat.com> - 4.1.1-2
+* Fri Nov 15 2013 Andreas Schneider <asn@redhat.com> - 4.1.1-2
 - related: #884169 - Fix strict aliasing warnings.
 
-* Mon Nov 11 2013 - Andreas Schneider <asn@redhat.com> - 4.1.1-1
+* Mon Nov 11 2013 Andreas Schneider <asn@redhat.com> - 4.1.1-1
 - resolves: #1024544 - Fix CVE-2013-4475.
 - Update to Samba 4.1.1.
 
-* Mon Nov 11 2013 - Andreas Schneider <asn@redhat.com> - 4.1.0-5
+* Mon Nov 11 2013 Andreas Schneider <asn@redhat.com> - 4.1.0-5
 - related: #884169 - Fix the upgrade path.
 
-* Wed Oct 30 2013 - Andreas Schneider <asn@redhat.com> - 4.1.0-4
+* Wed Oct 30 2013 Andreas Schneider <asn@redhat.com> - 4.1.0-4
 - related: #884169 - Add direct dependency to samba-libs in the
                      glusterfs package.
 - resolves: #996567 - Fix userPrincipalName composition.
 - related: #884169 - Fix memset call with zero length in in ntdb.
 
-* Fri Oct 18 2013 - Andreas Schneider <asn@redhat.com> - 4.1.0-3
+* Fri Oct 18 2013 Andreas Schneider <asn@redhat.com> - 4.1.0-3
 - resolves: #1020329 - Build glusterfs VFS plguin.
 
-* Tue Oct 15 2013 - Andreas Schneider <asn@redhat.com> - 4.1.0-2
+* Tue Oct 15 2013 Andreas Schneider <asn@redhat.com> - 4.1.0-2
 - resolves: #1018856 - Fix installation of pam_winbind after upgrade.
 - related: #1010722 - Split out a samba-winbind-modules package.
 - related: #985609
 
-* Fri Oct 11 2013 - Andreas Schneider <asn@redhat.com> - 4.1.0-1
+* Fri Oct 11 2013 Andreas Schneider <asn@redhat.com> - 4.1.0-1
 - related: #985609 - Update to Samba 4.1.0.
 
-* Tue Oct 01 2013 - Andreas Schneider <asn@redhat.com> - 2:4.1.0-0.8
+* Tue Oct 01 2013 Andreas Schneider <asn@redhat.com> - 2:4.1.0-0.8
 - related: #985609 - Update to Samba 4.1.0rc4.
 - resolves: #1010722 - Split out a samba-winbind-modules package.
 
-* Wed Sep 11 2013 - Andreas Schneider <asn@redhat.com> - 2:4.1.0-0.7
+* Wed Sep 11 2013 Andreas Schneider <asn@redhat.com> - 2:4.1.0-0.7
 - related: #985609 - Update to Samba 4.1.0rc3.
 - resolves: #1005422 - Add support for KEYRING ccache type in pam_winbindd.
 
-* Wed Sep 04 2013 - Andreas Schneider <asn@redhat.com> - 2:4.1.0-0.6
+* Wed Sep 04 2013 Andreas Schneider <asn@redhat.com> - 2:4.1.0-0.6
 - resolves: #717484 - Enable profiling data support.
 
-* Thu Aug 22 2013 - Guenther Deschner <gdeschner@redhat.com> - 2:4.1.0-0.5
+* Thu Aug 22 2013 Guenther Deschner <gdeschner@redhat.com> - 2:4.1.0-0.5
 - resolves: #996160 - Fix winbind with trusted domains.
 
-* Wed Aug 14 2013 - Andreas Schneider <asn@redhat.com> 2:4.1.0-0.4
+* Wed Aug 14 2013 Andreas Schneider <asn@redhat.com> 2:4.1.0-0.4
 - resolves: #996160 - Fix winbind nbt name lookup segfault.
 
-* Mon Aug 12 2013 - Andreas Schneider <asn@redhat.com> - 2:4.1.0-0.3
+* Mon Aug 12 2013 Andreas Schneider <asn@redhat.com> - 2:4.1.0-0.3
 - related: #985609 - Update to Samba 4.1.0rc2.
 
 * Sat Aug 03 2013 Petr Pisar <ppisar@redhat.com> - 2:4.1.0-0.2.rc1.1
 - Perl 5.18 rebuild
 
-* Wed Jul 24 2013 - Andreas Schneider <asn@redhat.com> - 2:4.1.0-0.2
+* Wed Jul 24 2013 Andreas Schneider <asn@redhat.com> - 2:4.1.0-0.2
 - resolves: #985985 - Fix file conflict between samba and wine.
 - resolves: #985107 - Add support for new default location for Kerberos
                       credential caches.
@@ -1721,62 +1736,62 @@ rm -rf %{buildroot}
 * Sat Jul 20 2013 Petr Pisar <ppisar@redhat.com> - 2:4.1.0-0.1.rc1.1
 - Perl 5.18 rebuild
 
-* Wed Jul 17 2013 - Andreas Schneider <asn@redhat.com> - 2:4.1.0-0.1
+* Wed Jul 17 2013 Andreas Schneider <asn@redhat.com> - 2:4.1.0-0.1
 - Update to Samba 4.1.0rc1.
 
-* Mon Jul 15 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.7-2
+* Mon Jul 15 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.7-2
 - resolves: #972692 - Build with PIE and full RELRO.
 - resolves: #884169 - Add explicit dependencies suggested by rpmdiff.
 - resolves: #981033 - Local user's krb5cc deleted by winbind.
 - resolves: #984331 - Fix samba-common tmpfiles configuration file in wrong
                       directory.
 
-* Wed Jul 03 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.7-1
+* Wed Jul 03 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.7-1
 - Update to Samba 4.0.7.
 
-* Fri Jun 07 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.6-3
+* Fri Jun 07 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.6-3
 - Add UPN enumeration to passdb internal API (bso #9779).
 
-* Wed May 22 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.6-2
+* Wed May 22 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.6-2
 - resolves: #966130 - Fix build with MIT Kerberos.
 - List vfs modules in spec file.
 
-* Tue May 21 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.6-1
+* Tue May 21 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.6-1
 - Update to Samba 4.0.6.
 - Remove SWAT.
 
-* Wed Apr 10 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.5-1
+* Wed Apr 10 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.5-1
 - Update to Samba 4.0.5.
 - Add UPN enumeration to passdb internal API (bso #9779).
 - resolves: #928947 - samba-doc is obsolete now.
 - resolves: #948606 - LogRotate should be optional, and not a hard "Requires".
 
-* Fri Mar 22 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.4-3
+* Fri Mar 22 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.4-3
 - resolves: #919405 - Fix and improve large_readx handling for broken clients.
 - resolves: #924525 - Don't use waf caching.
 
-* Wed Mar 20 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.4-2
+* Wed Mar 20 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.4-2
 - resolves: #923765 - Improve packaging of README files.
 
-* Wed Mar 20 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.4-1
+* Wed Mar 20 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.4-1
 - Update to Samba 4.0.4.
 
-* Mon Mar 11 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.3-4
+* Mon Mar 11 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.3-4
 - resolves: #919333 - Create /run/samba too.
 
-* Mon Mar 04 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.3-3
+* Mon Mar 04 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.3-3
 - Fix the cache dir to be /var/lib/samba to support upgrades.
 
-* Thu Feb 14 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.3-2
+* Thu Feb 14 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.3-2
 - resolves: #907915 - libreplace.so => not found
 
-* Thu Feb 07 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.3-1
+* Thu Feb 07 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.3-1
 - Update to Samba 4.0.3.
 - resolves: #907544 - Add unowned directory /usr/lib64/samba.
 - resolves: #906517 - Fix pidl code generation with gcc 4.8.
 - resolves: #908353 - Fix passdb backend ldapsam as module.
 
-* Wed Jan 30 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.2-1
+* Wed Jan 30 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.2-1
 - Update to Samba 4.0.2.
 - Fixes CVE-2013-0213.
 - Fixes CVE-2013-0214.
@@ -1788,20 +1803,20 @@ rm -rf %{buildroot}
 - Add missing example and make sure we don't introduce perl dependencies.
 - resolves: #639470
 
-* Wed Jan 16 2013 - Andreas Schneider <asn@redhat.com> - 2:4.0.1-1
+* Wed Jan 16 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.1-1
 - Update to Samba 4.0.1.
 - Fixes CVE-2013-0172.
 
-* Mon Dec 17 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-174
+* Mon Dec 17 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-174
 - Fix typo in winbind-krb-locator post uninstall script.
 
-* Tue Dec 11 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-173
+* Tue Dec 11 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-173
 - Update to Samba 4.0.0.
 
-* Thu Dec 06 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-171.rc6
+* Thu Dec 06 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-171.rc6
 - Fix typo in winbind-krb-locator post uninstall script.
 
-* Tue Dec 04 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-170.rc6
+* Tue Dec 04 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-170.rc6
 - Update to Samba 4.0.0rc6.
 - Add /etc/pam.d/samba for swat to work correctly.
 - resolves #882700
@@ -1809,75 +1824,75 @@ rm -rf %{buildroot}
 * Fri Nov 23 2012 Guenther Deschner <gdeschner@redhat.com> - 2:4.0.0-169.rc5
 - Make sure ncacn_ip_tcp client code looks for NBT_NAME_SERVER name types.
 
-* Thu Nov 15 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-168.rc5
+* Thu Nov 15 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-168.rc5
 - Reduce dependencies of samba-devel and create samba-test-devel package.
 
-* Tue Nov 13 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-167.rc5
+* Tue Nov 13 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-167.rc5
 - Use workaround for winbind default domain only when set.
 - Build with old ctdb support.
 
-* Tue Nov 13 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-166.rc5
+* Tue Nov 13 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-166.rc5
 - Update to Samba 4.0.0rc5.
 
-* Mon Nov 05 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-165.rc4
+* Mon Nov 05 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-165.rc4
 - Fix library dependencies of libnetapi.
 
-* Mon Nov 05 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-164.rc4
+* Mon Nov 05 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-164.rc4
 - resolves: #872818 - Fix perl dependencies.
 
-* Tue Oct 30 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-163.rc4
+* Tue Oct 30 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-163.rc4
 - Update to Samba 4.0.0rc4.
 
-* Mon Oct 29 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-162.rc3
+* Mon Oct 29 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-162.rc3
 - resolves: #870630 - Fix scriptlets interpeting a comment as argument.
 
-* Fri Oct 26 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-161.rc3
+* Fri Oct 26 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-161.rc3
 - Add missing Requries for python modules.
 - Add NetworkManager dispatcher script for winbind.
 
-* Fri Oct 19 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-160.rc3
+* Fri Oct 19 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-160.rc3
 - resolves: #867893 - Move /var/log/samba to samba-common package for
                       winbind which requires it.
 
-* Thu Oct 18 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-159.rc3
+* Thu Oct 18 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-159.rc3
 - Compile default auth methods into smbd.
 
-* Tue Oct 16 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-158.rc3
+* Tue Oct 16 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-158.rc3
 - Move pam_winbind.conf and the manpages to the right package.
 
-* Tue Oct 16 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-157.rc3
+* Tue Oct 16 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-157.rc3
 * resolves: #866959 - Build auth_builtin as static module.
 
-* Tue Oct 16 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-156.rc3
+* Tue Oct 16 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-156.rc3
 - Update systemd Requires to reflect latest packaging guidelines.
 
-* Tue Oct 16 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-155.rc3
+* Tue Oct 16 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-155.rc3
 - Add back the AES patches which didn't make it in rc3.
 
-* Tue Oct 16 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-154.rc3
+* Tue Oct 16 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-154.rc3
 - Update to 4.0.0rc3.
 - resolves: #805562 - Unable to share print queues.
 - resolves: #863388 - Unable to reload smbd configuration with systemctl.
 
-* Wed Oct 10 2012 - Alexander Bokovoy <abokovoy@redhat.com> - 2:4.0.0-153.rc2
+* Wed Oct 10 2012 Alexander Bokovoy <abokovoy@redhat.com> - 2:4.0.0-153.rc2
 - Use alternatives to configure winbind_krb5_locator.so
 - Fix Requires for winbind.
 
-* Thu Oct 04 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-152.rc2
+* Thu Oct 04 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-152.rc2
 - Add kerberos AES support.
 - Fix printing initialization.
 
-* Tue Oct 02 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-151.rc2
+* Tue Oct 02 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-151.rc2
 - Update to 4.0.0rc2.
 
-* Wed Sep 26 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-150.rc1
+* Wed Sep 26 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-150.rc1
 - Fix Obsoletes/Provides for update from samba4.
 - Bump release number to be bigger than samba4.
 
-* Wed Sep 26 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-96.rc1
+* Wed Sep 26 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-96.rc1
 - Package smbprint again.
 
-* Wed Sep 26 2012 - Andreas Schneider <asn@redhat.com> - 2:4.0.0-95.rc1
+* Wed Sep 26 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-95.rc1
 - Update to 4.0.0rc1.
 
 * Mon Aug 20 2012 Guenther Deschner <gdeschner@redhat.com> - 2:3.6.7-94.2
