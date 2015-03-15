@@ -699,7 +699,6 @@ install -m 0644 %{SOURCE110} %{buildroot}%{_sysconfdir}/sysconfig/samba
 
 install -m 0644 %{SOURCE201} packaging/README.downgrade
 install -m 0644 %{SOURCE200} packaging/README.dc
-install -m 0644 %{SOURCE200} packaging/README.dc-libs
 
 %if %{with_systemd}
 install -d -m 0755 %{buildroot}%{_unitdir}
@@ -1102,7 +1101,6 @@ rm -rf %{buildroot}
 ### DC-LIBS
 %files dc-libs
 %defattr(-,root,root)
-%doc packaging/README.dc-libs
 %if %{with_dc}
 %{_libdir}/samba/libprocess_model.so
 %{_libdir}/samba/libservice.so
