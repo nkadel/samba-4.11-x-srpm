@@ -146,6 +146,7 @@ BuildRequires: python-devel
 BuildRequires: python-tevent
 BuildRequires: quota-devel
 BuildRequires: readline-devel
+BuildRequires: systemd
 BuildRequires: systemd-devel
 BuildRequires: sed
 BuildRequires: zlib-devel >= 1.2.3
@@ -655,8 +656,6 @@ and use CTDB instead.
 LDFLAGS="-Wl,-z,relro,-z,now" \
 %configure \
         --enable-fhs \
-        --with-piddir=/run \
-        --with-sockets-dir=/run/samba \
         --with-modulesdir=%{_libdir}/samba \
         --with-pammodulesdir=%{_libdir}/security \
         --with-lockdir=/var/lib/samba \
@@ -672,25 +671,41 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
 %endif
 %if %with_mitkrb5
         --with-system-mitkrb5 \
+%slse
+	--without-system-mitkrb5 \
 %endif
-%if ! %with_dc
+%if %with_dc
+        --witht-ad-dc \
+%slee
         --without-ad-dc \
 %endif
-%if ! %with_vfs_glusterfs
+%if %with_vfs_glusterfs
+        --enable-glusterfs \
+%else
         --disable-glusterfs \
 %endif
 %if %with_clustering_support
         --with-cluster-support \
+%slse
+        --without-cluster-support \
 %endif
 %if %with_profiling
         --with-profiling-data \
+%else
+        --without-profiling-data \
 %endif
 %if %{with testsuite}
         --enable-selftest \
+%else
+        --disable-selftest \
 %endif
-%if ! %with_pam_smbpass
+%if %with_pam_smbpass
+        --with-pam_smbpass \
+%else
         --without-pam_smbpass \
 %endif
+        --with-piddir=/run \
+        --with-sockets-dir=/run/samba \
         --with-systemd
 
 make %{?_smp_mflags}
