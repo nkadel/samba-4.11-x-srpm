@@ -6,7 +6,8 @@
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
 
-%define main_release 6
+#%define main_release 6
+%define main_release 0.1
 
 %define samba_version 4.2.0
 %define talloc_version 2.1.1
@@ -27,11 +28,17 @@
 %global with_libwbclient 1
 
 %global with_pam_smbpass 0
-%global with_internal_talloc 0
-%global with_internal_tevent 0
-%global with_internal_tdb 0
+#%global with_internal_talloc 0
+#%global with_internal_tevent 0
+#%global with_internal_tdb 0
+#%global with_internal_ldb 0
+%global with_internal_talloc 1
+%global with_internal_tevent 1
+%global with_internal_tdb 1
+%global with_internal_ldb 1
+
 %global with_internal_ntdb 1
-%global with_internal_ldb 0
+
 
 %global with_profiling 1
 
@@ -146,7 +153,6 @@ BuildRequires: python-devel
 BuildRequires: python-tevent
 BuildRequires: quota-devel
 BuildRequires: readline-devel
-BuildRequires: systemd
 BuildRequires: systemd-devel
 BuildRequires: sed
 BuildRequires: zlib-devel >= 1.2.3
@@ -671,37 +677,23 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
 %endif
 %if %with_mitkrb5
         --with-system-mitkrb5 \
-%slse
-	--without-system-mitkrb5 \
 %endif
-%if %with_dc
-        --witht-ad-dc \
-%slee
+%if ! %with_dc
         --without-ad-dc \
 %endif
-%if %with_vfs_glusterfs
-        --enable-glusterfs \
-%else
+%if ! %with_vfs_glusterfs
         --disable-glusterfs \
 %endif
 %if %with_clustering_support
         --with-cluster-support \
-%slse
-        --without-cluster-support \
 %endif
 %if %with_profiling
         --with-profiling-data \
-%else
-        --without-profiling-data \
 %endif
 %if %{with testsuite}
         --enable-selftest \
-%else
-        --disable-selftest \
 %endif
-%if %with_pam_smbpass
-        --with-pam_smbpass \
-%else
+%if ! %with_pam_smbpass
         --without-pam_smbpass \
 %endif
         --with-piddir=/run \
