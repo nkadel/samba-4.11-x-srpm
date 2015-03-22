@@ -28,17 +28,17 @@
 %global with_libwbclient 1
 
 %global with_pam_smbpass 0
-#%global with_internal_talloc 0
-#%global with_internal_tevent 0
-#%global with_internal_tdb 0
-#%global with_internal_ldb 0
-%global with_internal_talloc 1
-%global with_internal_tevent 1
-%global with_internal_tdb 1
-%global with_internal_ldb 1
 
+%global with_internal_talloc 0
+%global with_internal_tevent 0
+%global with_internal_tdb 0
+%global with_internal_ldb 0
+#%global with_internal_talloc 1
+#%global with_internal_tevent 1
+#%global with_internal_tdb 1
+#%global with_internal_ldb 1
+# Not yet in reliable published repo
 %global with_internal_ntdb 1
-
 
 %global with_profiling 1
 
@@ -61,10 +61,11 @@
 %global with_mitkrb5 1
 %global with_dc 0
 
-%if %{with testsuite}
-# The testsuite only works with a full build right now.
+%if %{with dc}
+# Domain controller still requires internal, non-Heimdal 
+%global with_mitkrb5 1
+%else
 %global with_mitkrb5 0
-%global with_dc 1
 %endif
 
 %global with_clustering_support 0
@@ -749,11 +750,7 @@ install -m 0644 ctdb/config/ctdb.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/
 %endif
 
 install -m 0644 %{SOURCE201} packaging/README.downgrade
-
-%if ! %{with_dc}
 install -m 0644 %{SOURCE200} packaging/README.dc
-install -m 0644 %{SOURCE200} packaging/README.dc-libs
-%endif
 
 install -d -m 0755 %{buildroot}%{_unitdir}
 for i in nmb smb winbind ; do
@@ -1156,6 +1153,7 @@ rm -rf %{buildroot}
 ### DC
 %files dc
 %defattr(-,root,root)
+%doc packaging/README.dc
 
 %if %{with_dc}
 %{_bindir}/samba-tool
@@ -1217,7 +1215,6 @@ rm -rf %{buildroot}
 %{_mandir}/man8/samba.8*
 %{_mandir}/man8/samba-tool.8*
 %else # with_dc
-%doc packaging/README.dc
 %exclude %{_mandir}/man8/samba.8*
 %exclude %{_mandir}/man8/samba-tool.8*
 %exclude %{_libdir}/samba/ldb/ildap.so
@@ -1241,7 +1238,6 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libposix_eadb.so
 %{_libdir}/samba/bind9/dlz_bind9_9.so
 %else
-%doc packaging/README.dc-libs
 %exclude %{_libdir}/samba/libdfs_server_ad.so
 %exclude %{_libdir}/samba/libdnsserver_common.so
 %endif # with_dc
@@ -1832,6 +1828,19 @@ rm -rf %{buildroot}
 %endif # with_clustering_support
 
 %changelog
+* Sun Mar 22 2016 Guenther Deschner <gdeschner@redhat.com> - 4.2.0-0.1
+- Update to 4.2.0 build version
+- Discard obsolete file_debug_macro patch
+- Link 'with_mit_krb5' to 'with_dc', not 'with_testsuite'
+- Stop splitting README.dc and README.dc-libs, they're the same file
+
+* Sun Mar 22 2016 Guenther Deschner <gdeschner@redhat.com> - 4.2.0-0.7.rc3
+- Use '%%{with' consistently
+- Put all systemd components for configure in one stanza
+- Discard manual 'lib*_version' for internally built compnents,
+  just use '*_version' consistently
+
+
 * Mon Jan 12 2015 Guenther Deschner <gdeschner@redhat.com> - 4.2.0-0.6.rc3
 - Fix awk as a dependency (and require gawk)
 
