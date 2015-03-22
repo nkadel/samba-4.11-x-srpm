@@ -58,14 +58,19 @@
 %global libwbc_alternatives_suffix -64
 %endif
 
-%global with_mitkrb5 1
+# Not yet enabled by default, requires DC testing
 %global with_dc 0
 
 %if %{with dc}
-# Domain controller still requires internal, non-Heimdal 
+# Domain controller still requires internal, non-Heimdal  Kerberos
+%global with_mitkrb5 1
+%else
+%if %{with_testsuite}
+# Test suite still requires internal, non-Heimdal  Kerberos
 %global with_mitkrb5 1
 %else
 %global with_mitkrb5 0
+%endif
 %endif
 
 %global with_clustering_support 0
@@ -670,8 +675,12 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
 %endif
 %if %{with_mitkrb5}
         --with-system-mitkrb5 \
+%else
+        --without-system-mitkrb5 \
 %endif
-%if ! %{with_dc}
+%if %{with_dc}
+        --with-ad-dc \
+%else
         --without-ad-dc \
 %endif
 %if ! %{with_vfs_glusterfs}
@@ -1828,18 +1837,17 @@ rm -rf %{buildroot}
 %endif # with_clustering_support
 
 %changelog
-* Sun Mar 22 2016 Guenther Deschner <gdeschner@redhat.com> - 4.2.0-0.1
+* Sun Mar 22 2015 Nico Kadel-Garcia <nkadel@gmail.com> - 4.2.0-0.1
 - Update to 4.2.0 build version
 - Discard obsolete file_debug_macro patch
 - Link 'with_mit_krb5' to 'with_dc', not 'with_testsuite'
 - Stop splitting README.dc and README.dc-libs, they're the same file
 
-* Sun Mar 22 2016 Guenther Deschner <gdeschner@redhat.com> - 4.2.0-0.7.rc3
+* Sun Mar 22 2015 Nico Kadel-Garcia <nkadel@gmail.com>
 - Use '%%{with' consistently
 - Put all systemd components for configure in one stanza
 - Discard manual 'lib*_version' for internally built compnents,
   just use '*_version' consistently
-
 
 * Mon Jan 12 2015 Guenther Deschner <gdeschner@redhat.com> - 4.2.0-0.6.rc3
 - Fix awk as a dependency (and require gawk)
