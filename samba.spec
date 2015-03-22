@@ -173,31 +173,23 @@ BuildRequires: uid_wrapper
 BuildRequires: perl(Parse::Yapp)
 
 %if ! %with_internal_talloc
-%global libtalloc_version 2.1.1
-
-BuildRequires: libtalloc-devel >= %{libtalloc_version}
-BuildRequires: pytalloc-devel >= %{libtalloc_version}
+BuildRequires: libtalloc-devel >= %{talloc_version}
+BuildRequires: pytalloc-devel >= %{talloc_version}
 %endif
 
 %if ! %with_internal_tevent
-%global libtevent_version 0.9.22
-
-BuildRequires: libtevent-devel >= %{libtevent_version}
-BuildRequires: python-tevent >= %{libtevent_version}
+BuildRequires: libtevent-devel >= %{tevent_version}
+BuildRequires: python-tevent >= %{tevent_version}
 %endif
 
 %if ! %with_internal_ldb
-%global libldb_version 1.1.17
-
-BuildRequires: libldb-devel >= %{libldb_version}
-BuildRequires: pyldb-devel >= %{libldb_version}
+BuildRequires: libldb-devel >= %{ldb_version}
+BuildRequires: pyldb-devel >= %{ldb_version}
 %endif
 
 %if ! %with_internal_tdb
-%global libtdb_version 1.3.3
-
-BuildRequires: libtdb-devel >= %{libtdb_version}
-BuildRequires: python-tdb >= %{libtdb_version}
+BuildRequires: libtdb-devel >= %{tdb_version}
+BuildRequires: python-tdb >= %{tdb_version}
 %endif
 
 %if %{with testsuite}
@@ -1175,10 +1167,8 @@ rm -rf %{buildroot}
 %{_libdir}/mit_samba.so
 %{_libdir}/samba/auth/samba4.so
 %{_libdir}/samba/bind9/dlz_bind9.so
-%{_libdir}/samba/libheimntlm-samba4.so.1
-%{_libdir}/samba/libheimntlm-samba4.so.1.0.1
-%{_libdir}/samba/libkdc-samba4.so.2
-%{_libdir}/samba/libkdc-samba4.so.2.0.0
+%{_libdir}/samba/libheimntlm-samba4.so.*
+%{_libdir}/samba/libkdc-samba4.so.*
 %{_libdir}/samba/libpac.so
 %{_libdir}/samba/gensec
 %{_libdir}/samba/ldb/acl.so
@@ -1550,51 +1540,35 @@ rm -rf %{buildroot}
 %if %with_dc
 %{_libdir}/samba/libdb-glue.so
 %{_libdir}/samba/libHDB_SAMBA4.so
-%{_libdir}/samba/libasn1-samba4.so.8
-%{_libdir}/samba/libasn1-samba4.so.8.0.0
-%{_libdir}/samba/libgssapi-samba4.so.2
-%{_libdir}/samba/libgssapi-samba4.so.2.0.0
-%{_libdir}/samba/libhcrypto-samba4.so.5
-%{_libdir}/samba/libhcrypto-samba4.so.5.0.1
-%{_libdir}/samba/libhdb-samba4.so.11
-%{_libdir}/samba/libhdb-samba4.so.11.0.2
-%{_libdir}/samba/libheimbase-samba4.so.1
-%{_libdir}/samba/libheimbase-samba4.so.1.0.0
-%{_libdir}/samba/libhx509-samba4.so.5
-%{_libdir}/samba/libhx509-samba4.so.5.0.0
-%{_libdir}/samba/libkrb5-samba4.so.26
-%{_libdir}/samba/libkrb5-samba4.so.26.0.0
-%{_libdir}/samba/libroken-samba4.so.19
-%{_libdir}/samba/libroken-samba4.so.19.0.1
-%{_libdir}/samba/libwind-samba4.so.0
-%{_libdir}/samba/libwind-samba4.so.0.0.0
+%{_libdir}/samba/libasn1-samba4.so.*
+%{_libdir}/samba/libgssapi-samba4.so.*
+%{_libdir}/samba/libhcrypto-samba4.so.*
+%{_libdir}/samba/libhdb-samba4.so.*
+%{_libdir}/samba/libheimbase-samba4.so.*
+%{_libdir}/samba/libhx509-samba4.so.*
+%{_libdir}/samba/libkrb5-samba4.so.*
+%{_libdir}/samba/libroken-samba4.so.*
+%{_libdir}/samba/libwind-samba4.so.*
 %endif
 
 %if %{with_internal_ldb}
-%{_libdir}/samba/libldb.so.1
-%{_libdir}/samba/libldb.so.%{ldb_version}
-%{_libdir}/samba/libpyldb-util.so.1
-%{_libdir}/samba/libpyldb-util.so.%{ldb_version}
+%{_libdir}/samba/libldb.so.*
+%{_libdir}/samba/libpyldb-util.so.*
 %{_mandir}/man3/ldb.3.gz
 %endif
 %if %{with_internal_talloc}
-%{_libdir}/samba/libtalloc.so.2
-%{_libdir}/samba/libtalloc.so.%{talloc_version}
-%{_libdir}/samba/libpytalloc-util.so.2
-%{_libdir}/samba/libpytalloc-util.so.%{talloc_version}
+%{_libdir}/samba/libtalloc.so.*
+%{_libdir}/samba/libpytalloc-util.so.*
 %{_mandir}/man3/talloc.3.gz
 %endif
 %if %{with_internal_tevent}
-%{_libdir}/samba/libtevent.so.0
-%{_libdir}/samba/libtevent.so.%{tevent_version}
+%{_libdir}/samba/libtevent.so.*
 %endif
 %if %{with_internal_tdb}
-%{_libdir}/samba/libtdb.so.1
-%{_libdir}/samba/libtdb.so.%{tdb_version}
+%{_libdir}/samba/libtdb.so.*
 %endif
 %if %{with_internal_ntdb}
-%{_libdir}/samba/libntdb.so.1
-%{_libdir}/samba/libntdb.so.%{ntdb_version}
+%{_libdir}/samba/libntdb.so.*
 %endif
 
 %if ! %with_libsmbclient
