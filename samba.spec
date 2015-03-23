@@ -675,12 +675,8 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
 %endif
 %if %{with_mitkrb5}
         --with-system-mitkrb5 \
-%else
-        --without-system-mitkrb5 \
 %endif
-%if %{with_dc}
-        --with-ad-dc \
-%else
+%if ! %{with_dc}
         --without-ad-dc \
 %endif
 %if ! %{with_vfs_glusterfs}
