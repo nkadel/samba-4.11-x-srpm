@@ -10,13 +10,14 @@
 %define main_release 0.1
 
 %define samba_version 4.2.0
-%define talloc_version 2.1.1
+%define talloc_version 2.1.2
+%define tdb_version 1.3.4
+%define tevent_version 0.9.24
+%define ldb_version 1.1.20
+# Not yet in reliable published repo
 %define ntdb_version 1.0
-%define tdb_version 1.3.3
-%define tevent_version 0.9.22
-%define ldb_version 1.1.17
 # This should be rc1 or nil
-%define pre_release rc3
+%define pre_release %nil
 
 %if "x%{?pre_release}" != "x"
 %define samba_release 0.%{main_release}.%{pre_release}%{?dist}
@@ -102,7 +103,8 @@ License:        GPLv3+ and LGPLv3+
 Group:          System Environment/Daemons
 URL:            http://www.samba.org/
 
-Source0:        samba-%{version}%{pre_release}.tar.xz
+Source0:        https://www.samba.org/ftp/samba/samba-%{version}%{pre_release}.tar.gz
+#Source0:        samba-%{version}%{pre_release}.tar.gz
 
 # Red Hat specific replacement-files
 Source1: samba.log
@@ -211,7 +213,6 @@ BuildRequires: ldb-tools
 
 
 ### Patches
-Patch0001: samba-4.2.0rc3-fix_debug_macro.patch
 
 ### SAMBA
 %description
@@ -612,7 +613,6 @@ and use CTDB instead.
 
 %prep
 %setup -q -n samba-%{version}%{pre_release}
-%patch0001 -p1
 
 %build
 %global _talloc_lib ,talloc,pytalloc,pytalloc-util
