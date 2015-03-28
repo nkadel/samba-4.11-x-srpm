@@ -1,4 +1,4 @@
-# rpmbuild --rebuild --with testsuite --without clustering samba.src.rpm
+# rpmbuild --rebuild --with testsuite --without clustering samba.src.rpm#
 #
 # The testsuite is disabled by default. Set --with testsuite or %bcond_without
 # to run the Samba torture testsuite.
@@ -136,17 +136,18 @@ Provides: samba4 = %{samba_depver}
 Obsoletes: samba4 < %{samba_depver}
 
 # We don't build it outdated docs anymore
-Obsoletes: samba-doc
+Obsoletes: samba-doc < %{samba_depver}
 # Is not supported yet
-Obsoletes: samba-domainjoin-gui
+Obsoletes: samba-domainjoin-gui < %{samba_depver}
 # SWAT been deprecated and removed from samba
-Obsoletes: samba-swat
-Obsoletes: samba4-swat
+Obsoletes: samba-swat < %{samba_depver}
+Obsoletes: samba4-swat < %{samba_depver}
 
 BuildRequires: cups-devel
 BuildRequires: docbook-style-xsl
 BuildRequires: e2fsprogs-devel
 BuildRequires: gawk
+BuildRequires: gnutls-devel
 BuildRequires: iniparser-devel
 BuildRequires: krb5-devel >= 1.10
 BuildRequires: libacl-devel
@@ -167,9 +168,6 @@ BuildRequires: quota-devel
 BuildRequires: readline-devel
 BuildRequires: sed
 BuildRequires: zlib-devel >= 1.2.3
-%if ! %{with_mitkrb5}
-BuildRequires: gnutls-devel
-%endif
 %if %{with_systemd}
 BuildRequires: systemd-devel
 %endif
@@ -259,9 +257,9 @@ Provides: samba4-common = %{samba_depver}
 Obsoletes: samba4-common < %{samba_depver}
 
 # This is for upgrading from F17 to F18
-Obsoletes: samba-doc
-Obsoletes: samba-domainjoin-gui
-Obsoletes: samba-swat
+Obsoletes: samba-doc < %{samba_depver}
+Obsoletes: samba-domainjoin-gui < %{samba_depver}
+Obsoletes: samba-swat < %{samba_depver}
 
 %description common
 samba4-common provides files necessary for both the server and client
@@ -332,8 +330,8 @@ Requires: glusterfs >= 3.4.0.16
 Requires: %{name} = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
 
-Obsoletes: samba-glusterfs
-Provides: samba-glusterfs
+Obsoletes: samba-glusterfs < %{samba_depver}
+Provides: samba-glusterfs = %{samba_depver}
 
 %description vfs-glusterfs
 Samba VFS module for GlusterFS integration.
@@ -390,8 +388,8 @@ The libwbclient package contains the winbind client library from the Samba suite
 Summary: Developer tools for the winbind library
 Group: Development/Libraries
 Requires: libwbclient = %{samba_depver}
-Obsoletes: samba-winbind-devel
-Provides: samba-winbind-devel
+Obsoletes: samba-winbind-devel < %{samba_depver}
+Provides: samba-winbind-devel = %{samba_depver}
 
 %description -n libwbclient-devel
 The libwbclient-devel package provides developer tools for the wbclient library.
@@ -678,14 +676,12 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
         --bundled-libraries=%{_samba4_libraries} \
         --with-pam \
         --without-fam \
+        --enable-gnutls \
 %if (! %{with_libsmbclient}) || (! %{with_libwbclient})
         --private-libraries=%{_samba4_private_libraries} \
 %endif
 %if %{with_mitkrb5}
         --with-system-mitkrb5 \
-        --disable-gnutls \
-%else
-        --enable-gnutls \
 %endif
 %if ! %{with_dc}
         --without-ad-dc \
@@ -1185,7 +1181,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/ldb/subtree_rename.so
 %{_libdir}/samba/ldb/update_keytab.so
 %{_libdir}/samba/ldb/wins_ldb.so
-%{_libdir}/vfs/posix_eadb.so
+#%{_libdir}/vfs/posix_eadb.so
 #%dir /var/lib/samba/sysvol
 #%{_datadir}/samba/setup
 %{_mandir}/man8/samba.8*
@@ -1202,9 +1198,9 @@ rm -rf %{buildroot}
 %files dc-libs
 %defattr(-,root,root)
 %if %{with_dc}
-%{_libdir}/libprocess_model-samba4.so
-%{_libdir}/libservice-samba4.so
-%{_libdir}/process-model-samba4.so
+#%{_libdir}/libprocess-model-samba4.so
+#%{_libdir}/libservice-samba4.so
+#%{_libdir}/process-model-samba4.so
 %{_libdir}/samba/service
 %{_libdir}/libdcerpc-server.so.*
 #%{_libdir}/samba/libdfs_server_ad.so
@@ -1214,7 +1210,7 @@ rm -rf %{buildroot}
 #%{_libdir}/samba/libposix_eadb.so
 %{_libdir}/samba/bind9/dlz_bind9_*.so
 # Include dc setup documentation as  %%doc, ignore installed content 
-%exslude %{_datarootdir}/samba/setup
+%exclude %{_datarootdir}/samba/setup
 %else
 #%exclude %{_libdir}/samba/libdfs_server_ad.so
 #%exclude %{_libdir}/samba/libdnsserver_common.so
@@ -1399,12 +1395,14 @@ rm -rf %{buildroot}
 ### VFS-CEPHFS
 %if %{with_vfs_cephfs}
 %files vfs-cephfs
+%defattr(-,root,root)
 %{_libdir}/samba/vfs/ceph.so
 %endif
 
 ### VFS-GLUSTERFS
 %if %{with_vfs_glusterfs}
 %files vfs-glusterfs
+%defattr(-,root,root)
 %{_libdir}/samba/vfs/glusterfs.so
 %endif
 
@@ -1519,7 +1517,7 @@ rm -rf %{buildroot}
 
 %if %{with_dc}
 %{_libdir}/samba/libdb-glue-samba4.so
-{_libdir}/samba/libHDB_SAMBA4-samba4.so
+%{_libdir}/samba/libHDB_SAMBA4-samba4.so
 %{_libdir}/samba/libasn1-samba4.so.*
 %{_libdir}/samba/libgssapi-samba4.so.*
 %{_libdir}/samba/libhcrypto-samba4.so.*
@@ -1820,6 +1818,9 @@ rm -rf %{buildroot}
 - Stop splitting README.dc and README.dc-libs, they're the same file
 - Enable gnutls fo requirements
 - Exclude installed /usr/share/samba/setup, use source4/setup as docs
+- Fix inconsistent dates in %%changelog
+- Set Obsoletes to use 'samba_depver' and avoid rpmlint complaints
+- Add defattrs to new vfs files stanzas
 
 * Mon Jan 12 2015 Guenther Deschner <gdeschner@redhat.com> - 4.2.0-0.6.rc3
 - Fix awk as a dependency (and require gawk)
