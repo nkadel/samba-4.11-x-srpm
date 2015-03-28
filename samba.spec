@@ -34,10 +34,6 @@
 %global with_internal_tevent 0
 %global with_internal_tdb 0
 %global with_internal_ldb 0
-#%global with_internal_talloc 1
-#%global with_internal_tevent 1
-#%global with_internal_tdb 1
-#%global with_internal_ldb 1
 # Not yet in reliable published repo
 %global with_internal_ntdb 1
 
@@ -59,25 +55,32 @@
 %global libwbc_alternatives_suffix -64
 %endif
 
-# Not yet enabled by default, requires DC testing
-%global with_dc 0
+%global with_dc 1
 
-%if %{with dc}
-# Domain controller still requires internal, non-Heimdal  Kerberos
-%global with_mitkrb5 1
-%else
-%if %{with_testsuite}
-# Test suite still requires internal, non-Heimdal  Kerberos
-%global with_mitkrb5 1
-%else
-%global with_mitkrb5 0
+%if %{with testsuite}
+# The testsuite only works with a full build right now.
+%global with_dc 1
 %endif
+
+# Domain controller cannot compile with mitkrb5
+# Consider supporting heimdal compilation
+%if %{with_dc}
+%global with_mitkrb5 0
+%else
+%global with_mitkrb5 1
 %endif
 
 %global with_clustering_support 0
 
 %if %{with clustering}
 %global with_clustering_support 1
+%endif
+
+# Use systemd, not SysV init scripts, as appropriate
+%if 0%{?fedora} > 15 || 0%{?rhel} > 6
+%global with_systemd 1
+%else
+%global with_systemd 0
 %endif
 
 %{!?python_sitearch: %define python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
@@ -101,7 +104,7 @@ Epoch:          2
 Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+
 Group:          System Environment/Daemons
-URL:            http://www.samba.org/
+URL:            https://www.samba.org/
 
 Source0:        https://www.samba.org/ftp/samba/samba-%{version}%{pre_release}.tar.gz
 #Source0:        samba-%{version}%{pre_release}.tar.gz
@@ -144,6 +147,7 @@ BuildRequires: cups-devel
 BuildRequires: docbook-style-xsl
 BuildRequires: e2fsprogs-devel
 BuildRequires: gawk
+BuildRequires: iniparser-devel
 BuildRequires: krb5-devel >= 1.10
 BuildRequires: libacl-devel
 BuildRequires: libaio-devel
@@ -161,9 +165,14 @@ BuildRequires: python-devel
 BuildRequires: python-tevent
 BuildRequires: quota-devel
 BuildRequires: readline-devel
-BuildRequires: systemd-devel
 BuildRequires: sed
 BuildRequires: zlib-devel >= 1.2.3
+%if ! %{with_mitkrb5}
+BuildRequires: gnutls-devel
+%endif
+%if %{with_systemd}
+BuildRequires: systemd-devel
+%endif
 %if %{with_vfs_glusterfs}
 BuildRequires: glusterfs-api-devel >= 3.4.0.16
 BuildRequires: glusterfs-devel >= 3.4.0.16
@@ -664,7 +673,6 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
         --with-pammodulesdir=%{_libdir}/security \
         --with-lockdir=/var/lib/samba \
         --with-cachedir=/var/lib/samba \
-        --disable-gnutls \
         --disable-rpath-install \
         --with-shared-modules=%{_samba4_modules} \
         --bundled-libraries=%{_samba4_libraries} \
@@ -675,6 +683,9 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
 %endif
 %if %{with_mitkrb5}
         --with-system-mitkrb5 \
+        --disable-gnutls \
+%else
+        --enable-gnutls \
 %endif
 %if ! %{with_dc}
         --without-ad-dc \
@@ -1118,6 +1129,7 @@ rm -rf %{buildroot}
 %files dc
 %defattr(-,root,root)
 %doc packaging/README.dc
+%doc source4/setup
 
 %if %{with_dc}
 %{_bindir}/samba-tool
@@ -1131,7 +1143,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/bind9/dlz_bind9.so
 %{_libdir}/samba/libheimntlm-samba4.so.*
 %{_libdir}/samba/libkdc-samba4.so.*
-%{_libdir}/samba/libpac.so
+#%{_libdir}/samba/libpac.so
 %{_libdir}/samba/gensec
 %{_libdir}/samba/ldb/acl.so
 %{_libdir}/samba/ldb/aclread.so
@@ -1164,7 +1176,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/ldb/samba_secrets.so
 %{_libdir}/samba/ldb/samldb.so
 %{_libdir}/samba/ldb/schema_data.so
-%{_libdir}/samba/ldb/schema_load.so
+#%{_libdir}/samba/ldb/schema_load.so
 %{_libdir}/samba/ldb/secrets_tdb_sync.so
 %{_libdir}/samba/ldb/show_deleted.so
 %{_libdir}/samba/ldb/simple_dn.so
@@ -1173,9 +1185,9 @@ rm -rf %{buildroot}
 %{_libdir}/samba/ldb/subtree_rename.so
 %{_libdir}/samba/ldb/update_keytab.so
 %{_libdir}/samba/ldb/wins_ldb.so
-%{_libdir}/samba/vfs/posix_eadb.so
-%dir /var/lib/samba/sysvol
-%{_datadir}/samba/setup
+%{_libdir}/vfs/posix_eadb.so
+#%dir /var/lib/samba/sysvol
+#%{_datadir}/samba/setup
 %{_mandir}/man8/samba.8*
 %{_mandir}/man8/samba-tool.8*
 %else # with_dc
@@ -1190,17 +1202,19 @@ rm -rf %{buildroot}
 %files dc-libs
 %defattr(-,root,root)
 %if %{with_dc}
-%{_libdir}/samba/libprocess_model.so
-%{_libdir}/samba/libservice.so
-%{_libdir}/samba/process_model
+%{_libdir}/libprocess_model-samba4.so
+%{_libdir}/libservice-samba4.so
+%{_libdir}/process-model-samba4.so
 %{_libdir}/samba/service
 %{_libdir}/libdcerpc-server.so.*
 #%{_libdir}/samba/libdfs_server_ad.so
 #%{_libdir}/samba/libdnsserver_common.so
 #%{_libdir}/samba/libdsdb-module.so
-%{_libdir}/samba/libntvfs.so
-%{_libdir}/samba/libposix_eadb.so
-%{_libdir}/samba/bind9/dlz_bind9_9.so
+%{_libdir}/samba/libntvfs-samba4.so
+#%{_libdir}/samba/libposix_eadb.so
+%{_libdir}/samba/bind9/dlz_bind9_*.so
+# Include dc setup documentation as  %%doc, ignore installed content 
+%exslude %{_datarootdir}/samba/setup
 %else
 #%exclude %{_libdir}/samba/libdfs_server_ad.so
 #%exclude %{_libdir}/samba/libdnsserver_common.so
@@ -1469,7 +1483,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libhttp-samba4.so
 %{_libdir}/samba/libinterfaces-samba4.so
 %{_libdir}/samba/libkrb5samba-samba4.so
-%{_libdir}/samba/libldb-cmdline-samba4.so
+#%{_libdir}/samba/libldb-cmdline-samba4.so
 %{_libdir}/samba/libldbsamba-samba4.so
 %{_libdir}/samba/liblibcli-lsa3-samba4.so
 %{_libdir}/samba/liblibcli-netlogon3-samba4.so
@@ -1504,8 +1518,8 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libtdb-wrap-samba4.so
 
 %if %{with_dc}
-%{_libdir}/samba/libdb-glue.so
-%{_libdir}/samba/libHDB_SAMBA4.so
+%{_libdir}/samba/libdb-glue-samba4.so
+{_libdir}/samba/libHDB_SAMBA4-samba4.so
 %{_libdir}/samba/libasn1-samba4.so.*
 %{_libdir}/samba/libgssapi-samba4.so.*
 %{_libdir}/samba/libhcrypto-samba4.so.*
@@ -1649,7 +1663,7 @@ rm -rf %{buildroot}
 %{_libdir}/libtorture.so.*
 %{_libdir}/samba/libsubunit-samba4.so
 %if %{with_dc}
-%{_libdir}/samba/libdlz_bind9_for_torture.so
+%{_libdir}/samba/libdlz_bind9_for_torture-samba4.so
 %else
 #%{_libdir}/samba/libdsdb-module.so
 %endif
@@ -1799,16 +1813,13 @@ rm -rf %{buildroot}
 
 %changelog
 * Sun Mar 22 2015 Nico Kadel-Garcia <nkadel@gmail.com> - 4.2.0-0.1
+- Rebase from Fedora rawhide
 - Update to 4.2.0 build version
 - Discard obsolete file_debug_macro patch
 - Link 'with_mit_krb5' to 'with_dc', not 'with_testsuite'
 - Stop splitting README.dc and README.dc-libs, they're the same file
-
-* Sun Mar 22 2015 Nico Kadel-Garcia <nkadel@gmail.com>
-- Use '%%{with' consistently
-- Put all systemd components for configure in one stanza
-- Discard manual 'lib*_version' for internally built compnents,
-  just use '*_version' consistently
+- Enable gnutls fo requirements
+- Exclude installed /usr/share/samba/setup, use source4/setup as docs
 
 * Mon Jan 12 2015 Guenther Deschner <gdeschner@redhat.com> - 4.2.0-0.6.rc3
 - Fix awk as a dependency (and require gawk)
@@ -2486,7 +2497,7 @@ rm -rf %{buildroot}
 - Numerous improvements and bugfixes included
 - package libsmbsharemodes too
 - remove smbldap-tools as they are already packaged separately in Fedora
-- Fix bug 245506 
+- Fix bug 245506
 
 * Tue Oct 2 2007 Simo Sorce <ssorce@redhat.com> 3.0.26a-1.fc8
 - rebuild with AD DNS Update support
@@ -2888,7 +2899,7 @@ rm -rf %{buildroot}
   bugzilla #121356
 
 * Mon Apr 5 2004 Jay Fenlason <fenlason@redhat.com> 3.0.3-2.pre2
-- New upstream version  
+- New upstream version
 - Updated configure line to remove --with-fhs and to explicitly set all
   the directories that --with-fhs was setting.  We were overriding most of
   them anyway.  This closes #118598
@@ -2906,7 +2917,7 @@ rm -rf %{buildroot}
 * Mon Feb 16 2004 Jay Fenlason <fenlason@redhat.com> 3.0.2a-1
 - Upgrade to 3.0.2a
 
-* Mon Feb 16 2004 Karsten Hopp <karsten@redhat.de> 3.0.2-7 
+* Mon Feb 16 2004 Karsten Hopp <karsten@redhat.de> 3.0.2-7
 - fix ownership in -common package
 
 * Fri Feb 13 2004 Elliot Lee <sopwith@redhat.com>
@@ -3042,7 +3053,7 @@ rm -rf %{buildroot}
 
 * Fri Jul 26 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.5-7
 - Enable VFS support and compile the "recycling" module (#69796)
-- more selective includes of the examples dir 
+- more selective includes of the examples dir
 
 * Tue Jul 23 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.5-6
 - Fix the lpq parser for better handling of LPRng systems (#69352)
@@ -3063,11 +3074,11 @@ rm -rf %{buildroot}
 - 2.2.5
 
 * Fri Jun 14 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.4-5
-- Move the post/preun of winbind into the -common subpackage, 
+- Move the post/preun of winbind into the -common subpackage,
   where the script is (#66128)
 
 * Tue Jun  4 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.4-4
-- Fix pidfile locations so it runs properly again (2.2.4 
+- Fix pidfile locations so it runs properly again (2.2.4
   added a new directtive - #65007)
 
 * Thu May 23 2002 Tim Powers <timp@redhat.com>
@@ -3088,7 +3099,7 @@ rm -rf %{buildroot}
 - Add libsmbclient.a w/headerfile for KDE (#62202)
 
 * Tue Mar 26 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.3a-4
-- Make the logrotate script look the correct place for the pid files 
+- Make the logrotate script look the correct place for the pid files
 
 * Thu Mar 14 2002 Nalin Dahyabhai <nalin@redhat.com> 2.2.3a-3
 - include interfaces.o in pam_smbpass.so, which needs symbols from interfaces.o
@@ -3111,12 +3122,12 @@ rm -rf %{buildroot}
 
 * Tue Nov 13 2001 Trond Eivind Glomsrød <teg@redhat.com> 2.2.2-6
 - Move winbind files to samba-common. Add separate initscript for
-  winbind 
+  winbind
 - Fixes for winbind - protect global variables with mutex, use
   more secure getenv
 
 * Thu Nov  8 2001 Trond Eivind Glomsrød <teg@redhat.com> 2.2.2-5
-- Teach smbadduser about "getent passwd" 
+- Teach smbadduser about "getent passwd"
 - Fix more pid-file references
 - Add (conditional) winbindd startup to the initscript, configured in
   /etc/sysconfig/samba
@@ -3147,8 +3158,8 @@ rm -rf %{buildroot}
   encrypted passwords off the choice is available. (#31351)
 
 * Wed Aug  8 2001 Trond Eivind Glomsrød <teg@redhat.com>
-- Use /var/cache/samba instead of /var/lock/samba 
-- Remove "domain controller" keyword from smb.conf, it's 
+- Use /var/cache/samba instead of /var/lock/samba
+- Remove "domain controller" keyword from smb.conf, it's
   deprecated (from #13704)
 - Sync some examples with smb.conf.default
 - Fix password synchronization (#16987)
@@ -3188,26 +3199,26 @@ rm -rf %{buildroot}
 * Fri Jun  8 2001 Preston Brown <pbrown@redhat.com>
 - enable encypted passwords by default
 
-* Thu Jun  7 2001 Helge Deller <hdeller@redhat.de> 
+* Thu Jun  7 2001 Helge Deller <hdeller@redhat.de>
 - build as 2.2.0-1 release
 - skip the documentation-directories docbook, manpages and yodldocs
 - don't include *.sgml documentation in package
 - moved codepage-directory to /usr/share/samba/codepages
-- make it compile with glibc-2.2.3-10 and kernel-headers-2.4.2-2   
+- make it compile with glibc-2.2.3-10 and kernel-headers-2.4.2-2
 
-* Mon May 21 2001 Helge Deller <hdeller@redhat.de> 
+* Mon May 21 2001 Helge Deller <hdeller@redhat.de>
 - updated to samba 2.2.0
 - moved codepages to %%{_datadir}/samba/codepages
 - use all available CPUs for building rpm packages
 - use %%{_xxx} defines at most places in spec-file
 - "License:" replaces "Copyright:"
 - dropped excludearch sparc
-- de-activated japanese patches 100 and 200 for now 
+- de-activated japanese patches 100 and 200 for now
   (they need to be fixed and tested wth 2.2.0)
 - separated swat.desktop file from spec-file and added
   german translations
 - moved /etc/sysconfig/samba to a separate source-file
-- use htmlview instead of direct call to netscape in 
+- use htmlview instead of direct call to netscape in
   swat.desktop-file
 
 * Mon May  7 2001 Bill Nottingham <notting@redhat.com>
@@ -3297,7 +3308,7 @@ rm -rf %{buildroot}
 
 * Sat Jul 15 2000 Bill Nottingham <notting@redhat.com>
 - move initscript back
-- remove 'Using Samba' book from %%doc 
+- remove 'Using Samba' book from %%doc
 - move stuff to /etc/samba (#13708)
 - default configuration tweaks (#13704)
 - some logrotate tweaks
@@ -3476,7 +3487,7 @@ rm -rf %{buildroot}
 * Tue Mar 23 1999 Bill Nottingham <notting@redhat.com>
 - logrotate changes
 
-* Sun Mar 21 1999 Cristian Gafton <gafton@redhat.com> 
+* Sun Mar 21 1999 Cristian Gafton <gafton@redhat.com>
 - auto rebuild in the new build environment (release 3)
 
 * Fri Mar 19 1999 Preston Brown <pbrown@redhat.com>
@@ -3536,4 +3547,3 @@ rm -rf %{buildroot}
 - Added a number of options to smb.conf file
 - Added smbadduser command (missed from all previous RPMs) - Doooh!
 - Added smbuser file and smb.conf file updates for username map
-
