@@ -1172,7 +1172,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/ldb/samba_secrets.so
 %{_libdir}/samba/ldb/samldb.so
 %{_libdir}/samba/ldb/schema_data.so
-#%{_libdir}/samba/ldb/schema_load.so
+%{_libdir}/samba/ldb/schema_load.so
 %{_libdir}/samba/ldb/secrets_tdb_sync.so
 %{_libdir}/samba/ldb/show_deleted.so
 %{_libdir}/samba/ldb/simple_dn.so
@@ -1181,7 +1181,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/ldb/subtree_rename.so
 %{_libdir}/samba/ldb/update_keytab.so
 %{_libdir}/samba/ldb/wins_ldb.so
-#%{_libdir}/vfs/posix_eadb.so
+%{_libdir}/vfs/posix_eadb.so
 #%dir /var/lib/samba/sysvol
 #%{_datadir}/samba/setup
 %{_mandir}/man8/samba.8*
@@ -1198,16 +1198,17 @@ rm -rf %{buildroot}
 %files dc-libs
 %defattr(-,root,root)
 %if %{with_dc}
-#%{_libdir}/libprocess-model-samba4.so
-#%{_libdir}/libservice-samba4.so
-#%{_libdir}/process-model-samba4.so
+%{_libdir}/samba/libprocess-model-samba4.so
+%{_libdir}/samba/libservice-samba4.so
+%{_libdir}/samba/libprocess-model-samba4.so
+%{_libdir}/samba/process_model/lib*.so
 %{_libdir}/samba/service
 %{_libdir}/libdcerpc-server.so.*
 #%{_libdir}/samba/libdfs_server_ad.so
 #%{_libdir}/samba/libdnsserver_common.so
 #%{_libdir}/samba/libdsdb-module.so
 %{_libdir}/samba/libntvfs-samba4.so
-#%{_libdir}/samba/libposix_eadb.so
+%{_libdir}/samba/libposix-eadb.so
 %{_libdir}/samba/bind9/dlz_bind9_*.so
 # Include dc setup documentation as  %%doc, ignore installed content 
 %exclude %{_datarootdir}/samba/setup
@@ -1517,7 +1518,7 @@ rm -rf %{buildroot}
 
 %if %{with_dc}
 %{_libdir}/samba/libdb-glue-samba4.so
-%{_libdir}/samba/libHDB_SAMBA4-samba4.so
+%{_libdir}/samba/libHDB-SAMBA4-samba4.so
 %{_libdir}/samba/libasn1-samba4.so.*
 %{_libdir}/samba/libgssapi-samba4.so.*
 %{_libdir}/samba/libhcrypto-samba4.so.*
@@ -1661,7 +1662,7 @@ rm -rf %{buildroot}
 %{_libdir}/libtorture.so.*
 %{_libdir}/samba/libsubunit-samba4.so
 %if %{with_dc}
-%{_libdir}/samba/libdlz_bind9_for_torture-samba4.so
+%{_libdir}/samba/libdlz-bind9-for-torture-samba4.so
 %else
 #%{_libdir}/samba/libdsdb-module.so
 %endif
