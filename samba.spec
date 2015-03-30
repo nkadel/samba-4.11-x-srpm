@@ -953,6 +953,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/vfs/linux_xfs_sgid.so
 %{_libdir}/samba/vfs/media_harmony.so
 %{_libdir}/samba/vfs/netatalk.so
+%{_libdir}/samba/vfs/posix_eadb.so
 %{_libdir}/samba/vfs/preopen.so
 %{_libdir}/samba/vfs/readahead.so
 %{_libdir}/samba/vfs/readonly.so
@@ -1139,7 +1140,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/bind9/dlz_bind9.so
 %{_libdir}/samba/libheimntlm-samba4.so.*
 %{_libdir}/samba/libkdc-samba4.so.*
-#%{_libdir}/samba/libpac.so
+%{_libdir}/samba/libpac-samba4.so
 %{_libdir}/samba/gensec
 %{_libdir}/samba/ldb/acl.so
 %{_libdir}/samba/ldb/aclread.so
@@ -1181,7 +1182,7 @@ rm -rf %{buildroot}
 %{_libdir}/samba/ldb/subtree_rename.so
 %{_libdir}/samba/ldb/update_keytab.so
 %{_libdir}/samba/ldb/wins_ldb.so
-%{_libdir}/vfs/posix_eadb.so
+#%{_libdir}/vfs/posix_eadb.so
 #%dir /var/lib/samba/sysvol
 #%{_datadir}/samba/setup
 %{_mandir}/man8/samba.8*
@@ -1200,15 +1201,14 @@ rm -rf %{buildroot}
 %if %{with_dc}
 %{_libdir}/samba/libprocess-model-samba4.so
 %{_libdir}/samba/libservice-samba4.so
-%{_libdir}/samba/libprocess-model-samba4.so
-%{_libdir}/samba/process_model/lib*.so
+%{_libdir}/samba/process_model/*.so
 %{_libdir}/samba/service
 %{_libdir}/libdcerpc-server.so.*
 #%{_libdir}/samba/libdfs_server_ad.so
 #%{_libdir}/samba/libdnsserver_common.so
 #%{_libdir}/samba/libdsdb-module.so
 %{_libdir}/samba/libntvfs-samba4.so
-%{_libdir}/samba/libposix-eadb.so
+%{_libdir}/samba/libposix-eadb-samba4.so
 %{_libdir}/samba/bind9/dlz_bind9_*.so
 # Include dc setup documentation as  %%doc, ignore installed content 
 %exclude %{_datarootdir}/samba/setup
