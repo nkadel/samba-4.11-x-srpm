@@ -9,7 +9,7 @@
 #%define main_release 6
 %define main_release 0.1
 
-%define samba_version 4.2.0
+%define samba_version 4.2.1
 %define talloc_version 2.1.2
 %define tdb_version 1.3.4
 %define tevent_version 0.9.24
@@ -1811,6 +1811,9 @@ rm -rf %{buildroot}
 %endif # with_clustering_support
 
 %changelog
+* Sat Apr 25 2015 Nico Kadel-Garcia <nkadel@gmail.com> - 4.2.1-0.1
+= Update to 4.2.1
+
 * Sun Mar 22 2015 Nico Kadel-Garcia <nkadel@gmail.com> - 4.2.0-0.1
 - Rebase from Fedora rawhide
 - Update to 4.2.0 build version
