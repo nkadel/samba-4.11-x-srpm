@@ -176,7 +176,11 @@ BuildRequires: glusterfs-api-devel >= 3.4.0.16
 BuildRequires: glusterfs-devel >= 3.4.0.16
 %endif
 %if %{with_vfs_cephfs}
+%if 0%{?fedora} > 15 || 0%{?rhel} > 6
 BuildRequires: libcephfs1-devel
+%else
+BuildRequires: libcephfs1
+BuildRequires: ceph-devel
 %endif
 
 # cwrap
@@ -1813,6 +1817,7 @@ rm -rf %{buildroot}
 %changelog
 * Sat Apr 25 2015 Nico Kadel-Garcia <nkadel@gmail.com> - 4.2.1-0.1
 = Update to 4.2.1
+- Switch libcephs1-devel to libcehs1 and ceph-devel for RHEL 6
 
 * Sun Mar 22 2015 Nico Kadel-Garcia <nkadel@gmail.com> - 4.2.0-0.1
 - Rebase from Fedora rawhide
