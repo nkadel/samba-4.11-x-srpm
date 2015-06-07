@@ -182,6 +182,7 @@ BuildRequires: libcephfs1-devel
 BuildRequires: libcephfs1
 BuildRequires: ceph-devel
 %endif
+%endif
 
 # cwrap
 BuildRequires: socket_wrapper
@@ -751,12 +752,19 @@ install -m644 examples/LDAP/samba.schema %{buildroot}%{_sysconfdir}/openldap/sch
 
 install -m 0744 packaging/printing/smbprint %{buildroot}%{_bindir}/smbprint
 
+%if %{with_systemd}
 install -d -m 0755 %{buildroot}%{_prefix}/lib/tmpfiles.d/
 install -m644 packaging/systemd/samba.conf.tmp %{buildroot}%{_prefix}/lib/tmpfiles.d/samba.conf
 # create /run/samba too.
 echo "d /run/samba  755 root root" >> %{buildroot}%{_prefix}/lib/tmpfiles.d/samba.conf
 %if %{with_clustering_support}
 echo "d /run/ctdb 755 root root" >> %{buildroot}%{_tmpfilesdir}/ctdb.conf
+%endif
+%else 
+echo Warning: set up config files for init based file in /etc/sysconfig
+#%if %{with_clustering_support}
+#echo "d /run/ctdb 755 root root" >> %{buildroot}%{_tmpfilesdir}/ctdb.conf
+#%endif
 %endif
 
 install -d -m 0755 %{buildroot}%{_sysconfdir}/sysconfig
@@ -809,6 +817,7 @@ TDB_NO_FSYNC=1 make %{?_smp_mflags} test
 
 %post common
 /sbin/ldconfig
+%if %{with_systemd}
 /usr/bin/systemd-tmpfiles --create %{_prefix}/lib/tmpfiles.d/samba.conf
 if [ -d /var/cache/samba ]; then
     mv /var/cache/samba/netsamlogon_cache.tdb /var/lib/samba/ 2>/dev/null
@@ -816,6 +825,9 @@ if [ -d /var/cache/samba ]; then
     rm -rf /var/cache/samba/
     ln -sf /var/cache/samba /var/lib/samba/
 fi
+%else
+# TBD
+%endif
 
 %postun common -p /sbin/ldconfig
 
@@ -914,7 +926,6 @@ fi
 %systemd_postun_with_restart ctdb.service
 %endif
 
-
 %clean
 rm -rf %{buildroot}
 
@@ -934,44 +945,13 @@ rm -rf %{buildroot}
 %{_libdir}/samba/auth/unix.so
 %{_libdir}/samba/auth/wbc.so
 %dir %{_libdir}/samba/vfs
-%{_libdir}/samba/vfs/acl_tdb.so
-%{_libdir}/samba/vfs/acl_xattr.so
-%{_libdir}/samba/vfs/aio_fork.so
-%{_libdir}/samba/vfs/aio_linux.so
-%{_libdir}/samba/vfs/aio_posix.so
-%{_libdir}/samba/vfs/aio_pthread.so
-%{_libdir}/samba/vfs/audit.so
-%{_libdir}/samba/vfs/btrfs.so
-%{_libdir}/samba/vfs/cap.so
-%{_libdir}/samba/vfs/catia.so
-%{_libdir}/samba/vfs/commit.so
-%{_libdir}/samba/vfs/crossrename.so
-%{_libdir}/samba/vfs/default_quota.so
-%{_libdir}/samba/vfs/dirsort.so
-%{_libdir}/samba/vfs/expand_msdfs.so
-%{_libdir}/samba/vfs/extd_audit.so
-%{_libdir}/samba/vfs/fake_perms.so
-%{_libdir}/samba/vfs/fileid.so
-%{_libdir}/samba/vfs/fruit.so
-%{_libdir}/samba/vfs/full_audit.so
-%{_libdir}/samba/vfs/linux_xfs_sgid.so
-%{_libdir}/samba/vfs/media_harmony.so
-%{_libdir}/samba/vfs/netatalk.so
-%{_libdir}/samba/vfs/posix_eadb.so
-%{_libdir}/samba/vfs/preopen.so
-%{_libdir}/samba/vfs/readahead.so
-%{_libdir}/samba/vfs/readonly.so
-%{_libdir}/samba/vfs/recycle.so
-%{_libdir}/samba/vfs/scannedonly.so
-%{_libdir}/samba/vfs/shadow_copy.so
-%{_libdir}/samba/vfs/shadow_copy2.so
-%{_libdir}/samba/vfs/smb_traffic_analyzer.so
-%{_libdir}/samba/vfs/streams_depot.so
-%{_libdir}/samba/vfs/streams_xattr.so
-%{_libdir}/samba/vfs/syncops.so
-%{_libdir}/samba/vfs/time_audit.so
-%{_libdir}/samba/vfs/worm.so
-%{_libdir}/samba/vfs/xattr_tdb.so
+%{_libdir}/samba/vfs/*.so
+%if %{with_vfs_cephfs}
+%exclude %{_libdir}/samba/vfs/ceph.so
+%endif
+%if %{with_vfs_glusterfs}
+%exclude %{_libdir}/samba/vfs/glusterfs.so
+%endif
 
 %{_unitdir}/nmb.service
 %{_unitdir}/smb.service
@@ -1015,7 +995,7 @@ rm -rf %{buildroot}
 %{_mandir}/man1/regpatch.1*
 %{_mandir}/man1/regshell.1*
 %{_mandir}/man1/regtree.1*
-%exclude %{_mandir}/man1/findsmb.1*
+%exclude %{_mandir}/man1/indsmb.1*
 %{_mandir}/man1/log2pcap.1*
 %{_mandir}/man1/rpcclient.1*
 %{_mandir}/man1/sharesec.1*
@@ -1083,7 +1063,11 @@ rm -rf %{buildroot}
 %files common
 %defattr(-,root,root)
 #%{_libdir}/samba/charset ???
+%if %{with_systemd}
 %{_prefix}/lib/tmpfiles.d/samba.conf
+%else
+# TBD
+%endif
 %{_bindir}/net
 %{_bindir}/pdbedit
 %{_bindir}/profiles
@@ -1730,7 +1714,11 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/ctdb/functions
 %config(noreplace) %{_sysconfdir}/ctdb/debug_locks.sh
 %dir %{_localstatedir}/lib/ctdb/
+%if %{with_systemd}
 %{_tmpfilesdir}/%{name}.conf
+%else
+# TBD
+%endif
 
 %{_unitdir}/ctdb.service
 
@@ -1746,7 +1734,10 @@ rm -rf %{buildroot}
 %{_sysconfdir}/ctdb/events.d/
 %dir %{_sysconfdir}/ctdb/notify.d
 %{_sysconfdir}/ctdb/notify.d/README
+%if %{with_systemd}
 %{_prefix}/lib/tmpfiles.d/ctdb.conf
+# TBD
+%endif
 %{_sbindir}/ctdbd
 %{_sbindir}/ctdbd_wrapper
 %{_bindir}/ctdb
