@@ -1,4 +1,4 @@
-# rpmbuild --rebuild --with testsuite --without clustering samba.src.rpm#
+# rpmbuild --rebuild --with testsuite --without clustering samba.src.rpm
 #
 # The testsuite is disabled by default. Set --with testsuite or %bcond_without
 # to run the Samba torture testsuite.
@@ -6,10 +6,10 @@
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
 
-#%define main_release 6
+#%define main_release 7
 %define main_release 0.1
 
-%define samba_version 4.2.1
+%define samba_version 4.2.2
 %define talloc_version 2.1.2
 %define tdb_version 1.3.4
 %define tevent_version 0.9.24
@@ -995,7 +995,7 @@ rm -rf %{buildroot}
 %{_mandir}/man1/regpatch.1*
 %{_mandir}/man1/regshell.1*
 %{_mandir}/man1/regtree.1*
-%exclude %{_mandir}/man1/indsmb.1*
+%exclude %{_mandir}/man1/findsmb.1*
 %{_mandir}/man1/log2pcap.1*
 %{_mandir}/man1/rpcclient.1*
 %{_mandir}/man1/sharesec.1*
