@@ -1798,6 +1798,7 @@ rm -rf %{buildroot}
 %{_datadir}/ctdb-tests/eventscripts/etc-ctdb/events.d
 %{_datadir}/ctdb-tests/eventscripts/etc-ctdb/functions
 %{_datadir}/ctdb-tests/eventscripts/etc-ctdb/nfs-rpc-checks.d
+%{_datadir}/ctdb-tests/eventscripts/etc-ctdb/statd-callout
 %{_datadir}/ctdb-tests/scripts/common.sh
 %{_datadir}/ctdb-tests/scripts/integration.bash
 %{_datadir}/ctdb-tests/scripts/test_wrap
@@ -1806,6 +1807,10 @@ rm -rf %{buildroot}
 %endif # with_clustering_support
 
 %changelog
+* Sat Sep  5 2015 Nico Kadel-Garcia <nkadel@gmail.com> - 4.2.3-0.1
+- Update to 4.2.3 with dependencies
+- Add statd-client to ctdb files
+
 * Sat Apr 25 2015 Nico Kadel-Garcia <nkadel@gmail.com> - 4.2.1-0.1
 = Update to 4.2.1
 - Switch libcephs1-devel to libcehs1 and ceph-devel for RHEL 6
