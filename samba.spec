@@ -116,15 +116,31 @@ Source4: smb.conf.default
 Source5: pam_winbind.conf
 Source6: samba.pamd
 
+# RHEL specific init scripts, in case systemd not available
+Source100: nmb.init
+Source101: smb.init
+Source102: winbind.init
+Source103: samba.init
+Source104: ctdb.init
+
+# RHEL specific sysconfig, in case systemd not available
+Source110: samba.sysconfig
+
 Source200: README.dc
 Source201: README.downgrade
 
 BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 Requires(pre): /usr/sbin/groupadd
+%if %with_systemd
 Requires(post): systemd
 Requires(preun): systemd
 Requires(postun): systemd
+%else
+Requires(post): /sbin/chkconfig, /sbin/service
+Requires(preun): /sbin/chkconfig, /sbin/service
+Requires(postun): /sbin/chkconfig, /sbin/service
+%endif
 
 Requires(pre): %{name}-common = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
@@ -580,9 +596,13 @@ Requires: iptables
 # for flock, getopt, kill:
 Requires: util-linux
 
+%if %{with_systemd}
 Requires(post): systemd-units
 Requires(preun): systemd-units
 Requires(postun): systemd-units
+%else
+Requires: /sbin/service, /sbin/chkconfig
+%endif
 
 %description -n ctdb
 CTDB is a cluster implementation of the TDB database used by Samba and other
@@ -706,9 +726,15 @@ LDFLAGS="-Wl,-z,relro,-z,now" \
 %if ! %{with_pam_smbpass}
         --without-pam_smbpass \
 %endif
+%if %{with_systemd}
         --with-piddir=/run \
         --with-sockets-dir=/run/samba \
         --with-systemd
+%else
+	--with-piddir=/var/run/samba \
+	--with-sockets-dir=/var/run/samba \
+	--without-systemd
+%endif
 
 make %{?_smp_mflags}
 
@@ -725,8 +751,10 @@ install -d -m 0755 %{buildroot}/var/lib/samba/scripts
 install -d -m 0755 %{buildroot}/var/lib/samba/sysvol
 install -d -m 0755 %{buildroot}/var/log/samba/old
 install -d -m 0755 %{buildroot}/var/spool/samba
+%if ! %{with_systemd}
 install -d -m 0755 %{buildroot}/var/run/samba
 install -d -m 0755 %{buildroot}/var/run/winbindd
+%endif
 install -d -m 0755 %{buildroot}/%{_libdir}/samba
 install -d -m 0755 %{buildroot}/%{_libdir}/pkgconfig
 
@@ -776,13 +804,26 @@ install -m 0644 ctdb/config/ctdb.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/
 install -m 0644 %{SOURCE201} packaging/README.downgrade
 install -m 0644 %{SOURCE200} packaging/README.dc
 
+%if %{with_systemd}
 install -d -m 0755 %{buildroot}%{_unitdir}
 for i in nmb smb winbind ; do
     cat packaging/systemd/$i.service | sed -e 's@\[Service\]@[Service]\nEnvironment=KRB5CCNAME=FILE:/run/samba/krb5cc_samba@g' >tmp$i.service
     install -m 0644 tmp$i.service %{buildroot}%{_unitdir}/$i.service
 done
+%else
+install -d -m 0755 %{buildroot}%{_initrddir}
+install -m 0755 %{SOURCE100} %{buildroot}%{_initrddir}/nmb
+install -m 0755 %{SOURCE101} %{buildroot}%{_initrddir}/smb
+install -m 0755 %{SOURCE102} %{buildroot}%{_initrddir}/winbind
+%endif
+
 %if %{with_clustering_support}
+%if %{with_systemd}
 install -m 0755 ctdb/config/ctdb.service %{buildroot}%{_unitdir}
+%else
+install -d -m 0755 %{buildroot}%{_initrddir}
+install -m 0755 %{SOURCE104} %{buildroot}%{_initrddir}/ctdb
+%endif
 %endif
 
 # NetworkManager online/offline script
@@ -804,30 +845,46 @@ TDB_NO_FSYNC=1 make %{?_smp_mflags} test
 %endif
 
 %post
+%if %{with_systemd}
 %systemd_post smb.service
 %systemd_post nmb.service
+%else
+/sbin/chkconfig --add smb
+/sbin/chkconfig --add nmb
+%endif
 
 %preun
+%if %{with_systemd}
 %systemd_preun smb.service
 %systemd_preun nmb.service
+%else
+if [ $1 = 0 ]; then
+    /sbin/chkconfig --del smb
+    /sbin/chkconfig --del nmb
+    /sbin/service nmb stop
+    /sbin/service smb stop
+fi
+%endif
 
 %postun
+%if %{with_systemd}
 %systemd_postun_with_restart smb.service
 %systemd_postun_with_restart nmb.service
+%endif
 
 %post common
 /sbin/ldconfig
 %if %{with_systemd}
 /usr/bin/systemd-tmpfiles --create %{_prefix}/lib/tmpfiles.d/samba.conf
+#%else
+# N/A
+%endif
 if [ -d /var/cache/samba ]; then
     mv /var/cache/samba/netsamlogon_cache.tdb /var/lib/samba/ 2>/dev/null
     mv /var/cache/samba/winbindd_cache.tdb /var/lib/samba/ 2>/dev/null
     rm -rf /var/cache/samba/
     ln -sf /var/cache/samba /var/lib/samba/
 fi
-%else
-# TBD
-%endif
 
 %postun common -p /sbin/ldconfig
 
@@ -885,14 +942,30 @@ fi
 /usr/sbin/groupadd -g 88 wbpriv >/dev/null 2>&1 || :
 
 %post winbind
+%if %{with_systemd}
 %systemd_post winbind.service
+#%else
+# TBD
+%endif
 
 %preun winbind
+%if %{with_systemd}
 %systemd_preun winbind.service
+%else
+/sbin/chkconfig winbind --delete
+/sbin/service winbind stop
+%endif
 
 %postun winbind
+%if %{with_systemd}
 %systemd_postun_with_restart smb.service
 %systemd_postun_with_restart nmb.service
+%else
+/sbin/chkconfig smb --delete
+/sbin/service smb stop
+/sbin/chkconfig nmb --delete
+/sbin/service nmb stop
+%endif
 
 %postun winbind-krb5-locator
 if [ "$1" -ge "1" ]; then
@@ -917,13 +990,26 @@ fi
 %if %{with_clustering_support}
 %post -n ctdb
 /usr/bin/systemd-tmpfiles --create %{_prefix}/lib/tmpfiles.d/ctdb.conf
+%if %{with_systemd}
 %systemd_post ctdb.service
+%else
+# TBD
+%endif
 
 %preun -n ctdb
+%if %{with_systemd}
 %systemd_preun ctdb.service
+%else
+/sbin/chkconfig ctdb --delete
+/sbin/service ctdb stop
+%endif
 
 %postun -n ctdb
+%if %{with_systemd}
 %systemd_postun_with_restart ctdb.service
+%else
+# N/A
+%endif
 %endif
 
 %clean
@@ -953,8 +1039,12 @@ rm -rf %{buildroot}
 %exclude %{_libdir}/samba/vfs/glusterfs.so
 %endif
 
+%if %{with_systemd}
 %{_unitdir}/nmb.service
 %{_unitdir}/smb.service
+%else
+install -m 0755 %{_initrddir}/nmb
+install -m 0755 %{_initrddir}/smb
 %attr(1777,root,root) %dir /var/spool/samba
 %dir %{_sysconfdir}/openldap/schema
 %{_sysconfdir}/openldap/schema/samba.schema
@@ -1066,7 +1156,7 @@ rm -rf %{buildroot}
 %if %{with_systemd}
 %{_prefix}/lib/tmpfiles.d/samba.conf
 %else
-# TBD
+# N/A
 %endif
 %{_bindir}/net
 %{_bindir}/pdbedit
@@ -1672,7 +1762,11 @@ rm -rf %{buildroot}
 %{_libdir}/samba/libidmap-samba4.so
 %{_sbindir}/winbindd
 %attr(750,root,wbpriv) %dir /var/lib/samba/winbindd_privileged
+%if %{with_systemd}
 %{_unitdir}/winbind.service
+%else
+%{_initrddir}/winbind
+%endif
 %{_sysconfdir}/NetworkManager/dispatcher.d/30-winbind
 %{_mandir}/man8/winbindd.8*
 %{_mandir}/man8/idmap_*.8*
@@ -1715,12 +1809,16 @@ rm -rf %{buildroot}
 %config(noreplace) %{_sysconfdir}/ctdb/debug_locks.sh
 %dir %{_localstatedir}/lib/ctdb/
 %if %{with_systemd}
-%{_tmpfilesdir}/%{name}.conf
+%{_tmpfilesdir}/ctdb.conf
 %else
-# TBD
+%{_initrddir}/ctdb
 %endif
 
+%if %{with_systemd}
 %{_unitdir}/ctdb.service
+%else
+%{_initrddir}/ctdb
+%endif
 
 %dir %{_sysconfdir}/ctdb
 %{_sysconfdir}/ctdb/statd-callout
@@ -1736,7 +1834,8 @@ rm -rf %{buildroot}
 %{_sysconfdir}/ctdb/notify.d/README
 %if %{with_systemd}
 %{_prefix}/lib/tmpfiles.d/ctdb.conf
-# TBD
+%else
+# N/A
 %endif
 %{_sbindir}/ctdbd
 %{_sbindir}/ctdbd_wrapper
@@ -1762,47 +1861,19 @@ rm -rf %{buildroot}
 
 %files -n ctdb-devel
 %defattr(-,root,root)
+%{_includedir}/samba-4.0/ctdb_*.h
 %{_includedir}/samba-4.0/ctdb.h
-%{_includedir}/samba-4.0/ctdb_client.h
-%{_includedir}/samba-4.0/ctdb_protocol.h
-%{_includedir}/samba-4.0/ctdb_private.h
-%{_includedir}/samba-4.0/ctdb_typesafe_cb.h
-%{_includedir}/samba-4.0/ctdb_version.h
 %{_libdir}/pkgconfig/ctdb.pc
 
 %files -n ctdb-tests
 %defattr(-,root,root)
 %dir %{_libdir}/ctdb-tests
-%{_libdir}/ctdb-tests/ctdb_bench
-%{_libdir}/ctdb-tests/ctdb_fetch
-%{_libdir}/ctdb-tests/ctdb_fetch_one
-%{_libdir}/ctdb-tests/ctdb_fetch_readonly_loop
-%{_libdir}/ctdb-tests/ctdb_fetch_readonly_once
-%{_libdir}/ctdb-tests/ctdb_functest
-%{_libdir}/ctdb-tests/ctdb_lock_tdb
-%{_libdir}/ctdb-tests/ctdb_persistent
-%{_libdir}/ctdb-tests/ctdb_porting_tests
-%{_libdir}/ctdb-tests/ctdb_randrec
-%{_libdir}/ctdb-tests/ctdb_store
-%{_libdir}/ctdb-tests/ctdb_stubtest
-%{_libdir}/ctdb-tests/ctdb_takeover_tests
-%{_libdir}/ctdb-tests/ctdb_trackingdb_test
-%{_libdir}/ctdb-tests/ctdb_transaction
-%{_libdir}/ctdb-tests/ctdb_traverse
-%{_libdir}/ctdb-tests/ctdb_update_record
-%{_libdir}/ctdb-tests/ctdb_update_record_persistent
-%{_libdir}/ctdb-tests/rb_test
+%{_libdir}/ctdb-tests/*
 %{_bindir}/ctdb_run_tests
 %{_bindir}/ctdb_run_cluster_tests
 %dir %{_datadir}/ctdb-tests
-%{_datadir}/ctdb-tests/eventscripts/etc-ctdb/events.d
-%{_datadir}/ctdb-tests/eventscripts/etc-ctdb/functions
-%{_datadir}/ctdb-tests/eventscripts/etc-ctdb/nfs-rpc-checks.d
-%{_datadir}/ctdb-tests/eventscripts/etc-ctdb/statd-callout
-%{_datadir}/ctdb-tests/scripts/common.sh
-%{_datadir}/ctdb-tests/scripts/integration.bash
-%{_datadir}/ctdb-tests/scripts/test_wrap
-%{_datadir}/ctdb-tests/scripts/unit.sh
+%dir %{_datadir}/ctdb-tests/scripts
+%{_datadir}/ctdb-tests/*
 %doc ctdb/tests/README
 %endif # with_clustering_support
 
@@ -1810,6 +1881,7 @@ rm -rf %{buildroot}
 * Sat Sep  5 2015 Nico Kadel-Garcia <nkadel@gmail.com> - 4.2.3-0.1
 - Update to 4.2.3 with dependencies
 - Add statd-client to ctdb files
+- Simplify ctdb-tests file list
 
 * Sat Apr 25 2015 Nico Kadel-Garcia <nkadel@gmail.com> - 4.2.1-0.1
 = Update to 4.2.1
