@@ -41,14 +41,14 @@ $(MOCKS):: verifyspec FORCE
 	else \
 		echo "	Building $@ RPMS with $(SPEC)"; \
 		rm -rf $@; \
-		mock -q -r $@ --sources=$(PWD) \
+		mock -q -r $(PWD)/../$@.cfg \
 		    --resultdir=$(PWD)/$@ \
-		    --buildsrpm --spec=$(SPEC); \
+		    --sources=$(PWD) --buildsrpm --spec=$(SPEC); \
 		echo "Storing $@/*.src.rpm in $@.rpm"; \
 		/bin/mv $@/*.src.rpm $@.src.rpm; \
 		echo "Actally building RPMS in $@"; \
 		rm -rf $@; \
-		mock -q -r $@ \
+		mock -q -r $(PWD)/../$@.cfg \
 		     --resultdir=$(PWD)/$@ \
 		     $@.src.rpm; \
 	fi
@@ -68,8 +68,8 @@ install:: $(MOCKS)
 		rsync -av $$repo/*.rpm --exclude=*.src.rpm --exclude=*debuginfo*.rpm --no-owner --no-group $$repo/*.rpm $$rpmdir/. || exit 1; \
 		createrepo -q $$rpmdir/.; \
 	    done; \
-	    echo "Touching /etc/mock/$$repo.cfg to clear cache"; \
-	    sudo /bin/touch /etc/mock/$$repo.cfg; \
+	    echo "Touching $(PWD)/../$$repo.cfg to clear cache"; \
+	    /bin/touch $(PWD)/../$$repo.cfg; \
 	done
 
 clean::
