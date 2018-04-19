@@ -178,7 +178,9 @@ BuildRequires: libarchive-devel
 BuildRequires: libattr-devel
 BuildRequires: libcap-devel
 BuildRequires: libcmocka-devel
+%if 0%{?fedora} > 0
 BuildRequires: libnsl2-devel
+%endif
 BuildRequires: libtirpc-devel
 BuildRequires: libuuid-devel
 BuildRequires: libxslt
@@ -190,12 +192,20 @@ BuildRequires: perl(Test::More)
 BuildRequires: perl(ExtUtils::MakeMaker)
 BuildRequires: perl(Parse::Yapp)
 BuildRequires: popt-devel
+%if 0%{?fedora} > 0
 BuildRequires: python2-devel
+%else
+BuildRequires: python-devel
+%endif
 BuildRequires: python2-dns
 # Add python2-iso8601 to avoid that the
 # version in Samba is being packaged
 BuildRequires: python2-iso8601
+%if 0%{?fedora} > 0
 BuildRequires: python2-subunit
+%else
+BuildRequires: python-subunit
+%endif
 
 %if 0%{?with_python3}
 BuildRequires: python3-devel
@@ -210,10 +220,14 @@ BuildRequires: readline-devel
 %if 0%{?fedora} > 27
 BuildRequires: rpcgen
 BuildRequires: rpcsvc-proto-devel
-%else
+%elsif 0%{?fedora} > 0
 BuildRequires: rpc2
 BuildRequires: rpc2-devel
+# RHEL 7
 %endif
+# All rpc tools require rpcbind
+BuildRequires: rpcbind
+
 BuildRequires: sed
 BuildRequires: xfsprogs-devel
 BuildRequires: xz
@@ -896,14 +910,16 @@ export python_LDFLAGS="$(echo %{__global_ldflags} | sed -e 's/-Wl,-z,defs//g')"
 %if %with_intel_aes_accel
         --accel-aes=intelaesni \
 %endif
+%if %with_python3
+        --extra-python=%{__python3} \
+%endif
         --with-systemd \
 	--systemd-install-services \
 	--with-systemddir=/usr/lib/systemd/system \
 	--systemd-smb-extra=%{_systemd_extra} \
 	--systemd-nmb-extra=%{_systemd_extra} \
 	--systemd-winbind-extra=%{_systemd_extra} \
-	--systemd-samba-extra=%{_systemd_extra} \
-        --extra-python=%{__python3}
+	--systemd-samba-extra=%{_systemd_extra}
 
 make %{?_smp_mflags}
 
@@ -923,6 +939,7 @@ for i in %{buildroot}%{_bindir} %{buildroot}%{_sbindir} ; do
 		-exec sed -i -e '1 s|^#!.*\bpython[^ ]*|#!%{__python2}|' {} \;
 done
 
+%if 0%{?with_python3}
 # FIXME: Remove Python3 files with bad syntax
 # (needs to be done after install; before that the py2 and py3 versions
 #  are the same)
@@ -984,6 +1001,7 @@ filenames=$(echo "
     upgradehelpers.py
     web_server/__init__.py
 ")
+
 for file in $filenames; do
     filename="%{buildroot}/%{python3_sitearch}/samba/$file"
     if python3 -c "with open('$filename') as f: compile(f.read(), '$file', 'exec')"; then
@@ -994,6 +1012,7 @@ for file in $filenames; do
         rm "$filename"
     fi
 done
+%endif
 
 install -d -m 0755 %{buildroot}/usr/{sbin,bin}
 install -d -m 0755 %{buildroot}%{_libdir}/security
@@ -1120,6 +1139,7 @@ for i in \
     %{python_sitearch}/samba/samdb.py* \
     %{python_sitearch}/samba/schema.py* \
     %{python_sitearch}/samba/web_server/__init__.py* \
+%if 0%{?with_python3}
     %{python3_sitearch}/samba/dcerpc/dnsserver.*.so \
     %{python3_sitearch}/samba/dnsserver.py \
     %{python3_sitearch}/samba/domain_update.py \
@@ -1143,6 +1163,7 @@ for i in \
     %{python3_sitearch}/samba/__pycache__/schema.*.pyc \
     %{python3_sitearch}/samba/samdb.py \
     %{python3_sitearch}/samba/schema.py \
+%endif
     %{_sbindir}/samba_gpoupdate \
     ; do
     rm -f %{buildroot}$i
@@ -2318,6 +2339,7 @@ fi
 %{python_sitearch}/samba/tests/upgradeprovisionneeddc.py*
 %{python_sitearch}/samba/tests/xattr.py*
 
+%if 0%{?with_python3}
 ### PYTHON3
 %files -n python3-%{name}
 %defattr(-,root,root,-)
@@ -2687,6 +2709,7 @@ fi
 %{python3_sitearch}/samba/xattr.py
 %{python3_sitearch}/samba/xattr_native.*.so
 %{python3_sitearch}/samba/xattr_tdb.*.so
+%endif
 
 ### TEST
 %files test
