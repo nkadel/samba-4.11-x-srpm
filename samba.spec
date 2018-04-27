@@ -109,9 +109,9 @@ Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+
 URL:            http://www.samba.org/
 
-# This is a xz recompressed file of https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.gz
+# Do not use .xz file like most Fedora tools, would requite recompression and resignature
 Source0:        https://www.samba.org/ftp/samba/samba-%{version}%{pre_release}.tar.gz
-Source1:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.asc
+Source1:        https://www.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.asc
 Source2:        gpgkey-52FBC0B86D954B0843324CDC6F33915B6568B7EA.gpg
 
 # Red Hat specific replacement-files
@@ -242,11 +242,7 @@ BuildRequires: libcephfs-devel
 %if %{with_dc}
 BuildRequires: bind
 # RHEL lacks recent enough gnutls-devel
-%if 0%{?fedora} > 0
 BuildRequires: gnutls-devel >= 3.4.7
-%else
-BuildRequires: gnutls-devel
-%endif
 BuildRequires: krb5-server >= %{required_mit_krb5}
 
 # Required by samba-tool to run tests
@@ -3610,7 +3606,7 @@ fi
 %endif # with_clustering_support
 
 %changelog
-* Fri Apr 27 2014 Nico Kadel-Garcia <nkadel@gmail.com> - 4.8.1-0.1
+* Fri Apr 27 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.8.1-0.1
 - Update samba to 4.8.1
 - Updte talloc_version to 2.1.13
 
