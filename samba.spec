@@ -8,8 +8,8 @@
 
 %define main_release 0.1
 
-%define samba_version 4.8.0
-%define talloc_version 2.1.11
+%define samba_version 4.8.1
+%define talloc_version 2.1.13
 %define tdb_version 1.3.15
 %define tevent_version 0.9.36
 %define ldb_version 1.3.2
@@ -66,11 +66,6 @@
 
 %global with_mitkrb5 1
 %global with_dc 1
-
-%if 0%{?rhel}
-%global with_dc 0
-%global with_mitkrb5 0
-%endif
 
 %if %{with testsuite}
 %global with_dc 1
@@ -246,7 +241,12 @@ BuildRequires: libcephfs-devel
 
 %if %{with_dc}
 BuildRequires: bind
+# RHEL lacks recent enough gnutls-devel
+%if 0%{?fedora} > 0
 BuildRequires: gnutls-devel >= 3.4.7
+%else
+BuildRequires: gnutls-devel
+%endif
 BuildRequires: krb5-server >= %{required_mit_krb5}
 
 # Required by samba-tool to run tests
@@ -439,7 +439,7 @@ The %{name}-dc-libs package contains the libraries needed by the DC to
 link against the SMB, RPC and other protocols.
 
 ### DC-BIND
-%if %with_dc
+%if %{with_dc}
 %package dc-bind-dlz
 Summary: Bind DLZ module for Samba AD
 Requires: %{name}-common = %{samba_depver}
@@ -666,7 +666,7 @@ Requires: %{name}-winbind = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
 Requires: %{name}-test-libs = %{samba_depver}
-%if %with_dc
+%if %{with_dc}
 Requires: %{name}-dc-libs = %{samba_depver}
 %endif
 Requires: %{name}-libs = %{samba_depver}
@@ -892,7 +892,7 @@ export python_LDFLAGS="$(echo %{__global_ldflags} | sed -e 's/-Wl,-z,defs//g')"
 %if %with_mitkrb5
         --with-system-mitkrb5 \
 %endif
-%if ! %with_dc
+%if ! %{with_dc}
         --without-ad-dc \
 %endif
 %if ! %with_vfs_glusterfs
@@ -912,6 +912,11 @@ export python_LDFLAGS="$(echo %{__global_ldflags} | sed -e 's/-Wl,-z,defs//g')"
 %endif
 %if %with_python3
         --extra-python=%{__python3} \
+%endif
+%if 0%{?fedora}
+        --enable-gnutls \
+%else
+        --disable-gnutls \
 %endif
         --with-systemd \
 	--systemd-install-services \
@@ -1086,7 +1091,7 @@ install -m 0644 ctdb/config/ctdbd.conf %{buildroot}%{_sysconfdir}/ctdb/ctdbd.con
 
 install -m 0644 %{SOURCE201} packaging/README.downgrade
 
-%if ! %with_dc
+%if ! %{with_dc}
 install -m 0644 %{SOURCE200} packaging/README.dc
 install -m 0644 %{SOURCE200} packaging/README.dc-libs
 %endif
@@ -1104,7 +1109,7 @@ install -m 0755 packaging/NetworkManager/30-winbind-systemd \
 install -d -m 0755 %{buildroot}%{_libdir}/krb5/plugins/libkrb5
 touch %{buildroot}%{_libdir}/krb5/plugins/libkrb5/winbind_krb5_locator.so
 
-%if ! %with_dc
+%if ! %{with_dc}
 for i in \
     %{_libdir}/samba/libdfs-server-ad-samba4.so \
     %{_libdir}/samba/libdnsserver-common-samba4.so \
@@ -1226,7 +1231,7 @@ fi
 
 %postun common-libs -p /sbin/ldconfig
 
-%if %with_dc
+%if %{with_dc}
 %post dc-libs -p /sbin/ldconfig
 
 %postun dc-libs -p /sbin/ldconfig
@@ -1688,7 +1693,7 @@ fi
 %files dc
 %defattr(-,root,root)
 
-%if %with_dc
+%if %{with_dc}
 %{_unitdir}/samba.service
 %{_bindir}/samba-tool
 %{_sbindir}/samba
@@ -1763,7 +1768,7 @@ fi
 ### DC-LIBS
 %files dc-libs
 %defattr(-,root,root)
-%if %with_dc
+%if %{with_dc}
 %{_libdir}/samba/libdb-glue-samba4.so
 %{_libdir}/samba/libprocess-model-samba4.so
 %{_libdir}/samba/libservice-samba4.so
@@ -1794,7 +1799,7 @@ fi
 %endif # with_dc
 
 ### DC-BIND
-%if %with_dc
+%if %{with_dc}
 %files dc-bind-dlz
 %attr(770,root,named) %dir /var/lib/samba/bind-dns
 %dir %{_libdir}/samba/bind9
@@ -1922,7 +1927,7 @@ fi
 %{_libdir}/libsamba-passdb.so
 %{_libdir}/libsmbldap.so
 
-%if %with_dc
+%if %{with_dc}
 %{_includedir}/samba-4.0/dcerpc_server.h
 %{_libdir}/libdcerpc-server.so
 %{_libdir}/pkgconfig/dcerpc_server.pc
@@ -2736,7 +2741,7 @@ fi
 ### TEST-LIBS
 %files test-libs
 %defattr(-,root,root)
-%if %with_dc
+%if %{with_dc}
 %{_libdir}/samba/libdlz-bind9-for-torture-samba4.so
 %else
 %{_libdir}/samba/libdsdb-module-samba4.so
@@ -3605,9 +3610,14 @@ fi
 %endif # with_clustering_support
 
 %changelog
+* Fri Apr 27 2014 Nico Kadel-Garcia <nkadel@gmail.com> - 4.8.1-0.1
+- Update samba to 4.8.1
+- Updte talloc_version to 2.1.13
+
 * Sun Mar 18 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.8.0-0.1
 - Update to standard 4.8.0
-- Switch rpc packages for compatibility
+- Switch rpc packages for compatibility with RHEL 7
+= Handle python3 inclusions more effectily for RHEL 7
 - Strip excess whitespace in .spec file
 - Use cleaner with_dc and with_mitkrb5 logic
 
