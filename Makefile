@@ -5,7 +5,7 @@
 # Assure that sorting is case sensitive
 LANG=C
 
-MOCKS+=samba4repo-f27-x86_64
+MOCKS+=samba4repo-f28-x86_64
 MOCKS+=samba4repo-7-x86_64
 # Give up on RHEL 6, current upstream SRPMs require systemd
 #MOCKS+=samba4repo-6-x86_64
