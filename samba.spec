@@ -2,11 +2,12 @@
 #
 # The testsuite is disabled by default. Set --with testsuite or bcond_without
 # to run the Samba torture testsuite.
+# Note that testsuite does not work unless with_dc is set
 %bcond_with testsuite
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
 
-%define main_release 0.1
+%define main_release 0.2
 
 %define samba_version 4.8.1
 %define talloc_version 2.1.13
@@ -64,13 +65,14 @@
 %global libwbc_alternatives_suffix -64
 %endif
 
-%global with_mitkrb5 1
+# gnutls on RHEL is too old to support with_dc
+%if 0%{?fedors}
 %global with_dc 1
-
-%if %{with testsuite}
-%global with_dc 1
+%else
+%global with_dc 0
 %endif
 
+%global with_mitkrb5 1
 %global required_mit_krb5 1.15.1
 
 %global with_clustering_support 0
@@ -215,10 +217,12 @@ BuildRequires: readline-devel
 %if 0%{?fedora} > 27
 BuildRequires: rpcgen
 BuildRequires: rpcsvc-proto-devel
-%elsif 0%{?fedora} > 0
+%else
+%if 0%{?fedora} > 0
 BuildRequires: rpc2
 BuildRequires: rpc2-devel
 # RHEL 7
+%endif
 %endif
 # All rpc tools require rpcbind
 BuildRequires: rpcbind
@@ -226,6 +230,10 @@ BuildRequires: rpcbind
 BuildRequires: sed
 BuildRequires: xfsprogs-devel
 BuildRequires: xz
+# Ensure availability of yum-builddep
+%if 0%{?rhel} > 0
+BuildRequires: yum-utils
+%endif
 BuildRequires: zlib-devel >= 1.2.3
 
 BuildRequires: pkgconfig(libsystemd)
@@ -241,7 +249,6 @@ BuildRequires: libcephfs-devel
 
 %if %{with_dc}
 BuildRequires: bind
-# RHEL lacks recent enough gnutls-devel
 BuildRequires: gnutls-devel >= 3.4.7
 BuildRequires: krb5-server >= %{required_mit_krb5}
 
@@ -279,6 +286,7 @@ BuildRequires: python2-ldb-devel >= %{ldb_version}
 BuildRequires: python3-ldb-devel >= %{ldb_version}
 %endif
 
+%if %{with_dc}
 %if %{with testsuite}
 BuildRequires: ldb-tools
 BuildRequires: tdb-tools
@@ -287,6 +295,7 @@ BuildRequires: python2-markdown
 %if 0%{?with_python3}
 BuildRequires: python3-pygpgme
 BuildRequires: python3-markdown
+%endif
 %endif
 %endif
 
@@ -888,7 +897,7 @@ export python_LDFLAGS="$(echo %{__global_ldflags} | sed -e 's/-Wl,-z,defs//g')"
 %if %with_mitkrb5
         --with-system-mitkrb5 \
 %endif
-%if ! %{with_dc}
+%if ! %with_dc
         --without-ad-dc \
 %endif
 %if ! %with_vfs_glusterfs
@@ -900,8 +909,10 @@ export python_LDFLAGS="$(echo %{__global_ldflags} | sed -e 's/-Wl,-z,defs//g')"
 %if %with_profiling
         --with-profiling-data \
 %endif
+%if %{with_dc}
 %if %{with testsuite}
         --enable-selftest \
+%endif
 %endif
 %if %with_intel_aes_accel
         --accel-aes=intelaesni \
@@ -1087,7 +1098,7 @@ install -m 0644 ctdb/config/ctdbd.conf %{buildroot}%{_sysconfdir}/ctdb/ctdbd.con
 
 install -m 0644 %{SOURCE201} packaging/README.downgrade
 
-%if ! %{with_dc}
+%if ! %with_dc
 install -m 0644 %{SOURCE200} packaging/README.dc
 install -m 0644 %{SOURCE200} packaging/README.dc-libs
 %endif
@@ -1105,7 +1116,7 @@ install -m 0755 packaging/NetworkManager/30-winbind-systemd \
 install -d -m 0755 %{buildroot}%{_libdir}/krb5/plugins/libkrb5
 touch %{buildroot}%{_libdir}/krb5/plugins/libkrb5/winbind_krb5_locator.so
 
-%if ! %{with_dc}
+%if ! %with_dc
 for i in \
     %{_libdir}/samba/libdfs-server-ad-samba4.so \
     %{_libdir}/samba/libdnsserver-common-samba4.so \
@@ -1179,9 +1190,11 @@ done
 find %{buildroot}%{python2_sitearch} -name "*.pyc" -print -delete
 
 
+%if %{with_dc}
 %if %{with testsuite}
 %check
 TDB_NO_FSYNC=1 make %{?_smp_mflags} test
+%endif
 %endif
 
 %post
@@ -1227,7 +1240,7 @@ fi
 
 %postun common-libs -p /sbin/ldconfig
 
-%if %{with_dc}
+%if %with_dc
 %post dc-libs -p /sbin/ldconfig
 
 %postun dc-libs -p /sbin/ldconfig
@@ -1364,7 +1377,7 @@ fi
 %{_bindir}/eventlogadm
 %{_sbindir}/nmbd
 %{_sbindir}/smbd
-%if %{with_dc}
+%if %with_dc
 # This is only used by vfs_dfs_samba4
 %{_libdir}/samba/libdfs-server-ad-samba4.so
 %endif
@@ -1383,7 +1396,7 @@ fi
 %{_libdir}/samba/vfs/commit.so
 %{_libdir}/samba/vfs/crossrename.so
 %{_libdir}/samba/vfs/default_quota.so
-%if %{with_dc}
+%if %with_dc
 %{_libdir}/samba/vfs/dfs_samba4.so
 %endif
 %{_libdir}/samba/vfs/dirsort.so
@@ -1689,7 +1702,7 @@ fi
 %files dc
 %defattr(-,root,root)
 
-%if %{with_dc}
+%if %with_dc
 %{_unitdir}/samba.service
 %{_bindir}/samba-tool
 %{_sbindir}/samba
@@ -1759,12 +1772,14 @@ fi
 %{_mandir}/man8/samba-tool.8*
 %else # with_dc
 %doc packaging/README.dc
+# RHEL 7 or less cannot cannot run dc
+%exclude %{_unitdir}/samba.service
 %endif # with_dc
 
 ### DC-LIBS
 %files dc-libs
 %defattr(-,root,root)
-%if %{with_dc}
+%if %with_dc
 %{_libdir}/samba/libdb-glue-samba4.so
 %{_libdir}/samba/libprocess-model-samba4.so
 %{_libdir}/samba/libservice-samba4.so
@@ -1795,7 +1810,7 @@ fi
 %endif # with_dc
 
 ### DC-BIND
-%if %{with_dc}
+%if %with_dc
 %files dc-bind-dlz
 %attr(770,root,named) %dir /var/lib/samba/bind-dns
 %dir %{_libdir}/samba/bind9
@@ -1923,7 +1938,7 @@ fi
 %{_libdir}/libsamba-passdb.so
 %{_libdir}/libsmbldap.so
 
-%if %{with_dc}
+%if %with_dc
 %{_includedir}/samba-4.0/dcerpc_server.h
 %{_libdir}/libdcerpc-server.so
 %{_libdir}/pkgconfig/dcerpc_server.pc
@@ -2174,7 +2189,7 @@ fi
 %dir %{python_sitearch}/samba/third_party
 %{python_sitearch}/samba/third_party/__init__.py*
 
-%if %{with_dc}
+%if %with_dc
 %files -n python2-%{name}-dc
 %defattr(-,root,root,-)
 %{python_sitearch}/samba/domain_update.py*
@@ -2458,7 +2473,7 @@ fi
 %{python3_sitearch}/samba/subunit/run.py
 %{python3_sitearch}/samba/tdb_util.py
 
-%if %{with_dc}
+%if %with_dc
 %files -n python3-%{name}-dc
 %defattr(-,root,root,-)
 %{python3_sitearch}/samba/samdb.py
@@ -2727,17 +2742,19 @@ fi
 %{_mandir}/man1/smbtorture.1*
 %{_mandir}/man1/vfstest.1*
 
+%if %{with_dc}
 %if %{with testsuite}
 # files to ignore in testsuite mode
 %{_libdir}/samba/libnss-wrapper.so
 %{_libdir}/samba/libsocket-wrapper.so
 %{_libdir}/samba/libuid-wrapper.so
 %endif
+%endif
 
 ### TEST-LIBS
 %files test-libs
 %defattr(-,root,root)
-%if %{with_dc}
+%if %with_dc
 %{_libdir}/samba/libdlz-bind9-for-torture-samba4.so
 %else
 %{_libdir}/samba/libdsdb-module-samba4.so
@@ -3606,6 +3623,10 @@ fi
 %endif # with_clustering_support
 
 %changelog
+* Tue May 8 2018  Nico Kadel-Garcia <nkadel@gmail.com> - 4.8.1-0.2
+- Disable testsuite stanzas unliess with_dc is set, because testsuite
+  requires it
+
 * Fri Apr 27 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.8.1-0.1
 - Update samba to 4.8.1
 - Updte talloc_version to 2.1.13
