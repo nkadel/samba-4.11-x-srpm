@@ -7,13 +7,13 @@
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
 
-%define main_release 0.2
+%define main_release 0.3
 
-%define samba_version 4.8.1
+%define samba_version 4.8.2
 %define talloc_version 2.1.13
 %define tdb_version 1.3.15
 %define tevent_version 0.9.36
-%define ldb_version 1.3.2
+%define ldb_version 1.3.3
 # This should be rc1 or nil
 %define pre_release %nil
 
