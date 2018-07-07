@@ -67,14 +67,16 @@
 %global with_mitkrb5 1
 %global with_dc 1
 
-%if %{with testsuite}
-%global with_dc 1
-%endif
-
+# RHEL cannot support dc or testsuite
 %if 0%{?rhel}
 %global with_dc 0
 %global with_mitkrb5 0
+%else
+%if %{with testsuite}
+%global with_dc 1
 %endif
+%endif
+
 
 %global required_mit_krb5 1.15.1
 
