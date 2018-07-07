@@ -2,15 +2,14 @@
 #
 # The testsuite is disabled by default. Set --with testsuite or bcond_without
 # to run the Samba torture testsuite.
-# Note that testsuite does not work unless with_dc is set
 %bcond_with testsuite
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
 
-%define main_release 0.3
+%define main_release 0
 
-%define samba_version 4.8.2
-%define talloc_version 2.1.13
+%define samba_version 4.8.3
+%define talloc_version 2.1.11
 %define tdb_version 1.3.15
 %define tevent_version 0.9.36
 %define ldb_version 1.3.3
@@ -65,14 +64,18 @@
 %global libwbc_alternatives_suffix -64
 %endif
 
-# gnutls on RHEL is too old to support with_dc
-%if 0%{?fedors}
+%global with_mitkrb5 1
 %global with_dc 1
-%else
-%global with_dc 0
+
+%if %{with testsuite}
+%global with_dc 1
 %endif
 
-%global with_mitkrb5 1
+%if 0%{?rhel}
+%global with_dc 0
+%global with_mitkrb5 0
+%endif
+
 %global required_mit_krb5 1.15.1
 
 %global with_clustering_support 0
@@ -84,12 +87,6 @@
 %{!?python_sitearch: %define python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 
 %global _systemd_extra "Environment=KRB5CCNAME=FILE:/run/samba/krb5cc_samba"
-
-%if 0%{?fedora}
-%global with_python3 1
-%else
-%global with_python3 0
-%endif
 
 Name:           samba
 Version:        %{samba_version}
@@ -111,20 +108,22 @@ Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+
 URL:            http://www.samba.org/
 
-# Do not use .xz file like most Fedora tools, would requite recompression and resignature
-Source0:        https://www.samba.org/ftp/samba/samba-%{version}%{pre_release}.tar.gz
-Source1:        https://www.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.asc
+# This is a xz recompressed file of https://ftp.samba.org/pub/samba/samba-%%{version}%%{pre_release}.tar.gz
+Source0:        samba-%{version}%{pre_release}.tar.xz
+Source1:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.asc
 Source2:        gpgkey-52FBC0B86D954B0843324CDC6F33915B6568B7EA.gpg
 
 # Red Hat specific replacement-files
-Source10: samba.log
-Source11: smb.conf.vendor
-Source12: smb.conf.example
-Source13: pam_winbind.conf
-Source14: samba.pamd
+Source10:       samba.log
+Source11:       smb.conf.vendor
+Source12:       smb.conf.example
+Source13:       pam_winbind.conf
+Source14:       samba.pamd
 
-Source200: README.dc
-Source201: README.downgrade
+Source200:      README.dc
+Source201:      README.downgrade
+
+Patch0:         samba-4.8.3-fix_krb5_plugins.patch
 
 Requires(pre): /usr/sbin/groupadd
 Requires(post): systemd
@@ -175,9 +174,7 @@ BuildRequires: libarchive-devel
 BuildRequires: libattr-devel
 BuildRequires: libcap-devel
 BuildRequires: libcmocka-devel
-%if 0%{?fedora} > 0
 BuildRequires: libnsl2-devel
-%endif
 BuildRequires: libtirpc-devel
 BuildRequires: libuuid-devel
 BuildRequires: libxslt
@@ -189,51 +186,22 @@ BuildRequires: perl(Test::More)
 BuildRequires: perl(ExtUtils::MakeMaker)
 BuildRequires: perl(Parse::Yapp)
 BuildRequires: popt-devel
-%if 0%{?fedora} > 0
 BuildRequires: python2-devel
-%else
-BuildRequires: python-devel
-%endif
 BuildRequires: python2-dns
 # Add python2-iso8601 to avoid that the
 # version in Samba is being packaged
 BuildRequires: python2-iso8601
-%if 0%{?fedora} > 0
-BuildRequires: python2-subunit
-%else
-BuildRequires: python-subunit
-%endif
-
-%if 0%{?with_python3}
 BuildRequires: python3-devel
 # Add python3-iso8601 to avoid that the
 # version in Samba is being packaged
 BuildRequires: python3-iso8601
-BuildRequires: python3-subunit
-%endif
 BuildRequires: quota-devel
 BuildRequires: readline-devel
-# Package names changed for Fedora 28
-%if 0%{?fedora} > 27
 BuildRequires: rpcgen
 BuildRequires: rpcsvc-proto-devel
-%else
-%if 0%{?fedora} > 0
-BuildRequires: rpc2
-BuildRequires: rpc2-devel
-# RHEL 7
-%endif
-%endif
-# All rpc tools require rpcbind
-BuildRequires: rpcbind
-
 BuildRequires: sed
 BuildRequires: xfsprogs-devel
 BuildRequires: xz
-# Ensure availability of yum-builddep
-%if 0%{?rhel} > 0
-BuildRequires: yum-utils
-%endif
 BuildRequires: zlib-devel >= 1.2.3
 
 BuildRequires: pkgconfig(libsystemd)
@@ -254,9 +222,7 @@ BuildRequires: krb5-server >= %{required_mit_krb5}
 
 # Required by samba-tool to run tests
 BuildRequires: python2-crypto
-%if 0%{?with_python3}
 BuildRequires: python3-crypto
-%endif
 %endif
 
 # pidl requirements
@@ -264,39 +230,27 @@ BuildRequires: perl(Parse::Yapp)
 
 BuildRequires: libtalloc-devel >= %{talloc_version}
 BuildRequires: python2-talloc-devel >= %{talloc_version}
-%if 0%{?with_python3}
 BuildRequires: python3-talloc-devel >= %{talloc_version}
-%endif
 
 BuildRequires: libtevent-devel >= %{tevent_version}
 BuildRequires: python2-tevent >= %{tevent_version}
-%if 0%{?with_python3}
 BuildRequires: python3-tevent >= %{tevent_version}
-%endif
 
 BuildRequires: libtdb-devel >= %{tdb_version}
 BuildRequires: python2-tdb >= %{tdb_version}
-%if 0%{?with_python3}
 BuildRequires: python3-tdb >= %{tdb_version}
-%endif
 
 BuildRequires: libldb-devel >= %{ldb_version}
 BuildRequires: python2-ldb-devel >= %{ldb_version}
-%if 0%{?with_python3}
 BuildRequires: python3-ldb-devel >= %{ldb_version}
-%endif
 
-%if %{with_dc}
 %if %{with testsuite}
 BuildRequires: ldb-tools
 BuildRequires: tdb-tools
 BuildRequires: python2-pygpgme
 BuildRequires: python2-markdown
-%if 0%{?with_python3}
 BuildRequires: python3-pygpgme
 BuildRequires: python3-markdown
-%endif
-%endif
 %endif
 
 %if %{with_dc}
@@ -415,11 +369,9 @@ Requires: python2-crypto
 ### Note that samba-dc right now cannot be used with Python 3
 ### so we should make sure it does use python2 explicitly
 %if 0
-%if 0%{?with_python3}
 Requires: python3-crypto
 Requires: python3-%{name} = %{samba_depver}
 Requires: python3-%{name}-dc = %{samba_depver}
-%endif
 %endif
 Requires: krb5-server >= %{required_mit_krb5}
 %endif
@@ -444,7 +396,7 @@ The %{name}-dc-libs package contains the libraries needed by the DC to
 link against the SMB, RPC and other protocols.
 
 ### DC-BIND
-%if %{with_dc}
+%if %with_dc
 %package dc-bind-dlz
 Summary: Bind DLZ module for Samba AD
 Requires: %{name}-common = %{samba_depver}
@@ -611,7 +563,6 @@ The python2-%{name}-dc package contains the Python libraries needed by programs
 to manage Samba AD.
 %endif
 
-%if 0%{?with_python3}
 ### PYTHON3
 %package -n python3-%{name}
 Summary: Samba Python3 libraries
@@ -645,7 +596,6 @@ Requires: python3-%{name} = %{samba_depver}
 The python3-%{name}-dc package contains the Python libraries needed by programs
 to manage Samba AD.
 %endif
-%endif
 
 ### PIDL
 %package pidl
@@ -671,7 +621,7 @@ Requires: %{name}-winbind = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
 Requires: %{name}-test-libs = %{samba_depver}
-%if %{with_dc}
+%if %with_dc
 Requires: %{name}-dc-libs = %{samba_depver}
 %endif
 Requires: %{name}-libs = %{samba_depver}
@@ -820,7 +770,7 @@ Summary: CTDB clustered database test suite
 Requires: samba-client-libs = %{samba_depver}
 
 Requires: ctdb = %{samba_depver}
-Requires: nc
+Recommends: nc
 
 Provides: ctdb-devel = %{samba_depver}
 Obsoletes: ctdb-devel < %{samba_depver}
@@ -836,7 +786,7 @@ and use CTDB instead.
 
 
 %prep
-zcat %{SOURCE0} | gpgv2 --quiet --keyring %{SOURCE2} %{SOURCE1} -
+xzcat %{SOURCE0} | gpgv2 --quiet --keyring %{SOURCE2} %{SOURCE1} -
 %autosetup -n samba-%{version}%{pre_release} -p1
 
 %build
@@ -909,21 +859,11 @@ export python_LDFLAGS="$(echo %{__global_ldflags} | sed -e 's/-Wl,-z,defs//g')"
 %if %with_profiling
         --with-profiling-data \
 %endif
-%if %{with_dc}
 %if %{with testsuite}
         --enable-selftest \
 %endif
-%endif
 %if %with_intel_aes_accel
         --accel-aes=intelaesni \
-%endif
-%if %with_python3
-        --extra-python=%{__python3} \
-%endif
-%if 0%{?fedora}
-        --enable-gnutls \
-%else
-        --disable-gnutls \
 %endif
         --with-systemd \
 	--systemd-install-services \
@@ -931,7 +871,8 @@ export python_LDFLAGS="$(echo %{__global_ldflags} | sed -e 's/-Wl,-z,defs//g')"
 	--systemd-smb-extra=%{_systemd_extra} \
 	--systemd-nmb-extra=%{_systemd_extra} \
 	--systemd-winbind-extra=%{_systemd_extra} \
-	--systemd-samba-extra=%{_systemd_extra}
+	--systemd-samba-extra=%{_systemd_extra} \
+        --extra-python=%{__python3}
 
 make %{?_smp_mflags}
 
@@ -942,7 +883,7 @@ make %{?_smp_mflags} install DESTDIR=%{buildroot}
 export PYTHON=%{__python2}
 # Workaround: make sure all general Python shebangs are pointing to Python 2
 # otherwise it will not work when default python is different from Python 2.
-# Samba tools are not ready for Python 3 yet.
+# Samba tools aren't ready for Python 3 yet.
 for i in %{buildroot}%{_bindir} %{buildroot}%{_sbindir} ; do
 	find $i \
 		! -name '*.pyc' -a \
@@ -951,7 +892,6 @@ for i in %{buildroot}%{_bindir} %{buildroot}%{_sbindir} ; do
 		-exec sed -i -e '1 s|^#!.*\bpython[^ ]*|#!%{__python2}|' {} \;
 done
 
-%if 0%{?with_python3}
 # FIXME: Remove Python3 files with bad syntax
 # (needs to be done after install; before that the py2 and py3 versions
 #  are the same)
@@ -1013,7 +953,6 @@ filenames=$(echo "
     upgradehelpers.py
     web_server/__init__.py
 ")
-
 for file in $filenames; do
     filename="%{buildroot}/%{python3_sitearch}/samba/$file"
     if python3 -c "with open('$filename') as f: compile(f.read(), '$file', 'exec')"; then
@@ -1024,7 +963,6 @@ for file in $filenames; do
         rm "$filename"
     fi
 done
-%endif
 
 install -d -m 0755 %{buildroot}/usr/{sbin,bin}
 install -d -m 0755 %{buildroot}%{_libdir}/security
@@ -1112,7 +1050,7 @@ install -d -m 0755 %{buildroot}%{_sysconfdir}/NetworkManager/dispatcher.d/
 install -m 0755 packaging/NetworkManager/30-winbind-systemd \
             %{buildroot}%{_sysconfdir}/NetworkManager/dispatcher.d/30-winbind
 
-# winbind krb5 locator
+# winbind krb5 plugins
 install -d -m 0755 %{buildroot}%{_libdir}/krb5/plugins/libkrb5
 touch %{buildroot}%{_libdir}/krb5/plugins/libkrb5/winbind_krb5_locator.so
 
@@ -1126,6 +1064,7 @@ for i in \
     %{_mandir}/man8/samba_gpoupdate.8 \
     %{_libdir}/samba/ldb/ildap.so \
     %{_libdir}/samba/ldb/ldbsamba_extensions.so \
+    %{_unitdir}/samba.service \
     %{python_sitearch}/samba/dcerpc/dnsserver.so \
     %{python_sitearch}/samba/dnsserver.py* \
     %{python_sitearch}/samba/domain_update.py* \
@@ -1151,7 +1090,6 @@ for i in \
     %{python_sitearch}/samba/samdb.py* \
     %{python_sitearch}/samba/schema.py* \
     %{python_sitearch}/samba/web_server/__init__.py* \
-%if 0%{?with_python3}
     %{python3_sitearch}/samba/dcerpc/dnsserver.*.so \
     %{python3_sitearch}/samba/dnsserver.py \
     %{python3_sitearch}/samba/domain_update.py \
@@ -1175,7 +1113,6 @@ for i in \
     %{python3_sitearch}/samba/__pycache__/schema.*.pyc \
     %{python3_sitearch}/samba/samdb.py \
     %{python3_sitearch}/samba/schema.py \
-%endif
     %{_sbindir}/samba_gpoupdate \
     ; do
     rm -f %{buildroot}$i
@@ -1190,11 +1127,9 @@ done
 find %{buildroot}%{python2_sitearch} -name "*.pyc" -print -delete
 
 
-%if %{with_dc}
 %if %{with testsuite}
 %check
 TDB_NO_FSYNC=1 make %{?_smp_mflags} test
-%endif
 %endif
 
 %post
@@ -1334,18 +1269,18 @@ fi
 
 %postun winbind-krb5-locator
 if [ "$1" -ge "1" ]; then
-        if [ "`readlink %{_sysconfdir}/alternatives/winbind_krb5_locator.so`" == "%{_libdir}/winbind_krb5_locator.so" ]; then
-                %{_sbindir}/update-alternatives --set winbind_krb5_locator.so %{_libdir}/winbind_krb5_locator.so
+        if [ "`readlink %{_sysconfdir}/alternatives/winbind_krb5_locator.so`" == "%{_libdir}/samba/krb5/winbind_krb5_locator.so" ]; then
+                %{_sbindir}/update-alternatives --set winbind_krb5_locator.so %{_libdir}/samba/krb5/winbind_krb5_locator.so
         fi
 fi
 
 %post winbind-krb5-locator
 %{_sbindir}/update-alternatives --install %{_libdir}/krb5/plugins/libkrb5/winbind_krb5_locator.so \
-                                winbind_krb5_locator.so %{_libdir}/winbind_krb5_locator.so 10
+                                winbind_krb5_locator.so %{_libdir}/samba/krb5/winbind_krb5_locator.so 10
 
 %preun winbind-krb5-locator
 if [ $1 -eq 0 ]; then
-        %{_sbindir}/update-alternatives --remove winbind_krb5_locator.so %{_libdir}/winbind_krb5_locator.so
+        %{_sbindir}/update-alternatives --remove winbind_krb5_locator.so %{_libdir}/samba/krb5/winbind_krb5_locator.so
 fi
 
 %post winbind-modules -p /sbin/ldconfig
@@ -1377,7 +1312,7 @@ fi
 %{_bindir}/eventlogadm
 %{_sbindir}/nmbd
 %{_sbindir}/smbd
-%if %with_dc
+%if %{with_dc}
 # This is only used by vfs_dfs_samba4
 %{_libdir}/samba/libdfs-server-ad-samba4.so
 %endif
@@ -1396,7 +1331,7 @@ fi
 %{_libdir}/samba/vfs/commit.so
 %{_libdir}/samba/vfs/crossrename.so
 %{_libdir}/samba/vfs/default_quota.so
-%if %with_dc
+%if %{with_dc}
 %{_libdir}/samba/vfs/dfs_samba4.so
 %endif
 %{_libdir}/samba/vfs/dirsort.so
@@ -1772,8 +1707,6 @@ fi
 %{_mandir}/man8/samba-tool.8*
 %else # with_dc
 %doc packaging/README.dc
-# RHEL 7 or less cannot cannot run dc
-%exclude %{_unitdir}/samba.service
 %endif # with_dc
 
 ### DC-LIBS
@@ -2189,7 +2122,7 @@ fi
 %dir %{python_sitearch}/samba/third_party
 %{python_sitearch}/samba/third_party/__init__.py*
 
-%if %with_dc
+%if %{with_dc}
 %files -n python2-%{name}-dc
 %defattr(-,root,root,-)
 %{python_sitearch}/samba/domain_update.py*
@@ -2355,7 +2288,6 @@ fi
 %{python_sitearch}/samba/tests/upgradeprovisionneeddc.py*
 %{python_sitearch}/samba/tests/xattr.py*
 
-%if 0%{?with_python3}
 ### PYTHON3
 %files -n python3-%{name}
 %defattr(-,root,root,-)
@@ -2473,7 +2405,7 @@ fi
 %{python3_sitearch}/samba/subunit/run.py
 %{python3_sitearch}/samba/tdb_util.py
 
-%if %with_dc
+%if %{with_dc}
 %files -n python3-%{name}-dc
 %defattr(-,root,root,-)
 %{python3_sitearch}/samba/samdb.py
@@ -2725,7 +2657,6 @@ fi
 %{python3_sitearch}/samba/xattr.py
 %{python3_sitearch}/samba/xattr_native.*.so
 %{python3_sitearch}/samba/xattr_tdb.*.so
-%endif
 
 ### TEST
 %files test
@@ -2742,13 +2673,11 @@ fi
 %{_mandir}/man1/smbtorture.1*
 %{_mandir}/man1/vfstest.1*
 
-%if %{with_dc}
 %if %{with testsuite}
 # files to ignore in testsuite mode
 %{_libdir}/samba/libnss-wrapper.so
 %{_libdir}/samba/libsocket-wrapper.so
 %{_libdir}/samba/libuid-wrapper.so
-%endif
 %endif
 
 ### TEST-LIBS
@@ -2779,15 +2708,17 @@ fi
 %defattr(-,root,root)
 %{_bindir}/ntlm_auth
 %{_bindir}/wbinfo
+%{_libdir}/samba/krb5/winbind_krb5_localauth.so
 %{_mandir}/man1/ntlm_auth.1.gz
 %{_mandir}/man1/wbinfo.1*
+%{_mandir}/man8/winbind_krb5_localauth.8*
 
 ### WINBIND-KRB5-LOCATOR
 %files winbind-krb5-locator
 %defattr(-,root,root)
 %ghost %{_libdir}/krb5/plugins/libkrb5/winbind_krb5_locator.so
-%{_libdir}/winbind_krb5_locator.so
-%{_mandir}/man7/winbind_krb5_locator.7*
+%{_libdir}/samba/krb5/winbind_krb5_locator.so
+%{_mandir}/man8/winbind_krb5_locator.8*
 
 ### WINBIND-MODULES
 %files winbind-modules
@@ -3623,20 +3554,28 @@ fi
 %endif # with_clustering_support
 
 %changelog
-* Tue May 8 2018  Nico Kadel-Garcia <nkadel@gmail.com> - 4.8.1-0.2
-- Disable testsuite stanzas unliess with_dc is set, because testsuite
-  requires it
+* Tue Jun 26 2018 Andreas Schneider <asn@redhat.com> - 4.8.3-1
+- Update to Samba 4.8.3
+- Remove python(2|3)-subunit dependency
 
-* Fri Apr 27 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.8.1-0.1
-- Update samba to 4.8.1
-- Updte talloc_version to 2.1.13
+* Tue Jun 19 2018 Miro Hrončok <mhroncok@redhat.com> - 2:4.8.2-1.1
+- Rebuilt for Python 3.7
 
-* Sun Mar 18 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.8.0-0.1
-- Update to standard 4.8.0
-- Switch rpc packages for compatibility with RHEL 7
-= Handle python3 inclusions more effectily for RHEL 7
-- Strip excess whitespace in .spec file
-- Use cleaner with_dc and with_mitkrb5 logic
+* Wed May 16 2018 Guenther Deschner <gdeschner@redhat.com> - 4.8.2-0
+- Update to Samba 4.8.2
+
+* Wed May 09 2018 Andreas Schneider <asn@redhat.com> - 4.8.1-1
+- resolves: #1574177 - Fix smbspool command line argument handling
+
+* Thu Apr 26 2018 Guenther Deschner <gdeschner@redhat.com> - 4.8.1-0
+- Update to Samba 4.8.1
+
+* Wed Mar 14 2018 Guenther Deschner <gdeschner@redhat.com> - 4.8.0-7
+- resolves: #1554754, #1554756 - Security fixes for CVE-2018-1050 CVE-2018-1057
+- resolves: #1555112 - Update to Samba 4.8.0
+
+* Tue Mar 13 2018 Andreas Schneider <asn@redhat.com> - 4.8.0rc4-6
+- resolves: #1552652 - Fix usage of nc in ctdb tests and only recommned it
 
 * Fri Mar 02 2018 Guenther Deschner <gdeschner@redhat.com> - 4.8.0rc4-5
 - Update to Samba 4.8.0rc4
@@ -4244,7 +4183,7 @@ fi
 
 * Fri Mar 22 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.4-3
 - resolves: #919405 - Fix and improve large_readx handling for broken clients.
-- resolves: #924525 - Do not use waf caching.
+- resolves: #924525 - do not use waf caching.
 
 * Wed Mar 20 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.4-2
 - resolves: #923765 - Improve packaging of README files.
@@ -5324,7 +5263,7 @@ fi
 - Make it build
 
 * Wed Apr 10 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.3a-6
-- Do not use /etc/samba.d in smbadduser, it should be /etc/samba
+- do not use /etc/samba.d in smbadduser, it should be /etc/samba
 
 * Thu Apr  4 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.3a-5
 - Add libsmbclient.a w/headerfile for KDE (#62202)
@@ -5383,7 +5322,7 @@ fi
 - Add patch from Jeremy Allison to fix IA64 alignment problems (#51497)
 
 * Mon Aug 13 2001 Trond Eivind Glomsrød <teg@redhat.com>
-- Do not include smbpasswd in samba, it is in samba-common (#51598)
+- do not include smbpasswd in samba, it is in samba-common (#51598)
 - Add a disabled "obey pam restrictions" statement - it is not
   active, as we use encrypted passwords, but if the admin turns
   encrypted passwords off the choice is available. (#31351)
@@ -5416,8 +5355,8 @@ fi
 
 * Tue Jun 19 2001 Trond Eivind Glomsrød <teg@redhat.com>
 - (these changes are from the non-head version)
-- Do not include /usr/sbin/samba, it is the same as the initscript
-- unset TMPDIR, as samba ca not write into a TMPDIR owned
+- do not include /usr/sbin/samba, it is the same as the initscript
+- unset TMPDIR, as samba can not write into a TMPDIR owned
   by root (#41193)
 - Add pidfile: lines for smbd and nmbd and a config: line
   in the initscript  (#15343)
