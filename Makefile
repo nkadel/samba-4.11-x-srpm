@@ -7,8 +7,6 @@ LANG=C
 
 MOCKS+=samba4repo-f28-x86_64
 MOCKS+=samba4repo-7-x86_64
-# Give up on RHEL 6, too many upstream dependencies
-#MOCKS+=samba4repo-6-x86_64
 
 #REPOBASEDIR=/var/www/linux/samba4repo
 REPOBASEDIR:=`/bin/pwd`/../samba4repo
@@ -43,8 +41,7 @@ $(MOCKS):: verifyspec FORCE
 		rm -rf $@; \
 		mock -q -r $(PWD)/../$@.cfg \
 		    --resultdir=$(PWD)/$@ \
-		    --sources=$(PWD) \
-		    --buildsrpm --spec=$(SPEC); \
+		    --sources=$(PWD) --buildsrpm --spec=$(SPEC); \
 		echo "Storing $@/*.src.rpm in $@.rpm"; \
 		/bin/mv $@/*.src.rpm $@.src.rpm; \
 		echo "Actally building RPMS in $@"; \
