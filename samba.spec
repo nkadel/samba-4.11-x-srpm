@@ -1,10 +1,17 @@
-# rpmbuild --rebuild --with testsuite --without clustering samba.src.rpm
+# rpmbuild --rebuild --with testsuite --without clustering
+# samba.src.rpm
 #
 # The testsuite is disabled by default. Set --with testsuite or bcond_without
 # to run the Samba torture testsuite.
 %bcond_with testsuite
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
+
+%if 0%{?fedora} || 0%{?rhel} > 7
+%global with_python3 1
+%else
+%global with_python3 0
+%endif
 
 %define main_release 0
 
@@ -67,16 +74,13 @@
 %global with_mitkrb5 1
 %global with_dc 1
 
-# RHEL cannot support dc or testsuite
 %if 0%{?rhel}
 %global with_dc 0
-%global with_mitkrb5 0
-%else
+%endif
+
 %if %{with testsuite}
 %global with_dc 1
 %endif
-%endif
-
 
 %global required_mit_krb5 1.15.1
 
@@ -176,7 +180,9 @@ BuildRequires: libarchive-devel
 BuildRequires: libattr-devel
 BuildRequires: libcap-devel
 BuildRequires: libcmocka-devel
+%if 0%{?fedora}
 BuildRequires: libnsl2-devel
+%endif
 BuildRequires: libtirpc-devel
 BuildRequires: libuuid-devel
 BuildRequires: libxslt
@@ -193,14 +199,20 @@ BuildRequires: python2-dns
 # Add python2-iso8601 to avoid that the
 # version in Samba is being packaged
 BuildRequires: python2-iso8601
+%if 0%{?with_python3}
 BuildRequires: python3-devel
 # Add python3-iso8601 to avoid that the
 # version in Samba is being packaged
 BuildRequires: python3-iso8601
+%endif
 BuildRequires: quota-devel
 BuildRequires: readline-devel
+%if 0%{?fedora}
 BuildRequires: rpcgen
 BuildRequires: rpcsvc-proto-devel
+%else
+BuildRequires: rpcbind
+%endif
 BuildRequires: sed
 BuildRequires: xfsprogs-devel
 BuildRequires: xz
@@ -224,7 +236,9 @@ BuildRequires: krb5-server >= %{required_mit_krb5}
 
 # Required by samba-tool to run tests
 BuildRequires: python2-crypto
+%if 0%{?with_python3}
 BuildRequires: python3-crypto
+%endif
 %endif
 
 # pidl requirements
@@ -232,27 +246,37 @@ BuildRequires: perl(Parse::Yapp)
 
 BuildRequires: libtalloc-devel >= %{talloc_version}
 BuildRequires: python2-talloc-devel >= %{talloc_version}
+%if 0%{?with_python3}
 BuildRequires: python3-talloc-devel >= %{talloc_version}
+%endif
 
 BuildRequires: libtevent-devel >= %{tevent_version}
 BuildRequires: python2-tevent >= %{tevent_version}
+%if 0%{?with_python3}
 BuildRequires: python3-tevent >= %{tevent_version}
+%endif
 
 BuildRequires: libtdb-devel >= %{tdb_version}
 BuildRequires: python2-tdb >= %{tdb_version}
+%if 0%{?with_python3}
 BuildRequires: python3-tdb >= %{tdb_version}
+%endif
 
 BuildRequires: libldb-devel >= %{ldb_version}
 BuildRequires: python2-ldb-devel >= %{ldb_version}
+%if 0%{?with_python3}
 BuildRequires: python3-ldb-devel >= %{ldb_version}
+%endif
 
 %if %{with testsuite}
 BuildRequires: ldb-tools
 BuildRequires: tdb-tools
 BuildRequires: python2-pygpgme
 BuildRequires: python2-markdown
+%if 0%{?with_python3}
 BuildRequires: python3-pygpgme
 BuildRequires: python3-markdown
+%endif
 %endif
 
 %if %{with_dc}
@@ -370,6 +394,7 @@ Requires: python2-crypto
 
 ### Note that samba-dc right now cannot be used with Python 3
 ### so we should make sure it does use python2 explicitly
+#%if 0%{?with_python3}
 %if 0
 Requires: python3-crypto
 Requires: python3-%{name} = %{samba_depver}
@@ -565,6 +590,7 @@ The python2-%{name}-dc package contains the Python libraries needed by programs
 to manage Samba AD.
 %endif
 
+%if 0%{?with_python3}
 ### PYTHON3
 %package -n python3-%{name}
 Summary: Samba Python3 libraries
@@ -597,6 +623,7 @@ Requires: python3-%{name} = %{samba_depver}
 %description -n python3-samba-dc
 The python3-%{name}-dc package contains the Python libraries needed by programs
 to manage Samba AD.
+%endif
 %endif
 
 ### PIDL
@@ -772,7 +799,10 @@ Summary: CTDB clustered database test suite
 Requires: samba-client-libs = %{samba_depver}
 
 Requires: ctdb = %{samba_depver}
+# Fedora has dnf and Recommends, RHEL does not
+%if 0%{?fedora}
 Recommends: nc
+%endif
 
 Provides: ctdb-devel = %{samba_depver}
 Obsoletes: ctdb-devel < %{samba_depver}
@@ -874,7 +904,11 @@ export python_LDFLAGS="$(echo %{__global_ldflags} | sed -e 's/-Wl,-z,defs//g')"
 	--systemd-nmb-extra=%{_systemd_extra} \
 	--systemd-winbind-extra=%{_systemd_extra} \
 	--systemd-samba-extra=%{_systemd_extra} \
+%if 0%{?with_python3}
         --extra-python=%{__python3}
+%else
+
+%endif
 
 make %{?_smp_mflags}
 
@@ -955,6 +989,7 @@ filenames=$(echo "
     upgradehelpers.py
     web_server/__init__.py
 ")
+%if 0%{?with_python3}
 for file in $filenames; do
     filename="%{buildroot}/%{python3_sitearch}/samba/$file"
     if python3 -c "with open('$filename') as f: compile(f.read(), '$file', 'exec')"; then
@@ -965,6 +1000,7 @@ for file in $filenames; do
         rm "$filename"
     fi
 done
+%endif
 
 install -d -m 0755 %{buildroot}/usr/{sbin,bin}
 install -d -m 0755 %{buildroot}%{_libdir}/security
@@ -1092,6 +1128,7 @@ for i in \
     %{python_sitearch}/samba/samdb.py* \
     %{python_sitearch}/samba/schema.py* \
     %{python_sitearch}/samba/web_server/__init__.py* \
+%if 0%{?with_python3}
     %{python3_sitearch}/samba/dcerpc/dnsserver.*.so \
     %{python3_sitearch}/samba/dnsserver.py \
     %{python3_sitearch}/samba/domain_update.py \
@@ -1115,6 +1152,7 @@ for i in \
     %{python3_sitearch}/samba/__pycache__/schema.*.pyc \
     %{python3_sitearch}/samba/samdb.py \
     %{python3_sitearch}/samba/schema.py \
+%endif
     %{_sbindir}/samba_gpoupdate \
     ; do
     rm -f %{buildroot}$i
@@ -2290,6 +2328,7 @@ fi
 %{python_sitearch}/samba/tests/upgradeprovisionneeddc.py*
 %{python_sitearch}/samba/tests/xattr.py*
 
+%if 0%{?with_python3}
 ### PYTHON3
 %files -n python3-%{name}
 %defattr(-,root,root,-)
@@ -2659,6 +2698,7 @@ fi
 %{python3_sitearch}/samba/xattr.py
 %{python3_sitearch}/samba/xattr_native.*.so
 %{python3_sitearch}/samba/xattr_tdb.*.so
+%endif
 
 ### TEST
 %files test
@@ -3556,6 +3596,11 @@ fi
 %endif # with_clustering_support
 
 %changelog
+* Sun Jul 8 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.8.3-0
+- RHEL does support Recommends, exclude it
+- RHEL does not support dc or testsuite, disable them
+- Activate with_python3 option, to exclude it for RHEL consistently
+
 * Tue Jun 26 2018 Andreas Schneider <asn@redhat.com> - 4.8.3-1
 - Update to Samba 4.8.3
 - Remove python(2|3)-subunit dependency
@@ -4185,7 +4230,7 @@ fi
 
 * Fri Mar 22 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.4-3
 - resolves: #919405 - Fix and improve large_readx handling for broken clients.
-- resolves: #924525 - do not use waf caching.
+- resolves: #924525 - Do not use waf caching.
 
 * Wed Mar 20 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.4-2
 - resolves: #923765 - Improve packaging of README files.
@@ -5265,7 +5310,7 @@ fi
 - Make it build
 
 * Wed Apr 10 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.3a-6
-- do not use /etc/samba.d in smbadduser, it should be /etc/samba
+- Do not use /etc/samba.d in smbadduser, it should be /etc/samba
 
 * Thu Apr  4 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.3a-5
 - Add libsmbclient.a w/headerfile for KDE (#62202)
@@ -5324,7 +5369,7 @@ fi
 - Add patch from Jeremy Allison to fix IA64 alignment problems (#51497)
 
 * Mon Aug 13 2001 Trond Eivind Glomsrød <teg@redhat.com>
-- do not include smbpasswd in samba, it is in samba-common (#51598)
+- Do not include smbpasswd in samba, it is in samba-common (#51598)
 - Add a disabled "obey pam restrictions" statement - it is not
   active, as we use encrypted passwords, but if the admin turns
   encrypted passwords off the choice is available. (#31351)
