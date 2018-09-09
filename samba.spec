@@ -740,7 +740,7 @@ necessary to communicate to the Winbind Daemon
 ### CTDB
 %if %with_clustering_support
 %package -n ctdb
-Summary: A Clustered Database based on Samba's Trivial Database (TDB)
+Summary: A Clustered Database based on Samba Trivial Database (TDB)
 
 Requires: %{name}-client-libs = %{samba_depver}
 
@@ -4465,7 +4465,7 @@ fi
 * Mon Jul 15 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.7-2
 - resolves: #972692 - Build with PIE and full RELRO.
 - resolves: #884169 - Add explicit dependencies suggested by rpmdiff.
-- resolves: #981033 - Local user's krb5cc deleted by winbind.
+- resolves: #981033 - Local user krb5cc deleted by winbind.
 - resolves: #984331 - Fix samba-common tmpfiles configuration file in wrong
                       directory.
 
@@ -5249,7 +5249,7 @@ fi
 
 * Mon Nov 22 2004 Than Ngo <than@redhat.com> 3.0.8-4
 - fix unresolved symbols in libsmbclient which caused applications
-  such as KDE's konqueror to fail when accessing smb:// URLs. #139894
+  such as KDE konqueror to fail when accessing smb:// URLs. #139894
 
 * Thu Nov 11 2004 Jay Fenlason <fenlason@redhat.com> 3.0.8-3.1
 - Rescue the install.mount.smbfs patch from Juanjo Villaplana
@@ -5270,7 +5270,7 @@ fi
 
 * Tue Oct 26 2004 Jay Fenlason <fenlason@redhat.com> 3.0.8-0.pre2
 - New upstream version
-- Add Nalin's signing-shortkey patch.
+- Add Nalin signing-shortkey patch.
 
 * Tue Oct 19 2004 Jay Fenlason <fenlason@redhat.com> 3.0.8-0.pre1.3
 - disable the -salt patch, because it causes undefined references in
@@ -5279,7 +5279,7 @@ fi
 * Fri Oct 15 2004 Jay Fenlason <fenlason@redhat.com> 3.0.8-0.pre1.2
 - Re-enable the x_fclose patch that was accidentally disabled
   in 3.0.8-0.pre1.1.  This closes #135832
-- include Nalin's -fqdn and -salt patches.
+- include Nalin -fqdn and -salt patches.
 
 * Wed Oct 13 2004 Jay Fenlason <fenlason@redhat.com> 3.0.8-0.pre1.1
 - Include disable-sendfile patch to default "use sendfile" to "no".
@@ -5421,7 +5421,7 @@ fi
 
 * Wed Dec 17 2003 Felipe Alfaro Solana <felipe_alfaro@linuxmail.org> 3.0.1-1
 - Update to 3.0.1
-- Removed testparm patch as it's already merged
+- Removed testparm patch as it is already merged
 - Removed Samba.7* man pages
 - Fixed .buildroot patch
 - Fixed .pie patch
@@ -5630,14 +5630,14 @@ fi
 - Add patch from Jeremy Allison to fix IA64 alignment problems (#51497)
 
 * Mon Aug 13 2001 Trond Eivind Glomsrød <teg@redhat.com>
-- Do not include smbpasswd in samba, it's in samba-common (#51598)
-- Add a disabled "obey pam restrictions" statement - it's not
+- Do not include smbpasswd in samba, it is in samba-common (#51598)
+- Add a disabled "obey pam restrictions" statement - it is not
   active, as we use encrypted passwords, but if the admin turns
   encrypted passwords off the choice is available. (#31351)
 
 * Wed Aug  8 2001 Trond Eivind Glomsrød <teg@redhat.com>
 - Use /var/cache/samba instead of /var/lock/samba
-- Remove "domain controller" keyword from smb.conf, it's
+- Remove "domain controller" keyword from smb.conf, it is
   deprecated (from #13704)
 - Sync some examples with smb.conf.default
 - Fix password synchronization (#16987)
@@ -5663,7 +5663,7 @@ fi
 
 * Tue Jun 19 2001 Trond Eivind Glomsrød <teg@redhat.com>
 - (these changes are from the non-head version)
-- Do not include /usr/sbin/samba, it's the same as the initscript
+- Do not include /usr/sbin/samba, it is the same as the initscript
 - unset TMPDIR, as samba ca not write into a TMPDIR owned
   by root (#41193)
 - Add pidfile: lines for smbd and nmbd and a config: line
@@ -5718,8 +5718,8 @@ fi
 * Mon Mar 26 2001 Nalin Dahyabhai <nalin@redhat.com>
 - tweak the PAM code some more to try to do a setcred() after initgroups()
 - pull in all of the optflags on i386 and sparc
-- do not explicitly enable Kerberos support -- it's only used for password
-  checking, and if PAM is enabled it's a no-op anyway
+- do not explicitly enable Kerberos support -- it is only used for password
+  checking, and if PAM is enabled it is a no-op anyway
 
 * Mon Mar  5 2001 Tim Waugh <twaugh@redhat.com>
 - exit successfully from preun script (bug #30644).
