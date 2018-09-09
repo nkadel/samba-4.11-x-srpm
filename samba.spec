@@ -145,7 +145,7 @@ Requires: pam
 Provides: samba4 = %{samba_depver}
 Obsoletes: samba4 < %{samba_depver}
 
-# We don't build it outdated docs anymore
+# We do not build it outdated docs anymore
 Provides: samba-doc = %{samba_depver}
 Obsoletes: samba-doc < %{samba_depver}
 
@@ -907,7 +907,7 @@ make %{?_smp_mflags} install DESTDIR=%{buildroot}
 
 # Workaround: make sure all general Python shebangs are pointing to Python 2
 # otherwise it will not work when default python is different from Python 2.
-# Samba tools aren't ready for Python 3 yet.
+# Samba tools are not ready for Python 3 yet.
 for i in %{buildroot}%{_bindir} %{buildroot}%{_sbindir} ; do
 	find $i \
 		! -name '*.pyc' -a \
@@ -4491,7 +4491,7 @@ fi
 
 * Fri Mar 22 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.4-3
 - resolves: #919405 - Fix and improve large_readx handling for broken clients.
-- resolves: #924525 - Don't use waf caching.
+- resolves: #924525 - Do not use waf caching.
 
 * Wed Mar 20 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.4-2
 - resolves: #923765 - Improve packaging of README files.
@@ -4523,7 +4523,7 @@ fi
 - resolves: #905704
 - Fix conn->share_access which is reset between user switches.
 - resolves: #903806
-- Add missing example and make sure we don't introduce perl dependencies.
+- Add missing example and make sure we do not introduce perl dependencies.
 - resolves: #639470
 
 * Wed Jan 16 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.1-1
@@ -4590,7 +4590,7 @@ fi
 - Update systemd Requires to reflect latest packaging guidelines.
 
 * Tue Oct 16 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-155.rc3
-- Add back the AES patches which didn't make it in rc3.
+- Add back the AES patches which did not make it in rc3.
 
 * Tue Oct 16 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-154.rc3
 - Update to 4.0.0rc3.
@@ -5129,7 +5129,7 @@ fi
   to close
   bz#182560 Wrong retval for initscript when smbd is dead
 - Update this spec file to build with 3.0.23rc3
-- Remove the -install.mount.smbfs patch, since we don't install
+- Remove the -install.mount.smbfs patch, since we do not install
   mount.smbfs any more.
 
 * Wed Jun 14 2006 Tomas Mraz <tmraz@redhat.com> - 2.0.21c-3
@@ -5152,7 +5152,7 @@ fi
 
 * Sun Nov 13 2005 Jay Fenlason <fenlason@redhat.com> 3.0.20b-2
 - turn on -DLDAP_DEPRECATED to allow access to ldap functions that have
-  been depricated in 2.3.11, but which don't have well-documented
+  been depricated in 2.3.11, but which do not have well-documented
   replacements (ldap_simple_bind_s(), for example).
 - Upgrade to 3.0.20b, which includes all the previous upstream patches.
 - Updated the -warnings patch for 3.0.20a.
@@ -5203,7 +5203,7 @@ fi
 - rebuild with openssl-0.9.7e
 
 * Thu Feb 24 2005 Jay Fenlason <fenlason@redhat.com> 3.0.11-4
-- Use the updated filter-requires-samba.sh file, so we don't accidentally
+- Use the updated filter-requires-samba.sh file, so we do not accidentally
   pick up a dependency on perl(Crypt::SmbHash)
 
 * Fri Feb 18 2005 Jay Fenlason <fenlason@redhat.com> 3.0.11-3
@@ -5354,10 +5354,10 @@ fi
   to make winbindd work against Windows versions that do not have
   128 bit encryption enabled.
 - Moved %%{_bindir}/net to the -common package, so that folks who just
-  want to use winbind, etc don't have to install -client in order to
+  want to use winbind, etc do not have to install -client in order to
   "net join" their domain.
 - New upstream version obsoletes the patches added in 3.0.3-5
-- Remove smbgetrc.5 man page, since we don't ship smbget.
+- Remove smbgetrc.5 man page, since we do not ship smbget.
 
 * Tue Jun 15 2004 Elliot Lee <sopwith@redhat.com>
 - rebuilt
@@ -5510,7 +5510,7 @@ fi
 - use internal dep generator.
 
 * Sat Dec 14 2002 Tim Powers <timp@redhat.com> 2.2.7-4
-- don't use rpms internal dep generator
+- do not use rpms internal dep generator
 
 * Mon Dec 02 2002 Elliot Lee <sopwith@redhat.com> 2.2.7-3
 - Fix missing doc files.
@@ -5571,7 +5571,7 @@ fi
 - Make it build
 
 * Wed Apr 10 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.3a-6
-- Don't use /etc/samba.d in smbadduser, it should be /etc/samba
+- Do not use /etc/samba.d in smbadduser, it should be /etc/samba
 
 * Thu Apr  4 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.3a-5
 - Add libsmbclient.a w/headerfile for KDE (#62202)
@@ -5630,7 +5630,7 @@ fi
 - Add patch from Jeremy Allison to fix IA64 alignment problems (#51497)
 
 * Mon Aug 13 2001 Trond Eivind Glomsrød <teg@redhat.com>
-- Don't include smbpasswd in samba, it's in samba-common (#51598)
+- Do not include smbpasswd in samba, it's in samba-common (#51598)
 - Add a disabled "obey pam restrictions" statement - it's not
   active, as we use encrypted passwords, but if the admin turns
   encrypted passwords off the choice is available. (#31351)
@@ -5663,12 +5663,12 @@ fi
 
 * Tue Jun 19 2001 Trond Eivind Glomsrød <teg@redhat.com>
 - (these changes are from the non-head version)
-- Don't include /usr/sbin/samba, it's the same as the initscript
-- unset TMPDIR, as samba can't write into a TMPDIR owned
+- Do not include /usr/sbin/samba, it's the same as the initscript
+- unset TMPDIR, as samba ca not write into a TMPDIR owned
   by root (#41193)
 - Add pidfile: lines for smbd and nmbd and a config: line
   in the initscript  (#15343)
-- don't use make -j
+- do not use make -j
 - explicitly include /usr/share/samba, not just the files in it
 
 * Tue Jun 19 2001 Bill Nottingham <notting@redhat.com>
@@ -5680,7 +5680,7 @@ fi
 * Thu Jun  7 2001 Helge Deller <hdeller@redhat.de>
 - build as 2.2.0-1 release
 - skip the documentation-directories docbook, manpages and yodldocs
-- don't include *.sgml documentation in package
+- do not include *.sgml documentation in package
 - moved codepage-directory to /usr/share/samba/codepages
 - make it compile with glibc-2.2.3-10 and kernel-headers-2.4.2-2
 
@@ -5718,7 +5718,7 @@ fi
 * Mon Mar 26 2001 Nalin Dahyabhai <nalin@redhat.com>
 - tweak the PAM code some more to try to do a setcred() after initgroups()
 - pull in all of the optflags on i386 and sparc
-- don't explicitly enable Kerberos support -- it's only used for password
+- do not explicitly enable Kerberos support -- it's only used for password
   checking, and if PAM is enabled it's a no-op anyway
 
 * Mon Mar  5 2001 Tim Waugh <twaugh@redhat.com>
@@ -5922,7 +5922,7 @@ fi
 - add a -common package, shuffle files around.
 
 * Fri Jul 23 1999 Bill Nottingham <notting@redhat.com>
-- add a chmod in %%postun so /etc/services & inetd.conf don't become unreadable
+- add a chmod in %%postun so /etc/services & inetd.conf do not become unreadable
 
 * Wed Jul 21 1999 Bill Nottingham <notting@redhat.com>
 - update to 2.0.5
@@ -5932,7 +5932,7 @@ fi
 
 * Fri Jun 18 1999 Bill Nottingham <notting@redhat.com>
 - split off clients into separate package
-- don't run samba by default
+- do not run samba by default
 
 * Mon Jun 14 1999 Bill Nottingham <notting@redhat.com>
 - fix one problem with mount.smb script
@@ -5953,11 +5953,11 @@ fi
 - fix mount.smb arg ordering
 
 * Fri Apr 16 1999 Bill Nottingham <notting@redhat.com>
-- go back to stop/start for restart (-HUP didn't work in testing)
+- go back to stop/start for restart (-HUP did not work in testing)
 
 * Fri Mar 26 1999 Bill Nottingham <notting@redhat.com>
 - add a mount.smb to make smb mounting a little easier.
-- smb filesystems apparently don't work on alpha. Oops.
+- smb filesystems apparently do not work on alpha. Oops.
 
 * Thu Mar 25 1999 Bill Nottingham <notting@redhat.com>
 - always create codepages
