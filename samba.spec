@@ -108,7 +108,7 @@ License:        GPLv3+ and LGPLv3+
 URL:            http://www.samba.org/
 
 # This is a xz recompressed file of https://ftp.samba.org/pub/samba/samba-%%{version}%%{pre_release}.tar.gz
-Source0:        samba-%{version}%{pre_release}.tar.xz
+Source0:        samba-%{version}%{pre_release}.tar.gz
 Source1:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.asc
 Source2:        gpgkey-52FBC0B86D954B0843324CDC6F33915B6568B7EA.gpg
 
@@ -121,9 +121,6 @@ Source14:       samba.pamd
 
 Source200:      README.dc
 Source201:      README.downgrade
-
-Patch0:         samba-4.9.0-test_tldap.patch
-Patch1:         samba-4.8.3-vscript.local.patch
 
 Requires(pre): /usr/sbin/groupadd
 Requires(post): systemd
@@ -794,7 +791,7 @@ and use CTDB instead.
 
 
 %prep
-xzcat %{SOURCE0} | gpgv2 --quiet --keyring %{SOURCE2} %{SOURCE1} -
+zcat %{SOURCE0} | gpgv2 --quiet --keyring %{SOURCE2} %{SOURCE1} -
 %autosetup -n samba-%{version}%{pre_release} -p1
 
 %build
@@ -3825,6 +3822,10 @@ fi
 %endif # with_clustering_support
 
 %changelog
+- Sun Sep 9 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.0rc5-0
+- Update to 4.9.0rc5
+- Remove obsolete patches
+
 * Wed Aug 01 2018 Andreas Schneider <asn@redhat.com> - 4.9.0rc2-2
 - Add some spec file cleanups
 
