@@ -5429,7 +5429,7 @@ fi
 
 * Wed Dec 17 2003 Felipe Alfaro Solana <felipe_alfaro@linuxmail.org> 3.0.1-1
 - Update to 3.0.1
-- Removed testparm patch as it's already merged
+- Removed testparm patch as it is already merged
 - Removed Samba.7* man pages
 - Fixed .buildroot patch
 - Fixed .pie patch
@@ -5638,14 +5638,14 @@ fi
 - Add patch from Jeremy Allison to fix IA64 alignment problems (#51497)
 
 * Mon Aug 13 2001 Trond Eivind Glomsrød <teg@redhat.com>
-- Do not include smbpasswd in samba, it's in samba-common (#51598)
-- Add a disabled "obey pam restrictions" statement - it's not
+- Do not include smbpasswd in samba, it is in samba-common (#51598)
+- Add a disabled "obey pam restrictions" statement - it is not
   active, as we use encrypted passwords, but if the admin turns
   encrypted passwords off the choice is available. (#31351)
 
 * Wed Aug  8 2001 Trond Eivind Glomsrød <teg@redhat.com>
 - Use /var/cache/samba instead of /var/lock/samba
-- Remove "domain controller" keyword from smb.conf, it's
+- Remove "domain controller" keyword from smb.conf, it is
   deprecated (from #13704)
 - Sync some examples with smb.conf.default
 - Fix password synchronization (#16987)
@@ -5671,7 +5671,7 @@ fi
 
 * Tue Jun 19 2001 Trond Eivind Glomsrød <teg@redhat.com>
 - (these changes are from the non-head version)
-- Do not include /usr/sbin/samba, it's the same as the initscript
+- Do not include /usr/sbin/samba, it is the same as the initscript
 - unset TMPDIR, as samba ca not write into a TMPDIR owned
   by root (#41193)
 - Add pidfile: lines for smbd and nmbd and a config: line
@@ -5726,8 +5726,8 @@ fi
 * Mon Mar 26 2001 Nalin Dahyabhai <nalin@redhat.com>
 - tweak the PAM code some more to try to do a setcred() after initgroups()
 - pull in all of the optflags on i386 and sparc
-- do not explicitly enable Kerberos support -- it's only used for password
-  checking, and if PAM is enabled it's a no-op anyway
+- do not explicitly enable Kerberos support -- it is only used for password
+  checking, and if PAM is enabled it is a no-op anyway
 
 * Mon Mar  5 2001 Tim Waugh <twaugh@redhat.com>
 - exit successfully from preun script (bug #30644).
