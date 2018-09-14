@@ -739,7 +739,7 @@ necessary to communicate to the Winbind Daemon
 ### CTDB
 %if %with_clustering_support
 %package -n ctdb
-Summary: A Clustered Database based on Samba's Trivial Database (TDB)
+Summary: A Clustered Database based on Samba Trivial Database (TDB)
 
 Requires: %{name}-client-libs = %{samba_depver}
 
@@ -4473,7 +4473,7 @@ fi
 * Mon Jul 15 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.7-2
 - resolves: #972692 - Build with PIE and full RELRO.
 - resolves: #884169 - Add explicit dependencies suggested by rpmdiff.
-- resolves: #981033 - Local user's krb5cc deleted by winbind.
+- resolves: #981033 - Local user krb5cc deleted by winbind.
 - resolves: #984331 - Fix samba-common tmpfiles configuration file in wrong
                       directory.
 
@@ -5257,7 +5257,7 @@ fi
 
 * Mon Nov 22 2004 Than Ngo <than@redhat.com> 3.0.8-4
 - fix unresolved symbols in libsmbclient which caused applications
-  such as KDE's konqueror to fail when accessing smb:// URLs. #139894
+  such as KDE konqueror to fail when accessing smb:// URLs. #139894
 
 * Thu Nov 11 2004 Jay Fenlason <fenlason@redhat.com> 3.0.8-3.1
 - Rescue the install.mount.smbfs patch from Juanjo Villaplana
@@ -5278,7 +5278,7 @@ fi
 
 * Tue Oct 26 2004 Jay Fenlason <fenlason@redhat.com> 3.0.8-0.pre2
 - New upstream version
-- Add Nalin's signing-shortkey patch.
+- Add Nalin signing-shortkey patch.
 
 * Tue Oct 19 2004 Jay Fenlason <fenlason@redhat.com> 3.0.8-0.pre1.3
 - disable the -salt patch, because it causes undefined references in
@@ -5287,7 +5287,7 @@ fi
 * Fri Oct 15 2004 Jay Fenlason <fenlason@redhat.com> 3.0.8-0.pre1.2
 - Re-enable the x_fclose patch that was accidentally disabled
   in 3.0.8-0.pre1.1.  This closes #135832
-- include Nalin's -fqdn and -salt patches.
+- include Nalin -fqdn and -salt patches.
 
 * Wed Oct 13 2004 Jay Fenlason <fenlason@redhat.com> 3.0.8-0.pre1.1
 - Include disable-sendfile patch to default "use sendfile" to "no".
@@ -5762,7 +5762,7 @@ fi
 - clarify smbpasswd man page (#23370)
 - build with LFS support (#22388)
 - avoid extraneous pam error messages (#10666)
-- add Urban Widmark's bug fixes for smbmount (#19623)
+- add Urban Widmark bug fixes for smbmount (#19623)
 - fix setgid directory modes (#11911)
 - split swat into subpackage (#19706)
 
@@ -5936,7 +5936,7 @@ fi
 - update to 2.0.5
 - fix mount.smb - smbmount options changed again.........
 - fix postun. oops.
-- update some stuff from the samba team's spec file.
+- update some stuff from the samba team spec file.
 
 * Fri Jun 18 1999 Bill Nottingham <notting@redhat.com>
 - split off clients into separate package
@@ -6011,7 +6011,7 @@ fi
   samba is still running)
 - the %%postun and %%preun should only exectute if this is the final
   removal
-- migrated %%triggerpostun from Red Hat's samba package to work around
+- migrated %%triggerpostun from Red Hat samba package to work around
   packaging problems in some Red Hat samba releases
 
 * Sun Apr 26 1998 John H Terpstra <jht@samba.anu.edu.au>
