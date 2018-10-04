@@ -8,7 +8,7 @@
 
 %define main_release 0
 
-%define samba_version 4.9.0
+%define samba_version 4.9.1
 %define talloc_version 2.1.14
 %define tdb_version 1.3.16
 %define tevent_version 0.9.37
@@ -107,8 +107,7 @@ Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+.
 URL:            http://www.samba.org/
 
-# This is a xz recompressed file of https://ftp.samba.org/pub/samba/samba-%%{version}%%{pre_release}.tar.gz
-Source0:        https://ftp.samba.org/pub/dist/samba/samba-%{version}%{pre_release}.tar.gz
+Source0:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.gz
 Source1:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.asc
 Source2:        gpgkey-52FBC0B86D954B0843324CDC6F33915B6568B7EA.gpg
 
@@ -3815,8 +3814,16 @@ fi
 %endif # with_clustering_support
 
 %changelog
-* Sat Sep 15 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.0-0
-- Update to Smaba 4.9.0
+* Thu Oct 4 2018 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.1-0
+- Roll back release to avoid overlap with Fedora
+- Whitespace sanitize .spec
+- Use .tar.gz, not .tar.xz
+
+* Mon Sep 24 2018 Andreas Schneider <asn@redhat.com> - 4.9.1-1
+- Update to Samba 4.9.1
+
+* Thu Sep 13 2018 Guenther Deschner <gdeschner@redhat.com> - 4.9.0-4
+- Update to Samba 4.9.0
 
 * Thu Sep 06 2018 Andreas Schneider <asn@redhat.com> - 4.9.0rc5-3
 - Update to Samba 4.9.0rc5
