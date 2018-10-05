@@ -6,6 +6,12 @@
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
 
+%if 0%{?fedora} || 0%{?rhel} > 7
+%global with_python3 1
+%else
+%global with_python3 0
+%endif
+
 %define main_release 0
 
 %define samba_version 4.9.1
@@ -67,9 +73,9 @@
 %global with_mitkrb5 1
 %global with_dc 1
 
-%if 0%{?rhel}
-%global with_dc 0
-%endif
+#%if 0%{?rhel}
+#%global with_dc 0
+#%endif
 
 %if %{with testsuite}
 %global with_dc 1
@@ -187,7 +193,9 @@ BuildRequires: perl(ExtUtils::MakeMaker)
 BuildRequires: perl(Parse::Yapp)
 BuildRequires: popt-devel
 BuildRequires: python2-devel
+%if 0%{?with_python3}
 BuildRequires: python3-devel
+%endif
 %if %{with_dc}
 BuildRequires: python2-dns
 # Add python2-iso8601 to avoid that the
@@ -195,7 +203,9 @@ BuildRequires: python2-dns
 BuildRequires: python2-iso8601
 # Add python3-iso8601 to avoid that the
 # version in Samba is being packaged
+%if 0%{?with_python3}
 BuildRequires: python3-iso8601
+%endif
 %endif # with_dc
 BuildRequires: quota-devel
 BuildRequires: readline-devel
@@ -224,7 +234,9 @@ BuildRequires: krb5-server >= %{required_mit_krb5}
 
 # Required by samba-tool to run tests
 BuildRequires: python2-crypto
+%if 0%{?with_python3}
 BuildRequires: python3-crypto
+%endif
 %endif
 
 # pidl requirements
@@ -232,11 +244,15 @@ BuildRequires: perl(Parse::Yapp)
 
 BuildRequires: libtalloc-devel >= %{talloc_version}
 BuildRequires: python2-talloc-devel >= %{talloc_version}
+%if 0%{?with_python3}
 BuildRequires: python3-talloc-devel >= %{talloc_version}
+%endif
 
 BuildRequires: libtevent-devel >= %{tevent_version}
 BuildRequires: python2-tevent >= %{tevent_version}
+%if 0%{?with_python3}
 BuildRequires: python3-tevent >= %{tevent_version}
+%endif
 
 BuildRequires: libtdb-devel >= %{tdb_version}
 BuildRequires: python2-tdb >= %{tdb_version}
@@ -244,15 +260,19 @@ BuildRequires: python3-tdb >= %{tdb_version}
 
 BuildRequires: libldb-devel >= %{ldb_version}
 BuildRequires: python2-ldb-devel >= %{ldb_version}
+%if 0%{?with_python3}
 BuildRequires: python3-ldb-devel >= %{ldb_version}
+%endif
 
 %if %{with testsuite}
 BuildRequires: ldb-tools
 BuildRequires: tdb-tools
 BuildRequires: python2-pygpgme
 BuildRequires: python2-markdown
+%if 0%{?with_python3}
 BuildRequires: python3-pygpgme
 BuildRequires: python3-markdown
+%endif
 %endif
 
 %if %{with_dc}
@@ -370,10 +390,12 @@ Requires: python2-crypto
 
 ### Note that samba-dc right now cannot be used with Python 3
 ### so we should make sure it does use python2 explicitly
+%if 0%{?with_python3}
 %if 0
 Requires: python3-crypto
 Requires: python3-%{name} = %{samba_depver}
 Requires: python3-%{name}-dc = %{samba_depver}
+%endif
 %endif
 Requires: krb5-server >= %{required_mit_krb5}
 
@@ -565,6 +587,7 @@ The python2-%{name}-dc package contains the Python libraries needed by programs
 to manage Samba AD.
 %endif
 
+%if 0%{?with_python3}
 ### PYTHON3
 %package -n python3-%{name}
 Summary: Samba Python3 libraries
@@ -600,6 +623,7 @@ Requires: python3-%{name} = %{samba_depver}
 %description -n python3-samba-dc
 The python3-%{name}-dc package contains the Python libraries needed by programs
 to manage Samba AD.
+%endif
 %endif
 
 ### PIDL
@@ -888,7 +912,11 @@ export PYTHON=%{__python2}
 	--systemd-nmb-extra=%{_systemd_extra} \
 	--systemd-winbind-extra=%{_systemd_extra} \
 	--systemd-samba-extra=%{_systemd_extra} \
+%if 0%{?with_python3}
         --extra-python=%{__python3}
+%else
+	
+%endif
 
 make %{?_smp_mflags}
 
