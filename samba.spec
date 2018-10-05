@@ -3846,6 +3846,8 @@ fi
 - Roll back release to avoid overlap with Fedora
 - Whitespace sanitize .spec
 - Use .tar.gz, not .tar.xz
+- Re-activate "with_python3" settings
+- Activate samba-dc packages for RHEL
 
 * Mon Sep 24 2018 Andreas Schneider <asn@redhat.com> - 4.9.1-1
 - Update to Samba 4.9.1
