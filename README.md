@@ -1,7 +1,7 @@
-samba-4.4.x-srpm
+samba-4.9.x-srpm
 ================
 
-SRPM building tools for Samba 4.4 on Fedora. Samba 4.x compatibilies
+SRPM building tools for Samba 4.9 on Fedora. Samba 4.x compatibilies
 are no longer with RHEL or CentOS, due to gnutls and other updates.
 
 These are built from Fedora rawhide releases, and need to be built and
@@ -12,7 +12,7 @@ installed in the following order.
 	libldb-srpm
 	libtevent-srpm
 
-	samba-4.4.x-srpm
+	samba-4.9.x-srpm
 
 The "make" command will do these steps.
 
