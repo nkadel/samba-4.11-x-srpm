@@ -3851,6 +3851,9 @@ fi
 - Re-activate "with_python3" settings
 - Activate samba-dc packages for RHEL
 
+* Wed Sep 26 2018 Alexander Bokovoy <abokovoy@redhat.com> - 4.9.1-2
+- Package ctdb/doc/examples
+
 * Mon Sep 24 2018 Andreas Schneider <asn@redhat.com> - 4.9.1-1
 - Update to Samba 4.9.1
 
