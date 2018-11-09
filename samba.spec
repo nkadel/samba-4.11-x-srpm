@@ -14,7 +14,7 @@
 
 %define main_release 0
 
-%define samba_version 4.9.1
+%define samba_version 4.9.2
 %define talloc_version 2.1.14
 %define tdb_version 1.3.16
 %define tevent_version 0.9.37
@@ -114,8 +114,8 @@ License:        GPLv3+ and LGPLv3+
 URL:            http://www.samba.org/
 
 # This is a xz recompressed file of https://ftp.samba.org/pub/samba/samba-%%{version}%%{pre_release}.tar.gz
-Source0:        samba-%{version}%{pre_release}.tar.xz
-#Source0:        https://www.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.gz
+#Source0:        samba-%{version}%{pre_release}.tar.xz
+Source0:        https://www.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.gz
 Source1:        https://www.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.asc
 Source2:        gpgkey-52FBC0B86D954B0843324CDC6F33915B6568B7EA.gpg
 
@@ -128,7 +128,7 @@ Source14:       samba.pamd
 
 Source201:      README.downgrade
 
-Patch0:         samba-4.9.0rc5-stack-protector.patch
+#Patch0:         samba-4.9.0rc5-stack-protector.patch
 
 Requires(pre): /usr/sbin/groupadd
 Requires(post): systemd
@@ -815,7 +815,8 @@ and use CTDB instead.
 
 
 %prep
-xzcat %{SOURCE0} | gpgv2 --quiet --keyring %{SOURCE2} %{SOURCE1} -
+#xzcat %{SOURCE0} | gpgv2 --quiet --keyring %{SOURCE2} %{SOURCE1} -
+zcat %{SOURCE0} | gpgv2 --quiet --keyring %{SOURCE2} %{SOURCE1} -
 %autosetup -n samba-%{version}%{pre_release} -p1
 
 %build
@@ -3844,6 +3845,9 @@ fi
 %endif # with_clustering_support
 
 %changelog
+* Thu Nov 8 2018 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.2-0
+- Update to 4.9.2
+
 * Thu Oct 4 2018 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.1-0
 - Roll back release to avoid overlap with Fedora
 - Whitespace sanitize .spec
