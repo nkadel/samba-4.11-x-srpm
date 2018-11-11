@@ -32,7 +32,7 @@
 # Enables PIE and full RELRO protection
 %global _hardened_build 1
 # Samba cannot be linked with -Wl,-z,defs (from hardened build config)
-# For exmple the samba-cluster-support library is marked to allow undefined
+# For example the samba-cluster-support library is marked to allow undefined
 # symbols in the samba build.
 #
 # https://src.fedoraproject.org/rpms/redhat-rpm-config/blob/master/f/buildflags.md
