@@ -8,8 +8,10 @@
 
 %if 0%{?fedora} || 0%{?rhel} > 7
 %global with_python3 1
+%global with_dnf 1
 %else
 %global with_python3 0
+%global with_dnf 0
 %endif
 
 %define main_release 0
@@ -252,7 +254,9 @@ BuildRequires: python3-tevent >= %{tevent_version}
 
 BuildRequires: libtdb-devel >= %{tdb_version}
 BuildRequires: python2-tdb >= %{tdb_version}
+%if 0%{?with_python3}
 BuildRequires: python3-tdb >= %{tdb_version}
+%endif
 
 BuildRequires: libldb-devel >= %{ldb_version}
 BuildRequires: python2-ldb-devel >= %{ldb_version}
@@ -269,7 +273,7 @@ BuildRequires: python2-markdown
 BuildRequires: python3-pygpgme
 BuildRequires: python3-markdown
 %endif
-%endif
+%endif # testsuite
 
 %if %{with_dc}
 BuildRequires: krb5-server >= %{required_mit_krb5}
@@ -793,7 +797,9 @@ Summary: CTDB clustered database test suite
 Requires: samba-client-libs = %{samba_depver}
 
 Requires: ctdb = %{samba_depver}
+%if %{with_dnf}
 Recommends: nc
+%endif # with_dnf
 
 Provides: ctdb-devel = %{samba_depver}
 Obsoletes: ctdb-devel < %{samba_depver}
@@ -2326,6 +2332,7 @@ fi
 %{python2_sitearch}/samba/tests/xattr.py*
 %endif # rhel
 
+%if %{with_python3}
 ### PYTHON3
 %files -n python3-%{name}
 %dir %{python3_sitearch}/samba/
@@ -2586,7 +2593,7 @@ fi
 %{python3_sitearch}/samba/provision/__pycache__/sambadns.*.pyc
 
 %{python3_sitearch}/samba/remove_dc.py
-%endif
+%endif # with_dc
 
 %files -n python3-%{name}-test
 %dir %{python3_sitearch}/samba/tests
@@ -2897,6 +2904,7 @@ fi
 %{python3_sitearch}/samba/xattr.py
 %{python3_sitearch}/samba/xattr_native.*.so
 %{python3_sitearch}/samba/xattr_tdb.*.so
+%endif # with_python3
 
 ### TEST
 %files test
@@ -3849,6 +3857,7 @@ fi
 - Update to 4.9.2
 - Update ldb_version to 1.4.3
 - Discard stack-protector patch as already included
+- Add with_dnf
 
 * Thu Oct 4 2018 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.1-0
 - Roll back release to avoid overlap with Fedora
