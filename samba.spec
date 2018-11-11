@@ -109,8 +109,7 @@ Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+
 URL:            http://www.samba.org/
 
-# This is a xz recompressed file of https://ftp.samba.org/pub/samba/samba-%%{version}%%{pre_release}.tar.gz
-#Source0:        samba-%{version}%{pre_release}.tar.xz
+# Stop repackaging as a .xz file, just use the upstream tarball
 Source0:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.gz
 Source1:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.asc
 Source2:        gpgkey-52FBC0B86D954B0843324CDC6F33915B6568B7EA.gpg
@@ -188,17 +187,19 @@ BuildRequires: perl(Test::More)
 BuildRequires: perl(ExtUtils::MakeMaker)
 BuildRequires: perl(Parse::Yapp)
 BuildRequires: popt-devel
+%if 0%{?rhel}
 BuildRequires: python2-devel
+%else
+BuildRequires: python-devel
+%endif # rhel
 %if 0%{?with_python3}
 BuildRequires: python3-devel
 %endif
 %if %{with_dc}
 BuildRequires: python2-dns
-# Add python2-iso8601 to avoid that the
-# version in Samba is being packaged
+# Add python2-iso8601 to avoid packaging the version in SAmba
 BuildRequires: python2-iso8601
-# Add python3-iso8601 to avoid that the
-# version in Samba is being packaged
+# Add python3-iso8601 to avoid packaging the version in SAmba
 %if 0%{?with_python3}
 BuildRequires: python3-iso8601
 %endif
@@ -209,7 +210,6 @@ BuildRequires: rpcgen
 BuildRequires: rpcsvc-proto-devel
 BuildRequires: sed
 BuildRequires: xfsprogs-devel
-BuildRequires: xz
 BuildRequires: zlib-devel >= 1.2.3
 
 BuildRequires: pkgconfig(libsystemd)
@@ -809,7 +809,6 @@ and use CTDB instead.
 
 
 %prep
-#xzcat %{SOURCE0} | gpgv2 --quiet --keyring %{SOURCE2} %{SOURCE1} -
 zcat %{SOURCE0} | gpgv2 --quiet --keyring %{SOURCE2} %{SOURCE1} -
 %autosetup -n samba-%{version}%{pre_release} -p1
 
