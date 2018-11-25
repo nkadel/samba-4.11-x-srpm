@@ -8,8 +8,10 @@
 
 %if 0%{?fedora} || 0%{?rhel} > 7
 %global with_python3 1
+%global with_dc 1
 %else
 %global with_python3 0
+%global with_dc 0
 %endif
 
 %define main_release 0
@@ -71,7 +73,6 @@
 %endif
 
 %global with_mitkrb5 1
-%global with_dc 1
 
 %if %{with testsuite}
 %global with_dc 1
@@ -158,6 +159,7 @@ Obsoletes: samba-swat < %{samba_depver}
 Provides: samba4-swat = %{samba_depver}
 Obsoletes: samba4-swat < %{samba_depver}
 
+BuildRequires: /usr/bin/pathfix.py
 BuildRequires: gcc
 BuildRequires: avahi-devel
 BuildRequires: cups-devel
@@ -175,7 +177,9 @@ BuildRequires: libarchive-devel
 BuildRequires: libattr-devel
 BuildRequires: libcap-devel
 BuildRequires: libcmocka-devel
+%if 0%{?fedora} || 0%{?rhel} > 7
 BuildRequires: libnsl2-devel
+%endif # fedora || rhel > 7
 BuildRequires: libtirpc-devel
 BuildRequires: libuuid-devel
 BuildRequires: libxslt
@@ -206,8 +210,11 @@ BuildRequires: python3-iso8601
 %endif # with_dc
 BuildRequires: quota-devel
 BuildRequires: readline-devel
+%if 0%{?fedora} || 0%{?rhel} > 7
 BuildRequires: rpcgen
 BuildRequires: rpcsvc-proto-devel
+%else
+%endif # fedora || rhel > 7
 BuildRequires: sed
 BuildRequires: xfsprogs-devel
 BuildRequires: zlib-devel >= 1.2.3
@@ -3851,7 +3858,11 @@ fi
 %endif # with_clustering_support
 
 %changelog
-* Thu Nov 8 2018 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.2-0
+* Sun Nov 25 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.2-0.1
+- Re-enable RHEL 7 by disabling with_dc, altering BuildRequires
+- Use sed script instead of pathfix.py on RHEL 7
+
+* Thu Nov 8 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.2-0
 - Update to 4.9.2
 - Update ldb_version to 1.4.3
 - Discard stack-protector patch as already included
