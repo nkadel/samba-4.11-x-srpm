@@ -8,10 +8,8 @@
 
 %if 0%{?fedora} || 0%{?rhel} > 7
 %global with_python3 1
-%global with_dnf 1
 %else
 %global with_python3 0
-%global with_dnf 0
 %endif
 
 %define main_release 0
@@ -797,9 +795,9 @@ Summary: CTDB clustered database test suite
 Requires: samba-client-libs = %{samba_depver}
 
 Requires: ctdb = %{samba_depver}
-%if %{with_dnf}
+%if 0%{?fedora} || 0%{?rhel} > 7
 Recommends: nc
-%endif # with_dnf
+%endif
 
 Provides: ctdb-devel = %{samba_depver}
 Obsoletes: ctdb-devel < %{samba_depver}
