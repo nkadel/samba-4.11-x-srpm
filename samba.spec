@@ -18,7 +18,7 @@
 %define talloc_version 2.1.14
 %define tdb_version 1.3.16
 %define tevent_version 0.9.37
-%define ldb_version 1.4.2
+%define ldb_version 1.4.3
 # This should be rc1 or nil
 %define pre_release %nil
 
@@ -32,7 +32,7 @@
 # Enables PIE and full RELRO protection
 %global _hardened_build 1
 # Samba cannot be linked with -Wl,-z,defs (from hardened build config)
-# For exmple the samba-cluster-support library is marked to allow undefined
+# For example the samba-cluster-support library is marked to allow undefined
 # symbols in the samba build.
 #
 # https://src.fedoraproject.org/rpms/redhat-rpm-config/blob/master/f/buildflags.md
@@ -73,10 +73,6 @@
 %global with_mitkrb5 1
 %global with_dc 1
 
-#%if 0%{?rhel}
-#%global with_dc 0
-#%endif
-
 %if %{with testsuite}
 %global with_dc 1
 %endif
@@ -113,10 +109,9 @@ Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+
 URL:            http://www.samba.org/
 
-# This is a xz recompressed file of https://ftp.samba.org/pub/samba/samba-%%{version}%%{pre_release}.tar.gz
-#Source0:        samba-%{version}%{pre_release}.tar.xz
-Source0:        https://www.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.gz
-Source1:        https://www.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.asc
+# Stop repackaging as a .xz file, just use the upstream tarball
+Source0:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.gz
+Source1:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.asc
 Source2:        gpgkey-52FBC0B86D954B0843324CDC6F33915B6568B7EA.gpg
 
 # Red Hat specific replacement-files
@@ -127,8 +122,6 @@ Source13:       pam_winbind.conf
 Source14:       samba.pamd
 
 Source201:      README.downgrade
-
-#Patch0:         samba-4.9.0rc5-stack-protector.patch
 
 Requires(pre): /usr/sbin/groupadd
 Requires(post): systemd
@@ -194,17 +187,19 @@ BuildRequires: perl(Test::More)
 BuildRequires: perl(ExtUtils::MakeMaker)
 BuildRequires: perl(Parse::Yapp)
 BuildRequires: popt-devel
+%if 0%{?rhel}
 BuildRequires: python2-devel
+%else
+BuildRequires: python-devel
+%endif # rhel
 %if 0%{?with_python3}
 BuildRequires: python3-devel
 %endif
 %if %{with_dc}
 BuildRequires: python2-dns
-# Add python2-iso8601 to avoid that the
-# version in Samba is being packaged
+# Add python2-iso8601 to avoid packaging the version in SAmba
 BuildRequires: python2-iso8601
-# Add python3-iso8601 to avoid that the
-# version in Samba is being packaged
+# Add python3-iso8601 to avoid packaging the version in SAmba
 %if 0%{?with_python3}
 BuildRequires: python3-iso8601
 %endif
@@ -215,7 +210,6 @@ BuildRequires: rpcgen
 BuildRequires: rpcsvc-proto-devel
 BuildRequires: sed
 BuildRequires: xfsprogs-devel
-BuildRequires: xz
 BuildRequires: zlib-devel >= 1.2.3
 
 BuildRequires: pkgconfig(libsystemd)
@@ -258,7 +252,9 @@ BuildRequires: python3-tevent >= %{tevent_version}
 
 BuildRequires: libtdb-devel >= %{tdb_version}
 BuildRequires: python2-tdb >= %{tdb_version}
+%if 0%{?with_python3}
 BuildRequires: python3-tdb >= %{tdb_version}
+%endif
 
 BuildRequires: libldb-devel >= %{ldb_version}
 BuildRequires: python2-ldb-devel >= %{ldb_version}
@@ -275,7 +271,7 @@ BuildRequires: python2-markdown
 BuildRequires: python3-pygpgme
 BuildRequires: python3-markdown
 %endif
-%endif
+%endif # testsuite
 
 %if %{with_dc}
 BuildRequires: krb5-server >= %{required_mit_krb5}
@@ -817,7 +813,6 @@ and use CTDB instead.
 
 
 %prep
-#xzcat %{SOURCE0} | gpgv2 --quiet --keyring %{SOURCE2} %{SOURCE1} -
 zcat %{SOURCE0} | gpgv2 --quiet --keyring %{SOURCE2} %{SOURCE1} -
 %autosetup -n samba-%{version}%{pre_release} -p1
 
@@ -1537,6 +1532,7 @@ fi
 %{_libdir}/samba/libcli-smb-common-samba4.so
 %{_libdir}/samba/libcli-spoolss-samba4.so
 %{_libdir}/samba/libcliauth-samba4.so
+%{_libdir}/samba/libcmdline-contexts-samba4.so
 %{_libdir}/samba/libcmdline-credentials-samba4.so
 %{_libdir}/samba/libcommon-auth-samba4.so
 %{_libdir}/samba/libctdb-event-client-samba4.so
@@ -1632,6 +1628,7 @@ fi
 ### COMMON-libs
 %files common-libs
 # common libraries
+%{_libdir}/samba/libpopt-samba3-cmdline-samba4.so
 %{_libdir}/samba/libpopt-samba3-samba4.so
 %if %{with_intel_aes_accel}
 %{_libdir}/samba/libaesni-intel-samba4.so
@@ -2194,6 +2191,7 @@ fi
 %{python2_sitearch}/samba/tests/auth_log_samlogon.py*
 %dir %{python2_sitearch}/samba/tests/blackbox
 %{python2_sitearch}/samba/tests/blackbox/__init__.py*
+%{python2_sitearch}/samba/tests/blackbox/bug13653.py*
 %{python2_sitearch}/samba/tests/blackbox/check_output.py*
 %{python2_sitearch}/samba/tests/blackbox/ndrdump.py*
 %{python2_sitearch}/samba/tests/blackbox/samba_dnsupdate.py*
@@ -2332,6 +2330,7 @@ fi
 %{python2_sitearch}/samba/tests/xattr.py*
 %endif # rhel
 
+%if %{with_python3}
 ### PYTHON3
 %files -n python3-%{name}
 %dir %{python3_sitearch}/samba/
@@ -2592,7 +2591,7 @@ fi
 %{python3_sitearch}/samba/provision/__pycache__/sambadns.*.pyc
 
 %{python3_sitearch}/samba/remove_dc.py
-%endif
+%endif # with_dc
 
 %files -n python3-%{name}-test
 %dir %{python3_sitearch}/samba/tests
@@ -2698,6 +2697,8 @@ fi
 %{python3_sitearch}/samba/tests/blackbox/__init__.py
 %dir %{python3_sitearch}/samba/tests/blackbox/__pycache__
 %{python3_sitearch}/samba/tests/blackbox/__pycache__/__init__.*.pyc
+%{python3_sitearch}/samba/tests/blackbox/__pycache__/bug13653.cpython-37.opt-1.pyc
+%{python3_sitearch}/samba/tests/blackbox/__pycache__/bug13653.cpython-37.pyc
 %{python3_sitearch}/samba/tests/blackbox/__pycache__/check_output.*.pyc
 %{python3_sitearch}/samba/tests/blackbox/__pycache__/ndrdump.*.pyc
 %{python3_sitearch}/samba/tests/blackbox/__pycache__/samba_dnsupdate.*.pyc
@@ -2705,6 +2706,7 @@ fi
 %{python3_sitearch}/samba/tests/blackbox/__pycache__/traffic_learner.*.pyc
 %{python3_sitearch}/samba/tests/blackbox/__pycache__/traffic_replay.*.pyc
 %{python3_sitearch}/samba/tests/blackbox/__pycache__/traffic_summary.*.pyc
+%{python3_sitearch}/samba/tests/blackbox/bug13653.py
 %{python3_sitearch}/samba/tests/blackbox/check_output.py
 %{python3_sitearch}/samba/tests/blackbox/ndrdump.py
 %{python3_sitearch}/samba/tests/blackbox/samba_dnsupdate.py
@@ -2900,6 +2902,7 @@ fi
 %{python3_sitearch}/samba/xattr.py
 %{python3_sitearch}/samba/xattr_native.*.so
 %{python3_sitearch}/samba/xattr_tdb.*.so
+%endif # with_python3
 
 ### TEST
 %files test
@@ -3601,6 +3604,7 @@ fi
 %{_datadir}/ctdb/tests/simple/56_replicated_transaction_recovery.sh
 %{_datadir}/ctdb/tests/simple/58_ctdb_restoredb.sh
 %{_datadir}/ctdb/tests/simple/60_recoverd_missing_ip.sh
+%{_datadir}/ctdb/tests/simple/69_recovery_resurrect_deleted.sh
 %{_datadir}/ctdb/tests/simple/70_recoverpdbbyseqnum.sh
 %{_datadir}/ctdb/tests/simple/71_ctdb_wipedb.sh
 %{_datadir}/ctdb/tests/simple/72_update_record_persistent.sh
@@ -3849,6 +3853,9 @@ fi
 %changelog
 * Thu Nov 8 2018 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.2-0
 - Update to 4.9.2
+- Update ldb_version to 1.4.3
+- Discard stack-protector patch as already included
+- Add with_dnf
 
 * Thu Oct 4 2018 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.1-0
 - Roll back release to avoid overlap with Fedora
