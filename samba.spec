@@ -946,6 +946,7 @@ for i in %{buildroot}%{_bindir} %{buildroot}%{_sbindir} ; do
 		-exec sed -i -e '1 s|^#!.*\bpython[^ ]*|#!%{__python2}|' {} \;
 done
 
+%if 0%{?with_python3}
 # FIXME: Remove Python3 files with bad syntax
 # (needs to be done after install; before that the py2 and py3 versions
 #  are the same)
@@ -963,6 +964,7 @@ for file in $filenames; do
         rm "$filename"
     fi
 done
+%endif # with_python3
 
 install -d -m 0755 %{buildroot}/usr/{sbin,bin}
 install -d -m 0755 %{buildroot}%{_libdir}/security
