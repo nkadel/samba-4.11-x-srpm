@@ -111,8 +111,8 @@ License:        GPLv3+ and LGPLv3+
 URL:            http://www.samba.org/
 
 # Stop repackaging as a .xz file, just use the upstream tarball
-Source0:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.gz
-Source1:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.asc
+Source0:        https://www.samba.org/ftp/samba/samba-%{version}%{pre_release}.tar.gz
+Source1:        https://www.samba.org/ftp/samba/samba-%{version}%{pre_release}.tar.asc
 Source2:        gpgkey-52FBC0B86D954B0843324CDC6F33915B6568B7EA.gpg
 
 # Red Hat specific replacement-files
