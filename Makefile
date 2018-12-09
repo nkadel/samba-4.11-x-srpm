@@ -75,11 +75,11 @@ install:: $(MOCKS)
 	done
 
 clean::
-	rm -rf $(MOCKS)
+	rm -rf */
 	rm -rf rpmbuild
 	rm -f *.out
-	rm -f *.rpm
 
 realclean distclean:: clean
+	rm -f *.rpm
 
 FORCE:
