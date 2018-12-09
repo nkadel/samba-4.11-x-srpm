@@ -16,7 +16,7 @@
 
 %define main_release 0
 
-%define samba_version 4.9.2
+%define samba_version 4.9.3
 %define talloc_version 2.1.14
 %define tdb_version 1.3.16
 %define tevent_version 0.9.37
@@ -72,8 +72,6 @@
 %global libwbc_alternatives_suffix -64
 %endif
 
-%global with_mitkrb5 1
-
 %if %{with testsuite}
 %global with_dc 1
 %endif
@@ -122,6 +120,7 @@ Source12:       smb.conf.example
 Source13:       pam_winbind.conf
 Source14:       samba.pamd
 
+Source200:      README.dc
 Source201:      README.downgrade
 
 Requires(pre): /usr/sbin/groupadd
@@ -159,7 +158,6 @@ Obsoletes: samba-swat < %{samba_depver}
 Provides: samba4-swat = %{samba_depver}
 Obsoletes: samba4-swat < %{samba_depver}
 
-BuildRequires: /usr/bin/pathfix.py
 BuildRequires: gcc
 BuildRequires: avahi-devel
 BuildRequires: cups-devel
@@ -183,19 +181,17 @@ BuildRequires: libnsl2-devel
 BuildRequires: libtirpc-devel
 BuildRequires: libuuid-devel
 BuildRequires: libxslt
+BuildRequires: lmdb
 BuildRequires: ncurses-devel
 BuildRequires: openldap-devel
 BuildRequires: pam-devel
 BuildRequires: perl-generators
-BuildRequires: perl(Test::More)
+BuildRequires: perl(Archive::Tar)
 BuildRequires: perl(ExtUtils::MakeMaker)
 BuildRequires: perl(Parse::Yapp)
+BuildRequires: perl(Test::More)
 BuildRequires: popt-devel
-%if 0%{?rhel}
 BuildRequires: python2-devel
-%else
-BuildRequires: python-devel
-%endif # rhel
 %if 0%{?with_python3}
 BuildRequires: python3-devel
 %endif
@@ -213,7 +209,6 @@ BuildRequires: readline-devel
 %if 0%{?fedora} || 0%{?rhel} > 7
 BuildRequires: rpcgen
 BuildRequires: rpcsvc-proto-devel
-%else
 %endif # fedora || rhel > 7
 BuildRequires: sed
 BuildRequires: xfsprogs-devel
@@ -240,7 +235,7 @@ BuildRequires: python2-crypto
 %if 0%{?with_python3}
 BuildRequires: python3-crypto
 %endif
-%endif
+%endif # with_dc
 
 # pidl requirements
 BuildRequires: perl(Parse::Yapp)
@@ -272,13 +267,13 @@ BuildRequires: python3-ldb-devel >= %{ldb_version}
 %if %{with testsuite}
 BuildRequires: ldb-tools
 BuildRequires: tdb-tools
-BuildRequires: python2-pygpgme
+BuildRequires: python2-gpg
 BuildRequires: python2-markdown
 %if 0%{?with_python3}
-BuildRequires: python3-pygpgme
+BuildRequires: python3-gpg
 BuildRequires: python3-markdown
 %endif
-%endif # testsuite
+%endif # with testsuite
 
 %if %{with_dc}
 BuildRequires: krb5-server >= %{required_mit_krb5}
@@ -381,8 +376,10 @@ Requires: %{name} = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
 Requires: %{name}-dc-libs = %{samba_depver}
 Requires: %{name}-winbind = %{samba_depver}
-# samb-tool needs tdbbackup
+# samba-tool needs tdbbackup
 Requires: tdb-tools
+# samba-tool needs mdb_copy
+Requires: lmdb
 # samba-tool requirements, explicitly require python2 right now
 Requires: python2
 Requires: python2-%{name} = %{samba_depver}
@@ -401,7 +398,7 @@ Requires: python3-crypto
 Requires: python3-%{name} = %{samba_depver}
 Requires: python3-%{name}-dc = %{samba_depver}
 %endif
-%endif
+%endif # with_python3
 Requires: krb5-server >= %{required_mit_krb5}
 
 Provides: samba4-dc = %{samba_depver}
@@ -592,7 +589,6 @@ The python2-%{name}-dc package contains the Python libraries needed by programs
 to manage Samba AD.
 %endif
 
-%if 0%{?with_python3}
 ### PYTHON3
 %package -n python3-%{name}
 Summary: Samba Python3 libraries
@@ -626,8 +622,7 @@ Requires: python3-%{name} = %{samba_depver}
 %description -n python3-samba-dc
 The python3-%{name}-dc package contains the Python libraries needed by programs
 to manage Samba AD.
-%endif
-%endif
+%endif # with_dc
 
 ### PIDL
 %package pidl
@@ -663,6 +658,7 @@ Requires: libsmbclient = %{samba_depver}
 %if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
+Requires: perl(Archive::Tar)
 
 Provides: samba4-test = %{samba_depver}
 Obsoletes: samba4-test < %{samba_depver}
@@ -863,9 +859,15 @@ export python_LDFLAGS="$(echo %{__global_ldflags} | sed -e 's/-Wl,-z,defs//g')"
 export LDFLAGS="%{__global_ldflags} -fuse-ld=gold"
 
 %if 0%{?rhel}
-# Use Python 2 for the waf buildscript
-pathfix.py -n -p -i %{__python2} buildtools/bin/waf
+# RHEL does not *have* pathfix.py!!!
+
+## Use Python 2 for the waf buildscript
+#pathfix.py -n -p -i %{__python2} buildtools/bin/waf
+#export RHEL_ALLOW_PYTHON2_FOR_BUILD=1
+
+sed -i.python2 "s|^#!/usr/bin/env python|#!/usr/bin/python2|g" buildtools/bin/waf
 export RHEL_ALLOW_PYTHON2_FOR_BUILD=1
+
 %endif # rhel
 
 export PYTHON=%{__python2}
@@ -889,9 +891,8 @@ export PYTHON=%{__python2}
 %if (! %{with_libsmbclient}) || (! %{with_libwbclient})
         --private-libraries=%{_samba_private_libraries} \
 %endif
-%if %{with_mitkrb5}
         --with-system-mitkrb5 \
-%endif
+	--with-experimental-mit-ad-dc \
 %if ! %{with_dc}
         --without-ad-dc \
 %endif
@@ -1037,6 +1038,11 @@ install -m 0644 ctdb/config/ctdb.conf %{buildroot}%{_sysconfdir}/ctdb/ctdb.conf
 %endif
 
 install -m 0644 %{SOURCE201} packaging/README.downgrade
+
+%if ! %{with_dc}
+install -m 0644 %{SOURCE200} packaging/README.dc
+install -m 0644 %{SOURCE200} packaging/README.dc-libs
+%endif
 
 %if %{with_clustering_support}
 install -m 0644 ctdb/config/ctdb.service %{buildroot}%{_unitdir}
@@ -1529,6 +1535,7 @@ fi
 
 %dir %{_libdir}/samba
 %{_libdir}/samba/libCHARSET3-samba4.so
+%{_libdir}/samba/libMESSAGING-SEND-samba4.so
 %{_libdir}/samba/libaddns-samba4.so
 %{_libdir}/samba/libads-samba4.so
 %{_libdir}/samba/libasn1util-samba4.so
@@ -1667,6 +1674,7 @@ fi
 ### DC
 %if %{with_dc}
 %files dc
+
 %{_unitdir}/samba.service
 %{_bindir}/samba-tool
 %{_sbindir}/samba
@@ -1736,8 +1744,10 @@ fi
 %{_mandir}/man8/samba.8*
 %{_mandir}/man8/samba-gpupdate.8*
 %{_mandir}/man8/samba-tool.8*
+%endif # with_dc
 
 ### DC-LIBS
+%if %{with_dc}
 %files dc-libs
 %{_libdir}/samba/libdb-glue-samba4.so
 %{_libdir}/samba/libprocess-model-samba4.so
@@ -1765,7 +1775,9 @@ fi
 %{_libdir}/samba/libdsdb-module-samba4.so
 %{_libdir}/samba/libdsdb-garbage-collect-tombstones-samba4.so
 %{_libdir}/samba/libscavenge-dns-records-samba4.so
+%endif # with_dc
 
+%if %{with_dc}
 ### DC-BIND
 %files dc-bind-dlz
 %attr(770,root,named) %dir /var/lib/samba/bind-dns
@@ -2706,8 +2718,7 @@ fi
 %{python3_sitearch}/samba/tests/blackbox/__init__.py
 %dir %{python3_sitearch}/samba/tests/blackbox/__pycache__
 %{python3_sitearch}/samba/tests/blackbox/__pycache__/__init__.*.pyc
-%{python3_sitearch}/samba/tests/blackbox/__pycache__/bug13653.cpython-37.opt-1.pyc
-%{python3_sitearch}/samba/tests/blackbox/__pycache__/bug13653.cpython-37.pyc
+%{python3_sitearch}/samba/tests/blackbox/__pycache__/bug13653.*.pyc
 %{python3_sitearch}/samba/tests/blackbox/__pycache__/check_output.*.pyc
 %{python3_sitearch}/samba/tests/blackbox/__pycache__/ndrdump.*.pyc
 %{python3_sitearch}/samba/tests/blackbox/__pycache__/samba_dnsupdate.*.pyc
@@ -3860,22 +3871,22 @@ fi
 %endif # with_clustering_support
 
 %changelog
-* Sun Nov 25 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.2-0.1
-- Re-enable RHEL 7 by disabling with_dc, altering BuildRequires
-- Use sed script instead of pathfix.py on RHEL 7
+* Sat Dec 8 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.3-0.1
+- Roll in changes from Fedora 29 release
+- Re-activate hooks for RHEL 7 compilation, especially with_python3 settings
+- Activate conflict with dc packages if compiled with_dc=0
 
-* Thu Nov 8 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.2-0
-- Update to 4.9.2
-- Update ldb_version to 1.4.3
-- Discard stack-protector patch as already included
-- Add with_dnf
+* Tue Nov 27 2018 Guenther Deschner <gdeschner@redhat.com> - 4.9.3-0
+- Update to Samba 4.9.3
+- resolves: #1625449, #1654078 - Security fixes for CVE-2018-14629
+- resolves: #1642545, #1654082 - Security fixes for CVE-2018-16841
+- resolves: #1646377, #1654091 - Security fixes for CVE-2018-16851
+- resolves: #1646386, #1654092 - Security fixes for CVE-2018-16852
+- resolves: #1647246, #1654093 - Security fixes for CVE-2018-16853
+- resolves: #1649278, #1654095 - Security fixes for CVE-2018-16857
 
-* Thu Oct 4 2018 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.1-0
-- Roll back release to avoid overlap with Fedora
-- Whitespace sanitize .spec
-- Use .tar.gz, not .tar.xz
-- Re-activate "with_python3" settings
-- Activate samba-dc packages for RHEL
+* Thu Nov 08 2018 Guenther Deschner <gdeschner@redhat.com> - 4.9.2-0
+- Update to Samba 4.9.2
 
 * Wed Sep 26 2018 Alexander Bokovoy <abokovoy@redhat.com> - 4.9.1-2
 - Package ctdb/doc/examples
