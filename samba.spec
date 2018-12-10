@@ -11,7 +11,7 @@
 %global with_dc 1
 %else
 %global with_python3 0
-%global with_dc 0
+%global with_dc 1
 %endif
 
 %define main_release 0
@@ -112,6 +112,7 @@ URL:            http://www.samba.org/
 Source0:        https://www.samba.org/ftp/samba/samba-%{version}%{pre_release}.tar.gz
 Source1:        https://www.samba.org/ftp/samba/samba-%{version}%{pre_release}.tar.asc
 Source2:        gpgkey-52FBC0B86D954B0843324CDC6F33915B6568B7EA.gpg
+#PAtch: samba-4.9.3-gnutls.patch
 
 # Red Hat specific replacement-files
 Source10:       samba.log
@@ -227,7 +228,8 @@ BuildRequires: libcephfs-devel
 
 %if %{with_dc}
 BuildRequires: bind
-BuildRequires: gnutls-devel >= 3.4.7
+#BuildRequires: gnutls-devel >= 3.4.7
+BuildRequires: gnutls-devel
 BuildRequires: krb5-server >= %{required_mit_krb5}
 
 # Required by samba-tool to run tests
@@ -891,11 +893,14 @@ export PYTHON=%{__python2}
 %if (! %{with_libsmbclient}) || (! %{with_libwbclient})
         --private-libraries=%{_samba_private_libraries} \
 %endif
+%if %{with_dc}
+%if 0%{?fedora} || 0%{?rhel} > 7
         --with-system-mitkrb5 \
 	--with-experimental-mit-ad-dc \
-%if ! %{with_dc}
-        --without-ad-dc \
 %endif
+%else
+        --without-ad-dc \
+%endif # with_dc
 %if ! %{with_vfs_glusterfs}
         --disable-glusterfs \
 %endif
@@ -1684,7 +1689,9 @@ fi
 %{_sbindir}/samba_spnupdate
 %{_sbindir}/samba_upgradedns
 
+%if 0%{?fedora} || 0%{?rhel} > 7
 %{_libdir}/krb5/plugins/kdb/samba.so
+%endif
 
 %{_libdir}/samba/auth/samba4.so
 %{_libdir}/samba/libpac-samba4.so
@@ -1775,6 +1782,24 @@ fi
 %{_libdir}/samba/libdsdb-module-samba4.so
 %{_libdir}/samba/libdsdb-garbage-collect-tombstones-samba4.so
 %{_libdir}/samba/libscavenge-dns-records-samba4.so
+
+%if 0%{?fedora} || 0%{?rhel} > 7
+# Compilation on RHEL 7, with built-in Kerberos, generates distinct libraries
+%else
+%{_libdir}/samba/libHDB-SAMBA4-samba4.so
+%{_libdir}/samba/libasn1-samba4.so.*
+%{_libdir}/samba/libcom_err-samba4.so.*
+%{_libdir}/samba/libgssapi-samba4.so.*
+%{_libdir}/samba/libhcrypto-samba4.so.*
+%{_libdir}/samba/libhdb-samba4.so.*
+%{_libdir}/samba/libheimbase-samba4.so.*
+%{_libdir}/samba/libheimntlm-samba4.so.*
+%{_libdir}/samba/libhx509-samba4.so.*
+%{_libdir}/samba/libkdc-samba4.so.*
+%{_libdir}/samba/libkrb5-samba4.so.*
+%{_libdir}/samba/libroken-samba4.so.*
+%{_libdir}/samba/libwind-samba4.so.*
+%endif #  fedora || rhel > 7
 %endif # with_dc
 
 %if %{with_dc}
@@ -2970,10 +2995,14 @@ fi
 %files winbind-clients
 %{_bindir}/ntlm_auth
 %{_bindir}/wbinfo
+%if 0%{?fedora} || 0%{?rhel} > 7
 %{_libdir}/samba/krb5/winbind_krb5_localauth.so
+%endif
 %{_mandir}/man1/ntlm_auth.1.gz
 %{_mandir}/man1/wbinfo.1*
+%if 0%{?fedora} || 0%{?rhel} > 7
 %{_mandir}/man8/winbind_krb5_localauth.8*
+%endif
 
 ### WINBIND-KRB5-LOCATOR
 %files winbind-krb5-locator
@@ -3875,6 +3904,8 @@ fi
 - Roll in changes from Fedora 29 release
 - Re-activate hooks for RHEL 7 compilation, especially with_python3 settings
 - Activate conflict with dc packages if compiled with_dc=0
+- Disable use of system KRB5 with dc enabled on RHEL 7
+- ADd libraries activated by non-system KRB5 to dc-libs
 
 * Tue Nov 27 2018 Guenther Deschner <gdeschner@redhat.com> - 4.9.3-0
 - Update to Samba 4.9.3
