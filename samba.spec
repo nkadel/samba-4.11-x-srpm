@@ -14,7 +14,7 @@
 %global with_dc 1
 %endif
 
-%define main_release 0
+%define main_release 0.2
 
 %define samba_version 4.9.3
 %define talloc_version 2.1.14
@@ -169,7 +169,9 @@ BuildRequires: gawk
 BuildRequires: gnupg2
 BuildRequires: gpgme-devel
 BuildRequires: jansson-devel
+%if 0%{?fedora} || 0%{?rhel} > 7
 BuildRequires: krb5-devel >= %{required_mit_krb5}
+%endif
 BuildRequires: libacl-devel
 BuildRequires: libaio-devel
 BuildRequires: libarchive-devel
@@ -228,9 +230,14 @@ BuildRequires: libcephfs-devel
 
 %if %{with_dc}
 BuildRequires: bind
-#BuildRequires: gnutls-devel >= 3.4.7
+%if 0%{?fedora} || 0%{?rhel} > 7
+BuildRequires: gnutls-devel >= 3.4.7
+%else
 BuildRequires: gnutls-devel
+%endif
+%if 0%{?fedora} || 0%{?rhel} > 7
 BuildRequires: krb5-server >= %{required_mit_krb5}
+%endif
 
 # Required by samba-tool to run tests
 BuildRequires: python2-crypto
@@ -278,9 +285,11 @@ BuildRequires: python3-markdown
 %endif # with testsuite
 
 %if %{with_dc}
+%if 0%{?fedora} || 0%{?rhel} > 7
 BuildRequires: krb5-server >= %{required_mit_krb5}
-BuildRequires: bind
 %endif
+BuildRequires: bind
+%endif # with_dc
 
 # filter out perl requirements pulled in from examples in the docdir.
 %global __requires_exclude_from ^%{_docdir}/.*$
@@ -322,7 +331,9 @@ Requires: %{name}-common-libs = %{samba_depver}
 %if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
+%if 0%{?fedora} || 0%{?rhel} > 7
 Requires: krb5-libs >= %{required_mit_krb5}
+%endif
 
 %description client-libs
 The samba-client-libs package contains internal libraries needed by the
@@ -401,7 +412,9 @@ Requires: python3-%{name} = %{samba_depver}
 Requires: python3-%{name}-dc = %{samba_depver}
 %endif
 %endif # with_python3
+%if 0%{?fedora} || 0%{?rhel} > 7
 Requires: krb5-server >= %{required_mit_krb5}
+%endif
 
 Provides: samba4-dc = %{samba_depver}
 Obsoletes: samba4-dc < %{samba_depver}
@@ -3900,6 +3913,9 @@ fi
 %endif # with_clustering_support
 
 %changelog
+* Sun Dec 9 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.3-0.2
+- Tune compilation for RHEL further to avoid krb5_server
+
 * Sat Dec 8 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.3-0.1
 - Roll in changes from Fedora 29 release
 - Re-activate hooks for RHEL 7 compilation, especially with_python3 settings
