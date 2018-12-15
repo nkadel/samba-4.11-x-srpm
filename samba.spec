@@ -112,7 +112,6 @@ URL:            http://www.samba.org/
 Source0:        https://www.samba.org/ftp/samba/samba-%{version}%{pre_release}.tar.gz
 Source1:        https://www.samba.org/ftp/samba/samba-%{version}%{pre_release}.tar.asc
 Source2:        gpgkey-52FBC0B86D954B0843324CDC6F33915B6568B7EA.gpg
-#PAtch: samba-4.9.3-gnutls.patch
 
 # Red Hat specific replacement-files
 Source10:       samba.log
@@ -893,14 +892,9 @@ export PYTHON=%{__python2}
 %if (! %{with_libsmbclient}) || (! %{with_libwbclient})
         --private-libraries=%{_samba_private_libraries} \
 %endif
-%if %{with_dc}
-%if 0%{?fedora} || 0%{?rhel} > 7
-        --with-system-mitkrb5 \
-	--with-experimental-mit-ad-dc \
-%endif
-%else
+%if (! %{with_dc})
         --without-ad-dc \
-%endif # with_dc
+%endif
 %if ! %{with_vfs_glusterfs}
         --disable-glusterfs \
 %endif
@@ -3905,7 +3899,10 @@ fi
 - Re-activate hooks for RHEL 7 compilation, especially with_python3 settings
 - Activate conflict with dc packages if compiled with_dc=0
 - Disable use of system KRB5 with dc enabled on RHEL 7
-- ADd libraries activated by non-system KRB5 to dc-libs
+- Add libraries activated by non-system KRB5 to dc-libs
+- Disable gnutls version BuildRequires
+- Stop enabling MIT krb5 with --with-system-mitkrb5 --with-experimental-mit-ad-dc
+  Always use heimdal for security and reliability
 
 * Tue Nov 27 2018 Guenther Deschner <gdeschner@redhat.com> - 4.9.3-0
 - Update to Samba 4.9.3
