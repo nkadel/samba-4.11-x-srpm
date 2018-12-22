@@ -16,7 +16,7 @@
 
 %define main_release 0
 
-%define samba_version 4.9.3
+%define samba_version 4.9.4
 %define talloc_version 2.1.14
 %define tdb_version 1.3.16
 %define tevent_version 0.9.37
@@ -3894,6 +3894,9 @@ fi
 %endif # with_clustering_support
 
 %changelog
+* Fri Dec 21 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.4-0
+- Update tp 4.9.4-0
+
 * Sat Dec 8 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.3-0.1
 - Roll in changes from Fedora 29 release
 - Re-activate hooks for RHEL 7 compilation, especially with_python3 settings
