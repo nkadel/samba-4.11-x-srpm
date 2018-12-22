@@ -1696,10 +1696,6 @@ fi
 %{_sbindir}/samba_spnupdate
 %{_sbindir}/samba_upgradedns
 
-%if 0%{?fedora} || 0%{?rhel} > 7
-%{_libdir}/krb5/plugins/kdb/samba.so
-%endif
-
 %{_libdir}/samba/auth/samba4.so
 %{_libdir}/samba/libpac-samba4.so
 %dir %{_libdir}/samba/gensec
@@ -3002,14 +2998,8 @@ fi
 %files winbind-clients
 %{_bindir}/ntlm_auth
 %{_bindir}/wbinfo
-%if 0%{?fedora} || 0%{?rhel} > 7
-%{_libdir}/samba/krb5/winbind_krb5_localauth.so
-%endif
 %{_mandir}/man1/ntlm_auth.1.gz
 %{_mandir}/man1/wbinfo.1*
-%if 0%{?fedora} || 0%{?rhel} > 7
-%{_mandir}/man8/winbind_krb5_localauth.8*
-%endif
 
 ### WINBIND-KRB5-LOCATOR
 %files winbind-krb5-locator
@@ -3907,8 +3897,9 @@ fi
 %endif # with_clustering_support
 
 %changelog
-* Fri Dec 21 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.4-0
-- Update tp 4.9.4-0
+* Sat Dec 22 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.4-0.2
+- Update tp 4.9.4
+- Discard winbind_krb5_localauth.8*
 
 * Sun Dec 9 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.3-0.2
 - Tune compilation for RHEL further to avoid krb5_server
