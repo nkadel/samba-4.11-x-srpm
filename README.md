@@ -1,7 +1,7 @@
 samba-4.9.x-srpm
 ================
 
-SRPM building tools for Samba 4.9 on Fedora and RHEL 7. Samba 4.9.x
+SRPM building tools for Samba 4.9 on Fedora and RHEL. Samba 4.9.x
 with domain controller enabled is is not possible on current RHEL, so
 dc is only enabled on Fedora. Fedora now *has* 4.9.3, so it's not as
 necessary there anymore.
@@ -9,10 +9,10 @@ necessary there anymore.
 These are built from Fedora rawhide releases, and need to be built and
 installed in the following order.
 
-	libtalloc-srpm
-	libtdb-srpm
-	libldb-srpm
-	libtevent-srpm
+	libtalloc-2.1.x-srpm
+	libtdb-1.3.x-srpm
+	libldb-1.4.x-srpm
+	libtevent-0.9.x-srpm
 
 	samba-4.9.x-srpm
 
