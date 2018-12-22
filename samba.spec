@@ -906,12 +906,7 @@ export PYTHON=%{__python2}
 %if (! %{with_libsmbclient}) || (! %{with_libwbclient})
         --private-libraries=%{_samba_private_libraries} \
 %endif
-%if %{with_dc}
-%if 0%{?fedora} || 0%{?rhel} > 7
-        --with-system-mitkrb5 \
-	--with-experimental-mit-ad-dc \
-%endif
-%else
+%if ! %{with_dc}
         --without-ad-dc \
 %endif # with_dc
 %if ! %{with_vfs_glusterfs}
@@ -3915,6 +3910,7 @@ fi
 %changelog
 * Sun Dec 9 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.3-0.2
 - Tune compilation for RHEL further to avoid krb5_server
+- Turn off --with-system-krb5 and --with-experimental-mit-ad-dc
 
 * Sat Dec 8 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.3-0.1
 - Roll in changes from Fedora 29 release
