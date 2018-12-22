@@ -38,7 +38,7 @@
 # Enables PIE and full RELRO protection
 %global _hardened_build 1
 # Samba cannot be linked with -Wl,-z,defs (from hardened build config)
-# For example the samba-cluster-support library is marked to allow undefined
+# For exmple the samba-cluster-support library is marked to allow undefined
 # symbols in the samba build.
 #
 # https://src.fedoraproject.org/rpms/redhat-rpm-config/blob/master/f/buildflags.md
@@ -75,6 +75,9 @@
 %if 0%{?__isa_bits} == 64
 %global libwbc_alternatives_suffix -64
 %endif
+
+# Samba support for MIT krb5 is not yet safe or stable
+%global with_mit_krb5 1
 
 %global required_mit_krb5 1.15.1
 
@@ -134,7 +137,7 @@ Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-common-tools = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
-%if %{with_libwbclient}
+%if %with_libwbclient
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -143,7 +146,7 @@ Requires: pam
 Provides: samba4 = %{samba_depver}
 Obsoletes: samba4 < %{samba_depver}
 
-# We do not build it outdated docs anymore
+# We don't build it outdated docs anymore
 Provides: samba-doc = %{samba_depver}
 Obsoletes: samba-doc < %{samba_depver}
 
@@ -168,7 +171,7 @@ BuildRequires: gawk
 BuildRequires: gnupg2
 BuildRequires: gpgme-devel
 BuildRequires: jansson-devel
-%if 0%{?fedora} || 0%{?rhel} > 7
+%if %{with_mit_krb5}
 BuildRequires: krb5-devel >= %{required_mit_krb5}
 %endif
 BuildRequires: libacl-devel
@@ -199,9 +202,11 @@ BuildRequires: python3-devel
 %endif
 %if %{with_dc}
 BuildRequires: python2-dns
-# Add python2-iso8601 to avoid packaging the version in SAmba
+# Add python2-iso8601 to avoid that the
+# version in Samba is being packaged
 BuildRequires: python2-iso8601
-# Add python3-iso8601 to avoid packaging the version in SAmba
+# Add python3-iso8601 to avoid that the
+# version in Samba is being packaged
 %if 0%{?with_python3}
 BuildRequires: python3-iso8601
 %endif
@@ -214,6 +219,7 @@ BuildRequires: rpcsvc-proto-devel
 %endif # fedora || rhel > 7
 BuildRequires: sed
 BuildRequires: xfsprogs-devel
+BuildRequires: xz
 BuildRequires: zlib-devel >= 1.2.3
 
 BuildRequires: pkgconfig(libsystemd)
@@ -229,14 +235,12 @@ BuildRequires: libcephfs-devel
 
 %if %{with_dc}
 BuildRequires: bind
-%if 0%{?fedora} || 0%{?rhel} > 7
+%if %{with_mit_krb5}
 BuildRequires: gnutls-devel >= 3.4.7
+BuildRequires: krb5-server >= %{required_mit_krb5}
 %else
 BuildRequires: gnutls-devel
-%endif
-%if 0%{?fedora} || 0%{?rhel} > 7
-BuildRequires: krb5-server >= %{required_mit_krb5}
-%endif
+%endif # with_mit_krb5
 
 # Required by samba-tool to run tests
 BuildRequires: python2-crypto
@@ -284,7 +288,7 @@ BuildRequires: python3-markdown
 %endif # with testsuite
 
 %if %{with_dc}
-%if 0%{?fedora} || 0%{?rhel} > 7
+%if %{with_mit_krb5}
 BuildRequires: krb5-server >= %{required_mit_krb5}
 %endif
 BuildRequires: bind
@@ -329,10 +333,10 @@ Requires: %{name}-common = %{samba_depver}
 Requires: %{name}-common-libs = %{samba_depver}
 %if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
-%endif
-%if 0%{?fedora} || 0%{?rhel} > 7
+%endif # with_libwbclient
+%if %{with_mit_krb5}
 Requires: krb5-libs >= %{required_mit_krb5}
-%endif
+%endif # with_mit_krb5
 
 %description client-libs
 The samba-client-libs package contains internal libraries needed by the
@@ -404,16 +408,14 @@ Requires: python2-crypto
 
 ### Note that samba-dc right now cannot be used with Python 3
 ### so we should make sure it does use python2 explicitly
-%if 0%{?with_python3}
-%if 0
+%if 0%{?with_python3} && 0
 Requires: python3-crypto
 Requires: python3-%{name} = %{samba_depver}
 Requires: python3-%{name}-dc = %{samba_depver}
-%endif
 %endif # with_python3
-%if 0%{?fedora} || 0%{?rhel} > 7
+%if %{with_mit_krb5}
 Requires: krb5-server >= %{required_mit_krb5}
-%endif
+%endif # with_mit_krb5
 
 Provides: samba4-dc = %{samba_depver}
 Obsoletes: samba4-dc < %{samba_depver}
@@ -3012,7 +3014,7 @@ fi
 %{_mandir}/man5/pam_winbind.conf.5*
 %{_mandir}/man8/pam_winbind.8*
 
-%if %{with_clustering_support}
+%if %with_clustering_support
 %files -n ctdb
 %doc ctdb/README
 %doc ctdb/doc/examples
