@@ -77,7 +77,7 @@
 %endif
 
 # Samba support for MIT krb5 is not yet safe or stable
-%global with_mit_krb5 1
+%global with_mit_krb5 0
 
 %global required_mit_krb5 1.15.1
 
@@ -218,6 +218,8 @@ BuildRequires: rpcgen
 BuildRequires: rpcsvc-proto-devel
 %endif # fedora || rhel > 7
 BuildRequires: sed
+# sysvinit no longer supported
+BuildRequires: systemd
 BuildRequires: xfsprogs-devel
 BuildRequires: xz
 BuildRequires: zlib-devel >= 1.2.3
@@ -1793,6 +1795,7 @@ fi
 %{_libdir}/samba/libdsdb-garbage-collect-tombstones-samba4.so
 %{_libdir}/samba/libscavenge-dns-records-samba4.so
 
+%if ! %{with_mit_krb5}
 %{_libdir}/samba/libHDB-SAMBA4-samba4.so
 %{_libdir}/samba/libasn1-samba4.so.*
 %{_libdir}/samba/libcom_err-samba4.so.*
@@ -1806,6 +1809,7 @@ fi
 %{_libdir}/samba/libkrb5-samba4.so.*
 %{_libdir}/samba/libroken-samba4.so.*
 %{_libdir}/samba/libwind-samba4.so.*
+%endif # with_mit_krb5
 %endif # with_dc
 
 ### DC-BIND
@@ -3907,6 +3911,7 @@ fi
 * Sat Dec 22 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.4-0.2
 - Update to 4.9.4
 - Activate with_mit_krb5 to control Heimdal compilation with associated files
+- Add systemd requirement
 
 * Tue Nov 27 2018 Guenther Deschner <gdeschner@redhat.com> - 4.9.3-0
 - Update to Samba 4.9.3
