@@ -816,6 +816,7 @@ Summary: CTDB clustered database test suite
 Requires: samba-client-libs = %{samba_depver}
 
 Requires: ctdb = %{samba_depver}
+
 %if 0%{?fedora} || 0%{?rhel} > 7
 Recommends: nc
 %endif # fedora || rhel > 7
@@ -877,15 +878,13 @@ export python_LDFLAGS="$(echo %{__global_ldflags} | sed -e 's/-Wl,-z,defs//g')"
 export LDFLAGS="%{__global_ldflags} -fuse-ld=gold"
 
 %if 0%{?rhel}
-# RHEL does not *have* pathfix.py!!!
+# RHEL has non-functional paathfix.py from EPELL
 
 ## Use Python 2 for the waf buildscript
 #pathfix.py -n -p -i %{__python2} buildtools/bin/waf
-#export RHEL_ALLOW_PYTHON2_FOR_BUILD=1
 
 sed -i.python2 "s|^#!/usr/bin/env python|#!/usr/bin/python2|g" buildtools/bin/waf
 export RHEL_ALLOW_PYTHON2_FOR_BUILD=1
-
 %endif # rhel
 
 export PYTHON=%{__python2}
@@ -942,7 +941,7 @@ export PYTHON=%{__python2}
 %if %{with_python3}
         --extra-python=%{__python3}
 %else
-	
+
 %endif
 
 make %{?_smp_mflags}
@@ -959,7 +958,7 @@ make %{?_smp_mflags} install DESTDIR=%{buildroot}
 
 # Workaround: make sure all general Python shebangs are pointing to Python 2
 # otherwise it will not work when default python is different from Python 2.
-# Samba tools are not ready for Python 3 yet.
+# Samba tools aren't ready for Python 3 yet.
 for i in %{buildroot}%{_bindir} %{buildroot}%{_sbindir} ; do
 	find $i \
 		! -name '*.pyc' -a \
@@ -1536,7 +1535,6 @@ fi
 
 ### CLIENT-LIBS
 %files client-libs
-
 %{_libdir}/libdcerpc-binding.so.*
 %{_libdir}/libndr.so.*
 %{_libdir}/libndr-krb5pac.so.*
