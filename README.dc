@@ -1,12 +1,9 @@
 MIT Kerberos 5 Support
 =======================
 
-Fedora is using MIT Kerberos implementation as its Kerberos infrastructure of
-choice. The Samba build in Fedora is using MIT Kerberos implementation in order
-to allow system-wide interoperability between both desktop and server
-applications running on the same machine.
-
-In this build the Active Directory support has been disabled.
+The default Fedora build uses the MIT Kerberos infrastructure of
+choice. This build uses Heimdal in order to safely support the full
+domain controler featureset
 
 In case of further questions do not hesitate to send your inquiries to
 samba-owner@fedoraproject.org

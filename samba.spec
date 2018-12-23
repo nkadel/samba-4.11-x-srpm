@@ -1061,10 +1061,8 @@ install -m 0644 ctdb/config/ctdb.conf %{buildroot}%{_sysconfdir}/ctdb/ctdb.conf
 
 install -m 0644 %{SOURCE201} packaging/README.downgrade
 
-%if ! %{with_dc}
 install -m 0644 %{SOURCE200} packaging/README.dc
 install -m 0644 %{SOURCE200} packaging/README.dc-libs
-%endif
 
 %if %{with_clustering_support}
 install -m 0644 ctdb/config/ctdb.service %{buildroot}%{_unitdir}
@@ -1368,6 +1366,9 @@ fi
 %doc examples/autofs examples/LDAP examples/misc
 %doc examples/printer-accounting examples/printing
 %doc packaging/README.downgrade
+%if ! %{with_dc}
+%doc packaging/README.dc
+%endif # with_dc
 %{_bindir}/smbstatus
 %{_sbindir}/eventlogadm
 %{_sbindir}/nmbd
@@ -1670,6 +1671,9 @@ fi
 %if %{with_intel_aes_accel}
 %{_libdir}/samba/libaesni-intel-samba4.so
 %endif
+%if ! %{with_dc}
+%doc packaging/README.dc-libs
+%endif # with_dc
 
 %dir %{_libdir}/samba/ldb
 
