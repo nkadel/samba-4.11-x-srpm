@@ -1803,8 +1803,8 @@ fi
 %{_libdir}/samba/libwind-samba4.so.*
 %endif # with_dc
 
-%if %{with_dc}
 ### DC-BIND
+%if %{with_dc}
 %files dc-bind-dlz
 %attr(770,root,named) %dir /var/lib/samba/bind-dns
 %dir %{_libdir}/samba/bind9
