@@ -77,7 +77,7 @@
 %endif
 
 # Samba support for MIT krb5 is not yet safe or stable
-%global with_mit_krb5 1
+%global with_mit_krb5 0
 
 %global required_mit_krb5 1.15.1
 
@@ -907,9 +907,14 @@ export PYTHON=%{__python2}
 %if (! %{with_libsmbclient}) || (! %{with_libwbclient})
         --private-libraries=%{_samba_private_libraries} \
 %endif
-%if (! %{with_dc})
+%if %{with_dc}
+%if %{with_mit_krb5}
+        --with-system-mitkrb5 \
+        --with-experimental-mit-ad-dc \
+%endif # with_mit_krb5
+%else
         --without-ad-dc \
-%endif
+%endif # with_dc
 %if ! %{with_vfs_glusterfs}
         --disable-glusterfs \
 %endif
