@@ -77,7 +77,7 @@
 %endif
 
 # Samba support for MIT krb5 is not yet safe or stable
-%global with_mit_krb5 0
+%global with_mit_krb5 1
 
 %global required_mit_krb5 1.15.1
 
@@ -197,9 +197,9 @@ BuildRequires: perl(Parse::Yapp)
 BuildRequires: perl(Test::More)
 BuildRequires: popt-devel
 BuildRequires: python2-devel
-%if 0%{?with_python3}
+%if %{with_python3}
 BuildRequires: python3-devel
-%endif
+%endif # with_python3
 %if %{with_dc}
 BuildRequires: python2-dns
 # Add python2-iso8601 to avoid that the
@@ -207,9 +207,9 @@ BuildRequires: python2-dns
 BuildRequires: python2-iso8601
 # Add python3-iso8601 to avoid that the
 # version in Samba is being packaged
-%if 0%{?with_python3}
+%if %{with_python3}
 BuildRequires: python3-iso8601
-%endif
+%endif # with_python3
 %endif # with_dc
 BuildRequires: quota-devel
 BuildRequires: readline-devel
@@ -244,9 +244,9 @@ BuildRequires: gnutls-devel
 
 # Required by samba-tool to run tests
 BuildRequires: python2-crypto
-%if 0%{?with_python3}
+%if %{with_python3}
 BuildRequires: python3-crypto
-%endif
+%endif # with_python3
 %endif # with_dc
 
 # pidl requirements
@@ -254,43 +254,43 @@ BuildRequires: perl(Parse::Yapp)
 
 BuildRequires: libtalloc-devel >= %{talloc_version}
 BuildRequires: python2-talloc-devel >= %{talloc_version}
-%if 0%{?with_python3}
+%if %{with_python3}
 BuildRequires: python3-talloc-devel >= %{talloc_version}
-%endif
+%endif # with_python3
 
 BuildRequires: libtevent-devel >= %{tevent_version}
 BuildRequires: python2-tevent >= %{tevent_version}
-%if 0%{?with_python3}
+%if %{with_python3}
 BuildRequires: python3-tevent >= %{tevent_version}
-%endif
+%endif # with_python3
 
 BuildRequires: libtdb-devel >= %{tdb_version}
 BuildRequires: python2-tdb >= %{tdb_version}
-%if 0%{?with_python3}
+%if %{with_python3}
 BuildRequires: python3-tdb >= %{tdb_version}
-%endif
+%endif # with_python3
 
 BuildRequires: libldb-devel >= %{ldb_version}
 BuildRequires: python2-ldb-devel >= %{ldb_version}
-%if 0%{?with_python3}
+%if %{with_python3}
 BuildRequires: python3-ldb-devel >= %{ldb_version}
-%endif
+%endif # with_python3
 
 %if %{with testsuite}
 BuildRequires: ldb-tools
 BuildRequires: tdb-tools
 BuildRequires: python2-gpg
 BuildRequires: python2-markdown
-%if 0%{?with_python3}
+%if %{with_python3}
 BuildRequires: python3-gpg
 BuildRequires: python3-markdown
-%endif
+%endif # with_python3
 %endif # with testsuite
 
 %if %{with_dc}
 %if %{with_mit_krb5}
 BuildRequires: krb5-server >= %{required_mit_krb5}
-%endif
+%endif # with_mit_krb5
 BuildRequires: bind
 %endif # with_dc
 
@@ -384,8 +384,8 @@ Requires: libwbclient = %{samba_depver}
 The samba-common-tools package contains tools for Samba servers and
 SMB/CIFS clients.
 
-%if %{with_dc}
 ### DC
+%if %{with_dc}
 %package dc
 Summary: Samba AD Domain Controller
 Requires: %{name} = %{samba_depver}
@@ -408,7 +408,7 @@ Requires: python2-crypto
 
 ### Note that samba-dc right now cannot be used with Python 3
 ### so we should make sure it does use python2 explicitly
-%if 0%{?with_python3} && 0
+%if %{with_python3} && 0
 Requires: python3-crypto
 Requires: python3-%{name} = %{samba_depver}
 Requires: python3-%{name}-dc = %{samba_depver}
@@ -606,6 +606,7 @@ to manage Samba AD.
 %endif
 
 ### PYTHON3
+%if %{with_python3}
 %package -n python3-%{name}
 Summary: Samba Python3 libraries
 Requires: %{name} = %{samba_depver}
@@ -639,6 +640,7 @@ Requires: python3-%{name} = %{samba_depver}
 The python3-%{name}-dc package contains the Python libraries needed by programs
 to manage Samba AD.
 %endif # with_dc
+%endif # with_python3
 
 ### PIDL
 %package pidl
@@ -776,7 +778,7 @@ necessary to communicate to the Winbind Daemon
 ### CTDB
 %if %{with_clustering_support}
 %package -n ctdb
-Summary: A Clustered Database based on Samba Trivial Database (TDB)
+Summary: A Clustered Database based on Samba's Trivial Database (TDB)
 
 Requires: %{name}-client-libs = %{samba_depver}
 
@@ -937,7 +939,7 @@ export PYTHON=%{__python2}
         --systemd-nmb-extra=%{_systemd_extra} \
         --systemd-winbind-extra=%{_systemd_extra} \
         --systemd-samba-extra=%{_systemd_extra} \
-%if 0%{?with_python3}
+%if %{with_python3}
         --extra-python=%{__python3}
 %else
 	
@@ -966,7 +968,7 @@ for i in %{buildroot}%{_bindir} %{buildroot}%{_sbindir} ; do
 		-exec sed -i -e '1 s|^#!.*\bpython[^ ]*|#!%{__python2}|' {} \;
 done
 
-%if 0%{?with_python3}
+%if %{with_python3}
 # FIXME: Remove Python3 files with bad syntax
 # (needs to be done after install; before that the py2 and py3 versions
 #  are the same)
@@ -2382,8 +2384,8 @@ fi
 %{python2_sitearch}/samba/tests/xattr.py*
 %endif # rhel
 
-%if %{with_python3}
 ### PYTHON3
+%if %{with_python3}
 %files -n python3-%{name}
 %dir %{python3_sitearch}/samba/
 %{python3_sitearch}/samba/__init__.py
@@ -3003,6 +3005,10 @@ fi
 %{_bindir}/wbinfo
 %{_mandir}/man1/ntlm_auth.1.gz
 %{_mandir}/man1/wbinfo.1*
+%if %{with_mit_krb5}
+%{_libdir}/samba/krb5/winbind_krb5_localauth.so
+%{_mandir}/man8/winbind_krb5_localauth.8*
+%endif # with_mit_krb5
 
 ### WINBIND-KRB5-LOCATOR
 %files winbind-krb5-locator
@@ -3901,8 +3907,8 @@ fi
 
 %changelog
 * Sat Dec 22 2018 Nico Kadel-Garcia <nkadel@gmail.com> - 4.9.4-0.2
-- Update tp 4.9.4
-- Discard winbind_krb5_localauth.8*
+- Update to 4.9.4
+- Activate with_mit_krb5 to control Heimdal compilation with associated files
 
 * Tue Nov 27 2018 Guenther Deschner <gdeschner@redhat.com> - 4.9.3-0
 - Update to Samba 4.9.3
