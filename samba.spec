@@ -6,19 +6,7 @@
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
 
-%if 0%{?fedora} || 0%{?rhel} > 7
-%global with_python3 1
-%else
-%global with_python3 0
-%endif
-
-%global with_dc 1
-
-%if %{with testsuite}
-%global with_dc 1
-%endif
-
-%define main_release 0.2
+%define main_release 0
 
 %define samba_version 4.9.4
 %define talloc_version 2.1.14
@@ -32,6 +20,18 @@
 %define samba_release 0.%{main_release}.%{pre_release}%{?dist}
 %else
 %define samba_release %{main_release}%{?dist}
+%endif
+
+%if 0%{?fedora} || 0%{?rhel} > 7
+%global with_python3 1
+%else
+%global with_python3 0
+%endif
+
+%global with_dc 1
+
+%if %{with testsuite}
+%global with_dc 1
 %endif
 
 # This is a network daemon, do a hardened build
@@ -137,7 +137,7 @@ Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-common-tools = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -3014,7 +3014,7 @@ fi
 %{_mandir}/man5/pam_winbind.conf.5*
 %{_mandir}/man8/pam_winbind.8*
 
-%if %with_clustering_support
+%if %{with_clustering_support}
 %files -n ctdb
 %doc ctdb/README
 %doc ctdb/doc/examples
