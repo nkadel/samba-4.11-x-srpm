@@ -6,11 +6,11 @@
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
 
-%define main_release 0
+%define main_release 0.5
 
 %define samba_version 4.10.0
 %define talloc_version 2.1.16
-%define tdb_version 1.3.18
+%define tdb_version 1.4.0
 %define tevent_version 0.9.39
 %define ldb_version 1.5.4
 # This should be rc1 or nil
@@ -104,8 +104,8 @@ Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+.
 URL:            http://www.samba.org/
 
-Source0:        https://www.samba.org/ftp/samba/samba-%{version}%{pre_release}.tar.gz
-Source1:        https://www.samba.org/ftp/samba/samba-%{version}%{pre_release}.tar.asc
+Source0:        https://www.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.gz
+Source1:        https://www.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.asc
 Source2:        gpgkey-52FBC0B86D954B0843324CDC6F33915B6568B7EA.gpg
 
 # Red Hat specific replacement-files
@@ -116,6 +116,8 @@ Source13:       pam_winbind.conf
 Source14:       samba.pamd
 
 Source201:      README.downgrade
+
+Patch0:         v4.10_build_fix.patch
 
 Requires(pre): /usr/sbin/groupadd
 Requires(post): systemd
@@ -137,7 +139,7 @@ Requires: pam
 Provides: samba4 = %{samba_depver}
 Obsoletes: samba4 < %{samba_depver}
 
-# We don't build it outdated docs anymore
+# We do not build it outdated docs anymore
 Provides: samba-doc = %{samba_depver}
 Obsoletes: samba-doc < %{samba_depver}
 
@@ -679,7 +681,7 @@ necessary to communicate to the Winbind Daemon
 ### CTDB
 %if %with_clustering_support
 %package -n ctdb
-Summary: A Clustered Database based on Samba's Trivial Database (TDB)
+Summary: A Clustered Database based on Samba Trivial Database (TDB)
 
 Requires: %{name}-client-libs = %{samba_depver}
 
@@ -717,7 +719,9 @@ Summary: CTDB clustered database test suite
 Requires: samba-client-libs = %{samba_depver}
 
 Requires: ctdb = %{samba_depver}
+%if 0%{?fedora}
 Recommends: nc
+%endif
 
 Provides: ctdb-devel = %{samba_depver}
 Obsoletes: ctdb-devel < %{samba_depver}
@@ -777,7 +781,10 @@ export LDFLAGS="%{__global_ldflags} -fuse-ld=gold"
 
 %if 0%{?rhel}
 # Use Python 2 for the waf buildscript
-pathfix.py -n -p -i %{__python2} buildtools/bin/waf
+#pathfix.py -n -p -i %{__python2} buildtools/bin/waf
+
+# pathfix.py does not work on RHEL 7
+sed -i.python2 "s|^#!/usr/bin/env python.*|#!/usr/bin/python2|g" buildtools/bin/waf
 export RHEL_ALLOW_PYTHON2_FOR_BUILD=1
 %endif # rhel
 
@@ -971,9 +978,17 @@ for i in \
     %{python3_sitearch}/samba/__pycache__/ms_schema_markdown.*.pyc \
     %{python3_sitearch}/samba/__pycache__/remove_dc.*.pyc \
     %{python3_sitearch}/samba/__pycache__/schema.*.pyc \
+    %{python3_sitearch}/samba/__pycache__/uptodateness.*.pyc \
     %{python3_sitearch}/samba/remove_dc.py \
     %{python3_sitearch}/samba/samdb.py \
     %{python3_sitearch}/samba/schema.py \
+    %{python3_sitearch}/samba/third_party/iso8601/__init__.py \
+    %{python3_sitearch}/samba/third_party/iso8601/__pycache__/__init__.*.pyc \
+    %{python3_sitearch}/samba/third_party/iso8601/__pycache__/iso8601.*.pyc \
+    %{python3_sitearch}/samba/third_party/iso8601/__pycache__/test_iso8601.*.pyc \
+    %{python3_sitearch}/samba/third_party/iso8601/iso8601.py \
+    %{python3_sitearch}/samba/third_party/iso8601/test_iso8601.py \
+    %{python3_sitearch}/samba/uptodateness.py \
     %{_sbindir}/samba-gpupdate \
     ; do
     rm -f %{buildroot}$i
@@ -1037,12 +1052,18 @@ if [ $1 -eq 0 ] ; then
     %{_sbindir}/update-alternatives --remove cups_backend_smb %{_bindir}/smbspool
 fi
 
-%ldconfig_scriptlets client-libs
+#%%ldconfig_scriptlets client-libs
+%post client-libs -p /sbin/ldconfig
+%postun client-libs -p /sbin/ldconfig
 
-%ldconfig_scriptlets common-libs
+#%%ldconfig_scriptlets common-libs
+%post common-libs -p /sbin/ldconfig
+%postun common-libs -p /sbin/ldconfig
 
 %if %{with_dc}
-%ldconfig_scriptlets dc-libs
+#%%ldconfig_scriptlets dc-lib
+%post dc-lib -p /sbin/ldconfig
+%postun dc-lib -p /sbin/ldconfig
 
 %post dc
 %systemd_post samba.service
@@ -1064,10 +1085,14 @@ if [ $1 -eq 0 ] ; then
 	%{_sbindir}/update-alternatives --remove cups_backend_smb %{_libexecdir}/samba/smbspool_krb5_wrapper
 fi
 
-%ldconfig_scriptlets libs
+#%%ldconfig_scriptlets libs
+%post libs -p /sbin/ldconfig
+%postun libs -p /sbin/ldconfig
 
 %if %with_libsmbclient
-%ldconfig_scriptlets -n libsmbclient
+#%%ldconfig_scriptlets -n libsmbclient
+%post -n libsmbclient -p /sbin/ldconfig
+%postun -n libsmbclient -p /sbin/ldconfig
 %endif
 
 %if %with_libwbclient
@@ -1110,7 +1135,9 @@ fi
 
 %endif # with_libwbclient
 
-%ldconfig_scriptlets test
+#%%ldconfig_scriptlets test
+%post test -p /sbin/ldconfig
+%postun test -p /sbin/ldconfig
 
 %pre winbind
 /usr/sbin/groupadd -g 88 wbpriv >/dev/null 2>&1 || :
@@ -1141,7 +1168,9 @@ if [ $1 -eq 0 ]; then
         %{_sbindir}/update-alternatives --remove winbind_krb5_locator.so %{_libdir}/samba/krb5/winbind_krb5_locator.so
 fi
 
-%ldconfig_scriptlets winbind-modules
+#%ldconfig_scriptlets winbind-modules
+%post winbind-modules -p /sbin/ldconfig
+%postun winbind-modules -p /sbin/ldconfig
 
 %if %with_clustering_support
 %post -n ctdb
@@ -1859,7 +1888,6 @@ fi
 %{python3_sitearch}/samba/__pycache__/tdb_util.*.pyc
 %{python3_sitearch}/samba/__pycache__/upgrade.*.pyc
 %{python3_sitearch}/samba/__pycache__/upgradehelpers.*.pyc
-%{python3_sitearch}/samba/__pycache__/uptodateness.*.pyc
 %{python3_sitearch}/samba/__pycache__/xattr.*.pyc
 %{python3_sitearch}/samba/_glue.*.so
 %{python3_sitearch}/samba/_ldb.*.so
@@ -2079,6 +2107,7 @@ fi
 %{python3_sitearch}/samba/__pycache__/remove_dc.*.pyc
 %{python3_sitearch}/samba/__pycache__/samdb.*.pyc
 %{python3_sitearch}/samba/__pycache__/schema.*.pyc
+%{python3_sitearch}/samba/__pycache__/uptodateness.*.pyc
 
 %{python3_sitearch}/samba/dcerpc/dnsserver.*.so
 %{python3_sitearch}/samba/dckeytab.*.so
@@ -3396,6 +3425,18 @@ fi
 %endif # with_clustering_support
 
 %changelog
+* Sat Mar 23 2019 Nico Kadel-Garcia
+- Turn ldconfig_scriptlets into explicit post commands for RHEL 7
+- Disable Requires of nc for RHEL 7
+- Replace pathfix.py with sed command for RHEL 7
+- Eliminate contractions in comments
+
+* Wed Mar 20 2019 Guenther Deschner <gdeschner@redhat.com> - 4.10.0-5
+- Fix build failure (duplication during install)
+
+* Tue Mar 19 2019 Guenther Deschner <gdeschner@redhat.com> - 4.10.0-4
+- Update to Samba 4.10.0
+
 * Wed Mar 06 2019 Guenther Deschner <gdeschner@redhat.com> - 4.10.0rc4-2
 - Update to Samba 4.10.0rc4
 
@@ -4101,7 +4142,7 @@ fi
 * Mon Jul 15 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.7-2
 - resolves: #972692 - Build with PIE and full RELRO.
 - resolves: #884169 - Add explicit dependencies suggested by rpmdiff.
-- resolves: #981033 - Local user's krb5cc deleted by winbind.
+- resolves: #981033 - Local user krb5cc deleted by winbind.
 - resolves: #984331 - Fix samba-common tmpfiles configuration file in wrong
                       directory.
 
@@ -4127,7 +4168,7 @@ fi
 
 * Fri Mar 22 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.4-3
 - resolves: #919405 - Fix and improve large_readx handling for broken clients.
-- resolves: #924525 - Don't use waf caching.
+- resolves: #924525 - Do not use waf caching.
 
 * Wed Mar 20 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.4-2
 - resolves: #923765 - Improve packaging of README files.
@@ -4159,7 +4200,7 @@ fi
 - resolves: #905704
 - Fix conn->share_access which is reset between user switches.
 - resolves: #903806
-- Add missing example and make sure we don't introduce perl dependencies.
+- Add missing example and make sure we do not introduce perl dependencies.
 - resolves: #639470
 
 * Wed Jan 16 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.1-1
@@ -4226,7 +4267,7 @@ fi
 - Update systemd Requires to reflect latest packaging guidelines.
 
 * Tue Oct 16 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-155.rc3
-- Add back the AES patches which didn't make it in rc3.
+- Add back the AES patches which did not make it in rc3.
 
 * Tue Oct 16 2012 Andreas Schneider <asn@redhat.com> - 2:4.0.0-154.rc3
 - Update to 4.0.0rc3.
@@ -4765,7 +4806,7 @@ fi
   to close
   bz#182560 Wrong retval for initscript when smbd is dead
 - Update this spec file to build with 3.0.23rc3
-- Remove the -install.mount.smbfs patch, since we don't install
+- Remove the -install.mount.smbfs patch, since we do not install
   mount.smbfs any more.
 
 * Wed Jun 14 2006 Tomas Mraz <tmraz@redhat.com> - 2.0.21c-3
@@ -4788,7 +4829,7 @@ fi
 
 * Sun Nov 13 2005 Jay Fenlason <fenlason@redhat.com> 3.0.20b-2
 - turn on -DLDAP_DEPRECATED to allow access to ldap functions that have
-  been depricated in 2.3.11, but which don't have well-documented
+  been depricated in 2.3.11, but which do not have well-documented
   replacements (ldap_simple_bind_s(), for example).
 - Upgrade to 3.0.20b, which includes all the previous upstream patches.
 - Updated the -warnings patch for 3.0.20a.
@@ -4839,7 +4880,7 @@ fi
 - rebuild with openssl-0.9.7e
 
 * Thu Feb 24 2005 Jay Fenlason <fenlason@redhat.com> 3.0.11-4
-- Use the updated filter-requires-samba.sh file, so we don't accidentally
+- Use the updated filter-requires-samba.sh file, so we do not accidentally
   pick up a dependency on perl(Crypt::SmbHash)
 
 * Fri Feb 18 2005 Jay Fenlason <fenlason@redhat.com> 3.0.11-3
@@ -4885,7 +4926,7 @@ fi
 
 * Mon Nov 22 2004 Than Ngo <than@redhat.com> 3.0.8-4
 - fix unresolved symbols in libsmbclient which caused applications
-  such as KDE's konqueror to fail when accessing smb:// URLs. #139894
+  such as KDE konqueror to fail when accessing smb:// URLs. #139894
 
 * Thu Nov 11 2004 Jay Fenlason <fenlason@redhat.com> 3.0.8-3.1
 - Rescue the install.mount.smbfs patch from Juanjo Villaplana
@@ -4906,7 +4947,7 @@ fi
 
 * Tue Oct 26 2004 Jay Fenlason <fenlason@redhat.com> 3.0.8-0.pre2
 - New upstream version
-- Add Nalin's signing-shortkey patch.
+- Add Nalin signing-shortkey patch.
 
 * Tue Oct 19 2004 Jay Fenlason <fenlason@redhat.com> 3.0.8-0.pre1.3
 - disable the -salt patch, because it causes undefined references in
@@ -4915,7 +4956,7 @@ fi
 * Fri Oct 15 2004 Jay Fenlason <fenlason@redhat.com> 3.0.8-0.pre1.2
 - Re-enable the x_fclose patch that was accidentally disabled
   in 3.0.8-0.pre1.1.  This closes #135832
-- include Nalin's -fqdn and -salt patches.
+- include Nalin -fqdn and -salt patches.
 
 * Wed Oct 13 2004 Jay Fenlason <fenlason@redhat.com> 3.0.8-0.pre1.1
 - Include disable-sendfile patch to default "use sendfile" to "no".
@@ -4990,10 +5031,10 @@ fi
   to make winbindd work against Windows versions that do not have
   128 bit encryption enabled.
 - Moved %%{_bindir}/net to the -common package, so that folks who just
-  want to use winbind, etc don't have to install -client in order to
+  want to use winbind, etc do not have to install -client in order to
   "net join" their domain.
 - New upstream version obsoletes the patches added in 3.0.3-5
-- Remove smbgetrc.5 man page, since we don't ship smbget.
+- Remove smbgetrc.5 man page, since we do not ship smbget.
 
 * Tue Jun 15 2004 Elliot Lee <sopwith@redhat.com>
 - rebuilt
@@ -5057,7 +5098,7 @@ fi
 
 * Wed Dec 17 2003 Felipe Alfaro Solana <felipe_alfaro@linuxmail.org> 3.0.1-1
 - Update to 3.0.1
-- Removed testparm patch as it's already merged
+- Removed testparm patch as it is already merged
 - Removed Samba.7* man pages
 - Fixed .buildroot patch
 - Fixed .pie patch
@@ -5146,7 +5187,7 @@ fi
 - use internal dep generator.
 
 * Sat Dec 14 2002 Tim Powers <timp@redhat.com> 2.2.7-4
-- don't use rpms internal dep generator
+- do not use rpms internal dep generator
 
 * Mon Dec 02 2002 Elliot Lee <sopwith@redhat.com> 2.2.7-3
 - Fix missing doc files.
@@ -5207,7 +5248,7 @@ fi
 - Make it build
 
 * Wed Apr 10 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.3a-6
-- Don't use /etc/samba.d in smbadduser, it should be /etc/samba
+- Do not use /etc/samba.d in smbadduser, it should be /etc/samba
 
 * Thu Apr  4 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.3a-5
 - Add libsmbclient.a w/headerfile for KDE (#62202)
@@ -5266,14 +5307,14 @@ fi
 - Add patch from Jeremy Allison to fix IA64 alignment problems (#51497)
 
 * Mon Aug 13 2001 Trond Eivind Glomsrød <teg@redhat.com>
-- Don't include smbpasswd in samba, it's in samba-common (#51598)
-- Add a disabled "obey pam restrictions" statement - it's not
+- Do not include smbpasswd in samba, it is in samba-common (#51598)
+- Add a disabled "obey pam restrictions" statement - it is not
   active, as we use encrypted passwords, but if the admin turns
   encrypted passwords off the choice is available. (#31351)
 
 * Wed Aug  8 2001 Trond Eivind Glomsrød <teg@redhat.com>
 - Use /var/cache/samba instead of /var/lock/samba 
-- Remove "domain controller" keyword from smb.conf, it's 
+- Remove "domain controller" keyword from smb.conf, it is 
   deprecated (from #13704)
 - Sync some examples with smb.conf.default
 - Fix password synchronization (#16987)
@@ -5299,12 +5340,12 @@ fi
 
 * Tue Jun 19 2001 Trond Eivind Glomsrød <teg@redhat.com>
 - (these changes are from the non-head version)
-- Don't include /usr/sbin/samba, it's the same as the initscript
-- unset TMPDIR, as samba can't write into a TMPDIR owned
+- Do not include /usr/sbin/samba, it is the same as the initscript
+- unset TMPDIR, as samba ca not write into a TMPDIR owned
   by root (#41193)
 - Add pidfile: lines for smbd and nmbd and a config: line
   in the initscript  (#15343)
-- don't use make -j
+- do not use make -j
 - explicitly include /usr/share/samba, not just the files in it
 
 * Tue Jun 19 2001 Bill Nottingham <notting@redhat.com>
@@ -5316,7 +5357,7 @@ fi
 * Thu Jun  7 2001 Helge Deller <hdeller@redhat.de> 
 - build as 2.2.0-1 release
 - skip the documentation-directories docbook, manpages and yodldocs
-- don't include *.sgml documentation in package
+- do not include *.sgml documentation in package
 - moved codepage-directory to /usr/share/samba/codepages
 - make it compile with glibc-2.2.3-10 and kernel-headers-2.4.2-2   
 
@@ -5354,8 +5395,8 @@ fi
 * Mon Mar 26 2001 Nalin Dahyabhai <nalin@redhat.com>
 - tweak the PAM code some more to try to do a setcred() after initgroups()
 - pull in all of the optflags on i386 and sparc
-- don't explicitly enable Kerberos support -- it's only used for password
-  checking, and if PAM is enabled it's a no-op anyway
+- do not explicitly enable Kerberos support -- it is only used for password
+  checking, and if PAM is enabled it is a no-op anyway
 
 * Mon Mar  5 2001 Tim Waugh <twaugh@redhat.com>
 - exit successfully from preun script (bug #30644).
@@ -5390,7 +5431,7 @@ fi
 - clarify smbpasswd man page (#23370)
 - build with LFS support (#22388)
 - avoid extraneous pam error messages (#10666)
-- add Urban Widmark's bug fixes for smbmount (#19623)
+- add Urban Widmark bug fixes for smbmount (#19623)
 - fix setgid directory modes (#11911)
 - split swat into subpackage (#19706)
 
@@ -5558,17 +5599,17 @@ fi
 - add a -common package, shuffle files around.
 
 * Fri Jul 23 1999 Bill Nottingham <notting@redhat.com>
-- add a chmod in %%postun so /etc/services & inetd.conf don't become unreadable
+- add a chmod in %%postun so /etc/services & inetd.conf do not become unreadable
 
 * Wed Jul 21 1999 Bill Nottingham <notting@redhat.com>
 - update to 2.0.5
 - fix mount.smb - smbmount options changed again.........
 - fix postun. oops.
-- update some stuff from the samba team's spec file.
+- update some stuff from the samba team spec file.
 
 * Fri Jun 18 1999 Bill Nottingham <notting@redhat.com>
 - split off clients into separate package
-- don't run samba by default
+- do not run samba by default
 
 * Mon Jun 14 1999 Bill Nottingham <notting@redhat.com>
 - fix one problem with mount.smb script
@@ -5589,11 +5630,11 @@ fi
 - fix mount.smb arg ordering
 
 * Fri Apr 16 1999 Bill Nottingham <notting@redhat.com>
-- go back to stop/start for restart (-HUP didn't work in testing)
+- go back to stop/start for restart (-HUP did not work in testing)
 
 * Fri Mar 26 1999 Bill Nottingham <notting@redhat.com>
 - add a mount.smb to make smb mounting a little easier.
-- smb filesystems apparently don't work on alpha. Oops.
+- smb filesystems apparently do not work on alpha. Oops.
 
 * Thu Mar 25 1999 Bill Nottingham <notting@redhat.com>
 - always create codepages
@@ -5639,7 +5680,7 @@ fi
   samba is still running)
 - the %%postun and %%preun should only exectute if this is the final
   removal
-- migrated %%triggerpostun from Red Hat's samba package to work around
+- migrated %%triggerpostun from Red Hat samba package to work around
   packaging problems in some Red Hat samba releases
 
 * Sun Apr 26 1998 John H Terpstra <jht@samba.anu.edu.au>
