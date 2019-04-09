@@ -5,11 +5,7 @@
 # Assure that sorting is case sensitive
 LANG=C
 
-MOCKS+=samba4repo-rawhide-x86_64
 MOCKS+=samba4repo-f29-x86_64
-#MOCKS+=samba4repo-7-x86_64
-# Too many dependencies, including systemd
-#MOCKS+=samba4repo-6-x86_64
 
 #REPOBASEDIR=/var/www/linux/samba4repo
 REPOBASEDIR:=`/bin/pwd`/../samba4repo
