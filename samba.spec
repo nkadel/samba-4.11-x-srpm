@@ -8,10 +8,10 @@
 
 %define main_release 0.5
 
-%define samba_version 4.10.0
-%define talloc_version 2.1.16
+%define samba_version 4.10.1
+%define talloc_version 2.2.0
 %define tdb_version 1.4.0
-%define tevent_version 0.9.39
+%define tevent_version 0.10.0
 %define ldb_version 1.5.4
 # This should be rc1 or nil
 %define pre_release %nil
@@ -117,7 +117,7 @@ Source14:       samba.pamd
 
 Source201:      README.downgrade
 
-Patch0:         v4.10_build_fix.patch
+#Patch0:         v4.10_build_fix.patch
 
 Requires(pre): /usr/sbin/groupadd
 Requires(post): systemd
@@ -1061,9 +1061,9 @@ fi
 %postun common-libs -p /sbin/ldconfig
 
 %if %{with_dc}
-#%%ldconfig_scriptlets dc-lib
-%post dc-lib -p /sbin/ldconfig
-%postun dc-lib -p /sbin/ldconfig
+#%%ldconfig_scriptlets dc-libs
+%post dc-libs -p /sbin/ldconfig
+%postun dc-libs -p /sbin/ldconfig
 
 %post dc
 %systemd_post samba.service
