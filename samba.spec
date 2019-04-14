@@ -6,11 +6,11 @@
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
 
-%define main_release 0.5
+%define main_release 0
 
-%define samba_version 4.10.1
+%define samba_version 4.10.2
 %define talloc_version 2.2.0
-%define tdb_version 1.4.0
+%define tdb_version 1.3.18
 %define tevent_version 0.10.0
 %define ldb_version 1.5.4
 # This should be rc1 or nil
@@ -2243,6 +2243,8 @@ fi
 %{python3_sitearch}/samba/tests/__pycache__/samdb_api.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/security.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/smb.*.pyc
+%{python3_sitearch}/samba/tests/__pycache__/smbd_base.cpython-37.pyc
+%{python3_sitearch}/samba/tests/__pycache__/smbd_base.cpython-37.opt-1.pyc
 %{python3_sitearch}/samba/tests/__pycache__/source.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/strings.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/subunitrun.*.pyc
@@ -2471,6 +2473,7 @@ fi
 %{python3_sitearch}/samba/tests/samdb_api.py
 %{python3_sitearch}/samba/tests/security.py
 %{python3_sitearch}/samba/tests/smb.py
+%{python3_sitearch}/samba/tests/smbd_base.py
 %{python3_sitearch}/samba/tests/source.py
 %{python3_sitearch}/samba/tests/strings.py
 %{python3_sitearch}/samba/tests/subunitrun.py
@@ -3425,6 +3428,11 @@ fi
 %endif # with_clustering_support
 
 %changelog
+* Sat Apr 13 2019 Nico Kadel-Garcia - 4.10.2-0
+- Updte to 4.10.2
+- Add tests/smbd_base.py, tests/__pcache__/smbd_base.cpython-37.pyc
+- Add tests/__pcache__/smbd_base.cpython-37.opt-in.pyc
+
 * Sat Mar 23 2019 Nico Kadel-Garcia
 - Turn ldconfig_scriptlets into explicit post commands for RHEL 7
 - Disable Requires of nc for RHEL 7
