@@ -6,6 +6,8 @@
 LANG=C
 
 MOCKS+=samba4repo-f29-x86_64
+# Not yet available
+#MOCKS+=samba4repo-8-x86_64
 
 #REPOBASEDIR=/var/www/linux/samba4repo
 REPOBASEDIR:=`/bin/pwd`/../samba4repo
