@@ -1,3 +1,7 @@
+# Single python3 version in Fedora, python3_pkgversion macro not available
+%{!?python3_pkgversion:%global python3_pkgversion 3}
+%{!?python2_pkgversion:%global python2_pkgversion 2}
+
 # rpmbuild --rebuild --with testsuite --without clustering samba.src.rpm
 #
 # The testsuite is disabled by default. Set --with testsuite or bcond_without
@@ -9,9 +13,9 @@
 %define main_release 0
 
 %define samba_version 4.10.2
-%define talloc_version 2.2.0
+%define talloc_version 2.1.16
 %define tdb_version 1.3.18
-%define tevent_version 0.10.0
+%define tevent_version 0.9.39
 %define ldb_version 1.5.4
 # This should be rc1 or nil
 %define pre_release %nil
@@ -171,7 +175,9 @@ BuildRequires: libarchive-devel
 BuildRequires: libattr-devel
 BuildRequires: libcap-devel
 BuildRequires: libcmocka-devel
+%if 0%{?fedora} > 0
 BuildRequires: libnsl2-devel
+%endif
 BuildRequires: libtirpc-devel
 BuildRequires: libuuid-devel
 BuildRequires: libxslt
@@ -186,16 +192,21 @@ BuildRequires: perl(ExtUtils::MakeMaker)
 BuildRequires: perl(Parse::Yapp)
 BuildRequires: perl(Test::More)
 BuildRequires: popt-devel
-BuildRequires: python3-devel
+BuildRequires: python%{python3_pkgversion}-devel
 %if %{with_dc}
-# Add python3-iso8601 to avoid that the
+# Add python%%{python3_pkgversion}-iso8601 to avoid that the
 # version in Samba is being packaged
-BuildRequires: python3-iso8601
+BuildRequires: python%{python3_pkgversion}-iso8601
 %endif # with_dc
 BuildRequires: quota-devel
 BuildRequires: readline-devel
+%if 0%{?fedora} > 0
 BuildRequires: rpcgen
 BuildRequires: rpcsvc-proto-devel
+%endif
+%if 0%{?rhel} > 0
+BuildRequires: rpcbind
+%endif
 BuildRequires: sed
 BuildRequires: xfsprogs-devel
 BuildRequires: xz
@@ -214,33 +225,34 @@ BuildRequires: libcephfs-devel
 
 %if %{with_dc}
 BuildRequires: bind
-BuildRequires: gnutls-devel >= 3.4.7
+#BuildRequires: gnutls-devel >= 3.4.7
+BuildRequires: gnutls-devel
 BuildRequires: krb5-server >= %{required_mit_krb5}
 
 # Required by samba-tool to run tests
-BuildRequires: python3-crypto
+BuildRequires: python%{python3_pkgversion}-crypto
 %endif
 
 # pidl requirements
 BuildRequires: perl(Parse::Yapp)
 
 BuildRequires: libtalloc-devel >= %{talloc_version}
-BuildRequires: python3-talloc-devel >= %{talloc_version}
+BuildRequires: python%{python3_pkgversion}-talloc-devel >= %{talloc_version}
 
 BuildRequires: libtevent-devel >= %{tevent_version}
-BuildRequires: python3-tevent >= %{tevent_version}
+BuildRequires: python%{python3_pkgversion}-tevent >= %{tevent_version}
 
 BuildRequires: libtdb-devel >= %{tdb_version}
-BuildRequires: python3-tdb >= %{tdb_version}
+BuildRequires: python%{python3_pkgversion}-tdb >= %{tdb_version}
 
 BuildRequires: libldb-devel >= %{ldb_version}
-BuildRequires: python3-ldb-devel >= %{ldb_version}
+BuildRequires: python%{python3_pkgversion}-ldb-devel >= %{ldb_version}
 
 %if %{with testsuite}
 BuildRequires: ldb-tools
 BuildRequires: tdb-tools
-BuildRequires: python3-gpg
-BuildRequires: python3-markdown
+BuildRequires: python%{python3_pkgversion}-gpg
+BuildRequires: python%{python3_pkgversion}-markdown
 %endif
 
 %if %{with_dc}
@@ -355,9 +367,9 @@ Requires: ldb-tools
 %requires_eq libldb
 
 %if 0
-Requires: python3-crypto
-Requires: python3-%{name} = %{samba_depver}
-Requires: python3-%{name}-dc = %{samba_depver}
+Requires: python%{python3_pkgversion}-crypto
+Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
+Requires: python%{python3_pkgversion}-%{name}-dc = %{samba_depver}
 %endif
 Requires: krb5-server >= %{required_mit_krb5}
 
@@ -508,39 +520,39 @@ library.
 %endif # with_libwbclient
 
 ### PYTHON3
-%package -n python3-%{name}
+%package -n python%{python3_pkgversion}-%{name}
 Summary: Samba Python3 libraries
 Requires: %{name} = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
-Requires: python3-talloc
-Requires: python3-tevent
-Requires: python3-tdb
-Requires: python3-ldb
-Requires: python3-dns
+Requires: python%{python3_pkgversion}-talloc
+Requires: python%{python3_pkgversion}-tevent
+Requires: python%{python3_pkgversion}-tdb
+Requires: python%{python3_pkgversion}-ldb
+Requires: python%{python3_pkgversion}-dns
 
-%description -n python3-%{name}
-The python3-%{name} package contains the Python 3 libraries needed by programs
+%description -n python%{python3_pkgversion}-%{name}
+The python%{python3_pkgversion}-%{name} package contains the Python 3 libraries needed by programs
 that use SMB, RPC and other Samba provided protocols in Python 3 programs.
 
-%package -n python3-samba-test
+%package -n python%{python3_pkgversion}-samba-test
 Summary: Samba Python libraries
-Requires: python3-%{name} = %{samba_depver}
+Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
 
-%description -n python3-samba-test
-The python3-%{name}-test package contains the Python libraries used by the test suite of Samba.
+%description -n python%{python3_pkgversion}-samba-test
+The python%{python3_pkgversion}-%{name}-test package contains the Python libraries used by the test suite of Samba.
 If you want to run full set of Samba tests, you need to install this package.
 
 %if %{with_dc}
-%package -n python3-samba-dc
+%package -n python%{python3_pkgversion}-samba-dc
 Summary: Samba Python libraries for Samba AD
-Requires: python3-%{name} = %{samba_depver}
+Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
 
-%description -n python3-samba-dc
-The python3-%{name}-dc package contains the Python libraries needed by programs
+%description -n python%{python3_pkgversion}-samba-dc
+The python%{python3_pkgversion}-%{name}-dc package contains the Python libraries needed by programs
 to manage Samba AD.
 %endif
 
@@ -719,9 +731,7 @@ Summary: CTDB clustered database test suite
 Requires: samba-client-libs = %{samba_depver}
 
 Requires: ctdb = %{samba_depver}
-%if 0%{?fedora}
-Recommends: nc
-%endif
+#Recommends: nc
 
 Provides: ctdb-devel = %{samba_depver}
 Obsoletes: ctdb-devel < %{samba_depver}
@@ -1857,7 +1867,7 @@ fi
 %{_mandir}/man3/Parse::Pidl*
 
 ### PYTHON3
-%files -n python3-%{name}
+%files -n python%{python3_pkgversion}-%{name}
 %dir %{python3_sitearch}/samba/
 %{python3_sitearch}/samba/__init__.py
 %dir %{python3_sitearch}/samba/__pycache__
@@ -2095,7 +2105,7 @@ fi
 %{_libdir}/samba/libsamba-python.*-samba4.so
 
 %if %{with_dc}
-%files -n python3-%{name}-dc
+%files -n python%{python3_pkgversion}-%{name}-dc
 %{python3_sitearch}/samba/samdb.py
 %{python3_sitearch}/samba/schema.py
 
@@ -2155,7 +2165,7 @@ fi
 %{python3_sitearch}/samba/uptodateness.py
 %endif
 
-%files -n python3-%{name}-test
+%files -n python%{python3_pkgversion}-%{name}-test
 %dir %{python3_sitearch}/samba/tests
 %{python3_sitearch}/samba/tests/__init__.py
 %dir %{python3_sitearch}/samba/tests/__pycache__
