@@ -34,8 +34,6 @@ $(MOCKS):: srpm FORCE
 	else \
 		echo "Storing " rpmbuild/SRPMS/*.src.rpm "as $@.src.rpm"; \
 		install rpmbuild/SRPMS/*.src.rpm $@.src.rpm; \
-		echo "Storing $@/*.src.rpm in $@.rpm"; \
-		/bin/mv $@/*.src.rpm $@.src.rpm; \
 		echo "Actally building RPMS in $@"; \
 		rm -rf $@; \
 		mock -q -r $(PWD)/../$@.cfg \
