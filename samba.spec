@@ -121,8 +121,6 @@ Source14:       samba.pamd
 
 Source201:      README.downgrade
 
-#Patch0:         v4.10_build_fix.patch
-
 Requires(pre): /usr/sbin/groupadd
 Requires(post): systemd
 Requires(preun): systemd
@@ -175,7 +173,7 @@ BuildRequires: libarchive-devel
 BuildRequires: libattr-devel
 BuildRequires: libcap-devel
 BuildRequires: libcmocka-devel
-%if 0%{?fedora} > 0
+%if 0%{?fedora}
 BuildRequires: libnsl2-devel
 %endif
 BuildRequires: libtirpc-devel
@@ -197,6 +195,7 @@ BuildRequires: python%{python3_pkgversion}-devel
 # Add python%%{python3_pkgversion}-iso8601 to avoid that the
 # version in Samba is being packaged
 BuildRequires: python%{python3_pkgversion}-iso8601
+BuildRequires: python%{python3_pkgversion}-subunit-test
 %endif # with_dc
 BuildRequires: quota-devel
 BuildRequires: readline-devel
@@ -225,13 +224,18 @@ BuildRequires: libcephfs-devel
 
 %if %{with_dc}
 BuildRequires: bind
-#BuildRequires: gnutls-devel >= 3.4.7
-BuildRequires: gnutls-devel
+# Requires compat-gnutls34 on RHEL 7
+%if 0%{?rhel} == 7
+# Custom built compatility package
+BuildRequires: compat-gnutls34-devel >= 3.4.7
+%else
+BuildRequires: gnutls-devel >= 3.4.7
+%endif # rhel == 7
 BuildRequires: krb5-server >= %{required_mit_krb5}
 
 # Required by samba-tool to run tests
 BuildRequires: python%{python3_pkgversion}-crypto
-%endif
+%endif # with_dc
 
 # pidl requirements
 BuildRequires: perl(Parse::Yapp)
@@ -366,11 +370,9 @@ Requires: ldb-tools
 # See bug 1507420
 %requires_eq libldb
 
-%if 0
 Requires: python%{python3_pkgversion}-crypto
 Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
 Requires: python%{python3_pkgversion}-%{name}-dc = %{samba_depver}
-%endif
 Requires: krb5-server >= %{required_mit_krb5}
 
 Provides: samba4-dc = %{samba_depver}
@@ -731,6 +733,7 @@ Summary: CTDB clustered database test suite
 Requires: samba-client-libs = %{samba_depver}
 
 Requires: ctdb = %{samba_depver}
+# Stop using Recommends <nkadel@gmail.com>
 #Recommends: nc
 
 Provides: ctdb-devel = %{samba_depver}
@@ -789,14 +792,8 @@ export python_LDFLAGS="$(echo %{__global_ldflags} | sed -e 's/-Wl,-z,defs//g')"
 # Use the gold linker
 export LDFLAGS="%{__global_ldflags} -fuse-ld=gold"
 
-%if 0%{?rhel}
-# Use Python 2 for the waf buildscript
-#pathfix.py -n -p -i %{__python2} buildtools/bin/waf
-
-# pathfix.py does not work on RHEL 7
-sed -i.python2 "s|^#!/usr/bin/env python.*|#!/usr/bin/python2|g" buildtools/bin/waf
-export RHEL_ALLOW_PYTHON2_FOR_BUILD=1
-%endif # rhel
+# Enforce __python3 compilation, including for RHEL
+sed -i.python3 's|#!/usr/bin/env python3.*|#!%{__python3}|g' buildtools/bin/waf
 
 %configure \
         --enable-fhs \
@@ -1063,17 +1060,17 @@ if [ $1 -eq 0 ] ; then
 fi
 
 #%%ldconfig_scriptlets client-libs
-%post client-libs -p /sbin/ldconfig
-%postun client-libs -p /sbin/ldconfig
+%post -p /sbin/ldconfig client-libs
+%postun -p /sbin/ldconfig client-libs
 
 #%%ldconfig_scriptlets common-libs
-%post common-libs -p /sbin/ldconfig
-%postun common-libs -p /sbin/ldconfig
+%post -p /sbin/ldconfig common-libs
+%postun -p /sbin/ldconfig common-libs
 
 %if %{with_dc}
 #%%ldconfig_scriptlets dc-libs
-%post dc-libs -p /sbin/ldconfig
-%postun dc-libs -p /sbin/ldconfig
+%post -p /sbin/ldconfig dc-libs
+%postun -p /sbin/ldconfig dc-libs
 
 %post dc
 %systemd_post samba.service
@@ -1096,13 +1093,13 @@ if [ $1 -eq 0 ] ; then
 fi
 
 #%%ldconfig_scriptlets libs
-%post libs -p /sbin/ldconfig
-%postun libs -p /sbin/ldconfig
+%post -p /sbin/ldconfig libs
+%postun -p /sbin/ldconfig libs
 
 %if %with_libsmbclient
 #%%ldconfig_scriptlets -n libsmbclient
-%post -n libsmbclient -p /sbin/ldconfig
-%postun -n libsmbclient -p /sbin/ldconfig
+%post -p /sbin/ldconfig -n libsmbclient
+%postun -p /sbin/ldconfig -n libsmbclient
 %endif
 
 %if %with_libwbclient
@@ -1146,8 +1143,8 @@ fi
 %endif # with_libwbclient
 
 #%%ldconfig_scriptlets test
-%post test -p /sbin/ldconfig
-%postun test -p /sbin/ldconfig
+%post -p /sbin/ldconfig test
+%postun -p /sbin/ldconfig test
 
 %pre winbind
 /usr/sbin/groupadd -g 88 wbpriv >/dev/null 2>&1 || :
@@ -1178,9 +1175,9 @@ if [ $1 -eq 0 ]; then
         %{_sbindir}/update-alternatives --remove winbind_krb5_locator.so %{_libdir}/samba/krb5/winbind_krb5_locator.so
 fi
 
-#%ldconfig_scriptlets winbind-modules
-%post winbind-modules -p /sbin/ldconfig
-%postun winbind-modules -p /sbin/ldconfig
+#%%ldconfig_scriptlets winbind-modules
+%post -p /sbin/ldconfig winbind-modules
+%postun -p /sbin/ldconfig winbind-modules
 
 %if %with_clustering_support
 %post -n ctdb
@@ -2253,8 +2250,7 @@ fi
 %{python3_sitearch}/samba/tests/__pycache__/samdb_api.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/security.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/smb.*.pyc
-%{python3_sitearch}/samba/tests/__pycache__/smbd_base.cpython-37.pyc
-%{python3_sitearch}/samba/tests/__pycache__/smbd_base.cpython-37.opt-1.pyc
+%{python3_sitearch}/samba/tests/__pycache__/smbd_base.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/source.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/strings.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/subunitrun.*.pyc
@@ -3438,16 +3434,21 @@ fi
 %endif # with_clustering_support
 
 %changelog
-* Sat Apr 13 2019 Nico Kadel-Garcia - 4.10.2-0
-- Updte to 4.10.2
-- Add tests/smbd_base.py, tests/__pcache__/smbd_base.cpython-37.pyc
-- Add tests/__pcache__/smbd_base.cpython-37.opt-in.pyc
+* Thu Apr 18 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.10.2-0.1
+- Activate python3_pkgversion for RHEL 7
+- Disable Recommends for RHEL 7
+- Replace ldconfig_scriptlets for RHEL 7
 
-* Sat Mar 23 2019 Nico Kadel-Garcia
-- Turn ldconfig_scriptlets into explicit post commands for RHEL 7
-- Disable Requires of nc for RHEL 7
-- Replace pathfix.py with sed command for RHEL 7
-- Eliminate contractions in comments
+* Mon Apr 08 2019 Guenther Deschner <gdeschner@redhat.com> - 4.10.2-0
+- Update to Samba 4.10.2
+- resolves: #1689010, #1697718 - Security fixes for CVE-2019-3870
+- resolves: #1691518, #1697717 - Security fixes for CVE-2019-3880
+
+* Wed Apr 03 2019 Guenther Deschner <gdeschner@redhat.com> - 4.10.1-0
+- Update to Samba 4.10.1
+
+* Mon Mar 25 2019 Andreas Schneider <asn@redhat.com> - 4.10.0-6
+- resolves: #1692347 - Add missing DC requirement for its python3 tools
 
 * Wed Mar 20 2019 Guenther Deschner <gdeschner@redhat.com> - 4.10.0-5
 - Fix build failure (duplication during install)
@@ -5359,7 +5360,7 @@ fi
 * Tue Jun 19 2001 Trond Eivind Glomsrød <teg@redhat.com>
 - (these changes are from the non-head version)
 - Do not include /usr/sbin/samba, it is the same as the initscript
-- unset TMPDIR, as samba ca not write into a TMPDIR owned
+- unset TMPDIR, as samba cannot write into a TMPDIR owned
   by root (#41193)
 - Add pidfile: lines for smbd and nmbd and a config: line
   in the initscript  (#15343)
