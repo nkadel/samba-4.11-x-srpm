@@ -41,21 +41,26 @@
 
 %global with_profiling 1
 
-%global with_vfs_cephfs 0
 %if 0%{?fedora}
 %ifarch aarch64 ppc64le s390x x86_64
 %global with_vfs_cephfs 1
-%endif
-%endif
+%else
+%global with_vfs_cephfs 0
+%endif # arch aarch64 ppc64le s390x x86_64
+%else
+%global with_vfs_cephfs 0
+%endif # fedora
 
-%global with_vfs_glusterfs 1
 %if 0%{?rhel}
-%global with_vfs_glusterfs 0
 # Only enable on x86_64
 %ifarch x86_64
 %global with_vfs_glusterfs 1
-%endif
-%endif
+%else
+%global with_vfs_glusterfs 0
+%endif # x86_64
+%else
+%global with_vfs_glusterfs 1
+%endif # rhel
 
 %global with_intel_aes_accel 0
 %ifarch x86_64
@@ -1309,7 +1314,10 @@ fi
 %files client
 %{_bindir}/cifsdd
 %{_bindir}/dbwrap_tool
+# Find why this is not in RHEL 7 <nkadel@gmail.com>
+%if 0%{?fedora}
 %{_bindir}/dumpmscat
+%endif
 %{_bindir}/findsmb
 %{_bindir}/mvxattr
 %{_bindir}/nmblookup
@@ -1413,7 +1421,10 @@ fi
 %{_libdir}/samba/liblibsmb-samba4.so
 %{_libdir}/samba/libmessages-dgm-samba4.so
 %{_libdir}/samba/libmessages-util-samba4.so
+%if 0%{?fedora}
+# Unclear why this is not on RHEL, 
 %{_libdir}/samba/libmscat-samba4.so
+%endif
 %{_libdir}/samba/libmsghdr-samba4.so
 %{_libdir}/samba/libmsrpc3-samba4.so
 %{_libdir}/samba/libndr-samba-samba4.so
@@ -1759,8 +1770,10 @@ fi
 ### VFS-CEPHFS
 %if %{with_vfs_cephfs}
 %files vfs-cephfs
+%if 0%{?fedora}
 %{_libdir}/samba/vfs/ceph.so
 %{_mandir}/man8/vfs_ceph.8*
+%endif
 %endif
 
 ### VFS-GLUSTERFS
