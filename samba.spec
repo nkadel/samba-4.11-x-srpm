@@ -847,10 +847,6 @@ make %{?_smp_mflags}
 %install
 rm -rf %{buildroot}
 
-%if 0%{?rhel}
-export RHEL_ALLOW_PYTHON2_FOR_BUILD=1
-%endif # rhel
-
 make %{?_smp_mflags} install DESTDIR=%{buildroot}
 
 install -d -m 0755 %{buildroot}/usr/{sbin,bin}
@@ -1017,9 +1013,6 @@ done
 
 %if %{with testsuite}
 %check
-%if 0%{?rhel}
-export RHEL_ALLOW_PYTHON2_FOR_BUILD=1
-%endif # rhel
 
 TDB_NO_FSYNC=1 make %{?_smp_mflags} test
 %endif # with testsuite
@@ -3435,9 +3428,10 @@ fi
 
 %changelog
 * Thu Apr 18 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.10.2-0.1
-- Activate python3_pkgversion for RHEL 7
+- Activate python3_pkgversion for RHEL 7 to use python36-devel
 - Disable Recommends for RHEL 7
 - Replace ldconfig_scriptlets for RHEL 7
+- Discard python2 compilation entirely, especially RHEL_ALLOW_PYTHON2_FOR_BUILD=1
 
 * Mon Apr 08 2019 Guenther Deschner <gdeschner@redhat.com> - 4.10.2-0
 - Update to Samba 4.10.2
