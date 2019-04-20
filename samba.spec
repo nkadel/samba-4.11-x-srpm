@@ -764,16 +764,6 @@ and use CTDB instead.
 %prep
 zcat %{SOURCE0} | gpgv2 --quiet --keyring %{SOURCE2} %{SOURCE1} -
 %autosetup -n samba-%{version}%{pre_release} -p1
-echo with_dc: %with_dc
-echo with_mitkrb5: %with_mitkrb5
-echo with_libsmbclient: %with_libsmbclient
-echo with_libwbclient: %with_libwbclient
-echo with_profiling: %with_profiling
-echo with_vfs_cephs: %with_vfs_cephs
-echo with_vfs_glusterfs: %with_vfs_glusterfs
-echo with_intel_aes_accel: %with_intel_aes_accel
-echo with_dc: %with_dc
-echo with_mitkrb5: %with_mitkrb5
 
 %build
 %global _talloc_lib ,talloc,pytalloc,pytalloc-util
