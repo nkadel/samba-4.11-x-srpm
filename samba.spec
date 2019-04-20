@@ -3500,6 +3500,7 @@ fi
 - Replace ldconfig_scriptlets for RHEL 7
 - Discard python2 compilation entirely, especially RHEL_ALLOW_PYTHON2_FOR_BUILD=1
 - Activate compat-gnutls34 and compat-nettle32 for RHEL 7
+- Discard obsolete v4.10_build_fix.patch
 
 * Mon Apr 08 2019 Guenther Deschner <gdeschner@redhat.com> - 4.10.2-0
 - Update to Samba 4.10.2
