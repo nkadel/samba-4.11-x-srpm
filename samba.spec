@@ -10,7 +10,7 @@
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
 
-%define main_release 0
+%define main_release 0.1
 
 %define samba_version 4.10.2
 %define talloc_version 2.1.16
@@ -3499,6 +3499,7 @@ fi
 - Disable Recommends for RHEL 7
 - Replace ldconfig_scriptlets for RHEL 7
 - Discard python2 compilation entirely, especially RHEL_ALLOW_PYTHON2_FOR_BUILD=1
+- Activate compat-gnutls34 and compat-nettle32 for RHEL 7
 
 * Mon Apr 08 2019 Guenther Deschner <gdeschner@redhat.com> - 4.10.2-0
 - Update to Samba 4.10.2
