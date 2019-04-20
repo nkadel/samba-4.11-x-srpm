@@ -74,13 +74,15 @@
 %endif
 
 %global with_dc 1
-
-%if 0%{?rhel}
-%global with_dc 0
-%endif
+%if %with_dc
 
 %if %{with testsuite}
 %global with_dc 1
+%endif
+
+%global with_mitkrb5 0
+%else
+%global with_mitkrb5 1
 %endif
 
 %global required_mit_krb5 1.15.1
@@ -171,7 +173,9 @@ BuildRequires: gawk
 BuildRequires: gnupg2
 BuildRequires: gpgme-devel
 BuildRequires: jansson-devel
+%if %with_mitkrb5
 BuildRequires: krb5-devel >= %{required_mit_krb5}
+%endif
 BuildRequires: libacl-devel
 BuildRequires: libaio-devel
 BuildRequires: libarchive-devel
@@ -200,7 +204,9 @@ BuildRequires: python%{python3_pkgversion}-devel
 # Add python%%{python3_pkgversion}-iso8601 to avoid that the
 # version in Samba is being packaged
 BuildRequires: python%{python3_pkgversion}-iso8601
+%if 0%{?fedora} > 0
 BuildRequires: python%{python3_pkgversion}-subunit-test
+%endif # fedora
 %endif # with_dc
 BuildRequires: quota-devel
 BuildRequires: readline-devel
@@ -229,14 +235,15 @@ BuildRequires: libcephfs-devel
 
 %if %{with_dc}
 BuildRequires: bind
-# Requires compat-gnutls34 on RHEL 7
-%if 0%{?rhel} == 7
+BuildRequires: krb5-server >= %{required_mit_krb5}
+%if 0%{?rhel}
 # Custom built compatility package
+BuildRequires: compat-nettle32-devel >= 3.1.1
 BuildRequires: compat-gnutls34-devel >= 3.4.7
 %else
 BuildRequires: gnutls-devel >= 3.4.7
-%endif # rhel == 7
-BuildRequires: krb5-server >= %{required_mit_krb5}
+BuildRequires: nettle-devel >= 3.1.1
+%endif # rhel
 
 # Required by samba-tool to run tests
 BuildRequires: python%{python3_pkgversion}-crypto
@@ -757,6 +764,16 @@ and use CTDB instead.
 %prep
 zcat %{SOURCE0} | gpgv2 --quiet --keyring %{SOURCE2} %{SOURCE1} -
 %autosetup -n samba-%{version}%{pre_release} -p1
+echo with_dc: %with_dc
+echo with_mitkrb5: %with_mitkrb5
+echo with_libsmbclient: %with_libsmbclient
+echo with_libwbclient: %with_libwbclient
+echo with_profiling: %with_profiling
+echo with_vfs_cephs: %with_vfs_cephs
+echo with_vfs_glusterfs: %with_vfs_glusterfs
+echo with_intel_aes_accel: %with_intel_aes_accel
+echo with_dc: %with_dc
+echo with_mitkrb5: %with_mitkrb5
 
 %build
 %global _talloc_lib ,talloc,pytalloc,pytalloc-util
@@ -800,6 +817,12 @@ export LDFLAGS="%{__global_ldflags} -fuse-ld=gold"
 # Enforce __python3 compilation, including for RHEL
 sed -i.python3 's|#!/usr/bin/env python3.*|#!%{__python3}|g' buildtools/bin/waf
 
+%if 0%{?rhel}
+# Needed for compatibility packages on RHEL
+export PKG_CONFIG_PATH=%{_libdir}/compat-gnutls34/pkgconfig:%{_libdir}/compat-nettle32/pkgconfig
+/usr/bin/pkg-config "gnutls >= 3.4.7" --cflags --libs gnutls
+%endif
+
 %configure \
         --enable-fhs \
         --with-piddir=/run \
@@ -819,8 +842,10 @@ sed -i.python3 's|#!/usr/bin/env python3.*|#!%{__python3}|g' buildtools/bin/waf
 %if (! %with_libsmbclient) || (! %with_libwbclient)
         --private-libraries=%{_samba_private_libraries} \
 %endif
+%if %with_mitkrb5
         --with-system-mitkrb5 \
 	--with-experimental-mit-ad-dc \
+%endif
 %if ! %with_dc
         --without-ad-dc \
 %endif
@@ -1537,9 +1562,9 @@ fi
 %{_sbindir}/samba-gpupdate
 %{_sbindir}/samba_spnupdate
 %{_sbindir}/samba_upgradedns
-
+%if %with_mitkrb5
 %{_libdir}/krb5/plugins/kdb/samba.so
-
+%endif
 %{_libdir}/samba/auth/samba4.so
 %{_libdir}/samba/libpac-samba4.so
 %dir %{_libdir}/samba/gensec
@@ -1804,6 +1829,33 @@ fi
 %{_libdir}/samba/libshares-samba4.so
 %{_libdir}/samba/libsmbpasswdparser-samba4.so
 %{_libdir}/samba/libxattr-tdb-samba4.so
+%if ! %with_mitkrb5
+%{_libdir}/samba/libHDB-SAMBA4-samba4.so
+%{_libdir}/samba/libasn1-samba4.so.8
+%{_libdir}/samba/libasn1-samba4.so.8.0.0
+%{_libdir}/samba/libcom_err-samba4.so.0
+%{_libdir}/samba/libcom_err-samba4.so.0.25
+%{_libdir}/samba/libgssapi-samba4.so.2
+%{_libdir}/samba/libgssapi-samba4.so.2.0.0
+%{_libdir}/samba/libhcrypto-samba4.so.5
+%{_libdir}/samba/libhcrypto-samba4.so.5.0.1
+%{_libdir}/samba/libhdb-samba4.so.11
+%{_libdir}/samba/libhdb-samba4.so.11.0.2
+%{_libdir}/samba/libheimbase-samba4.so.1
+%{_libdir}/samba/libheimbase-samba4.so.1.0.0
+%{_libdir}/samba/libheimntlm-samba4.so.1
+%{_libdir}/samba/libheimntlm-samba4.so.1.0.1
+%{_libdir}/samba/libhx509-samba4.so.5
+%{_libdir}/samba/libhx509-samba4.so.5.0.0
+%{_libdir}/samba/libkdc-samba4.so.2
+%{_libdir}/samba/libkdc-samba4.so.2.0.0
+%{_libdir}/samba/libkrb5-samba4.so.26
+%{_libdir}/samba/libkrb5-samba4.so.26.0.0
+%{_libdir}/samba/libroken-samba4.so.19
+%{_libdir}/samba/libroken-samba4.so.19.0.1
+%{_libdir}/samba/libwind-samba4.so.0
+%{_libdir}/samba/libwind-samba4.so.0.0.0
+%endif # ! with_mitkrb5
 
 ### LIBSMBCLIENT
 %if %with_libsmbclient
@@ -2541,10 +2593,12 @@ fi
 %files winbind-clients
 %{_bindir}/ntlm_auth
 %{_bindir}/wbinfo
+%if %with_mitkrb5
 %{_libdir}/samba/krb5/winbind_krb5_localauth.so
+%{_mandir}/man8/winbind_krb5_localauth.8*
+%endif # with_mitkrb5
 %{_mandir}/man1/ntlm_auth.1.gz
 %{_mandir}/man1/wbinfo.1*
-%{_mandir}/man8/winbind_krb5_localauth.8*
 
 ### WINBIND-KRB5-LOCATOR
 %files winbind-krb5-locator
