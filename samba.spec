@@ -40,49 +40,44 @@
 
 %global with_profiling 1
 
+%global with_vfs_cephfs 0
 %if 0%{?fedora} > 0
 %ifarch aarch64 ppc64le s390x x86_64
 %global with_vfs_cephfs 1
-%else
-%global with_vfs_cephfs 0
-%endif # arch aarch64 ppc64le s390x x86_64
-%else
-%global with_vfs_cephfs 0
+%endif #aarch64 ppc64le s390x x86_64
 %endif # fedora > 0
 
+%global with_vfs_glusterfs 1
 %if 0%{?rhel} >  0
+%global with_vfs_glusterfs 0
 # Only enable on x86_64
 %ifarch x86_64
 %global with_vfs_glusterfs 1
-%else
-%global with_vfs_glusterfs 0
 %endif # x86_64
-%else
-%global with_vfs_glusterfs 1
 %endif # rhel > 0
 
 %global with_intel_aes_accel 0
 %ifarch x86_64
 %global with_intel_aes_accel 1
-%endif
+%endif # x86_64
 
 %global libwbc_alternatives_version 0.15
 %global libwbc_alternatives_suffix %nil
 %if 0%{?__isa_bits} == 64
 %global libwbc_alternatives_suffix -64
-%endif
+%endif # isa_bits == 64
 
 %global with_dc 1
-%if %with_dc
 
 %if %{with testsuite}
 %global with_dc 1
-%endif
+%endif # testsuite
 
-%global with_mitkrb5 0
-%else
 %global with_mitkrb5 1
-%endif
+%if %with_dc
+# with_mitkrb5 is depreacted for with_dc
+%global with_mitkrb5 0
+%endif # with_dc
 
 %global required_mit_krb5 1.15.1
 
