@@ -1,7 +1,3 @@
-# Single python3 version in Fedora, python3_pkgversion macro not available
-%{!?python3_pkgversion:%global python3_pkgversion 3}
-%{!?python2_pkgversion:%global python2_pkgversion 2}
-
 # rpmbuild --rebuild --with testsuite --without clustering samba.src.rpm
 #
 # The testsuite is disabled by default. Set --with testsuite or bcond_without
@@ -10,7 +6,10 @@
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
 
-%define main_release 0.1
+# Single python3 version in Fedora, python3_pkgversion macro not available
+%{!?python3_pkgversion:%global python3_pkgversion 3}
+
+%define main_release 0.3
 
 %define samba_version 4.10.2
 %define talloc_version 2.1.16
@@ -41,7 +40,7 @@
 
 %global with_profiling 1
 
-%if 0%{?fedora}
+%if 0%{?fedora} > 0
 %ifarch aarch64 ppc64le s390x x86_64
 %global with_vfs_cephfs 1
 %else
@@ -49,9 +48,9 @@
 %endif # arch aarch64 ppc64le s390x x86_64
 %else
 %global with_vfs_cephfs 0
-%endif # fedora
+%endif # fedora > 0
 
-%if 0%{?rhel}
+%if 0%{?rhel} >  0
 # Only enable on x86_64
 %ifarch x86_64
 %global with_vfs_glusterfs 1
@@ -60,7 +59,7 @@
 %endif # x86_64
 %else
 %global with_vfs_glusterfs 1
-%endif # rhel
+%endif # rhel > 0
 
 %global with_intel_aes_accel 0
 %ifarch x86_64
@@ -99,7 +98,7 @@ Name:           samba
 Version:        %{samba_version}
 Release:        %{samba_release}
 
-%if 0%{?rhel}
+%if 0%{?rhel} > 0
 Epoch:          0
 %else
 Epoch:          2
@@ -182,7 +181,7 @@ BuildRequires: libarchive-devel
 BuildRequires: libattr-devel
 BuildRequires: libcap-devel
 BuildRequires: libcmocka-devel
-%if 0%{?fedora}
+%if 0%{?fedora} > 0
 BuildRequires: libnsl2-devel
 %endif
 BuildRequires: libtirpc-devel
@@ -206,7 +205,7 @@ BuildRequires: python%{python3_pkgversion}-devel
 BuildRequires: python%{python3_pkgversion}-iso8601
 %if 0%{?fedora} > 0
 BuildRequires: python%{python3_pkgversion}-subunit-test
-%endif # fedora
+%endif # fedora > 0
 %endif # with_dc
 BuildRequires: quota-devel
 BuildRequires: readline-devel
@@ -236,14 +235,14 @@ BuildRequires: libcephfs-devel
 %if %{with_dc}
 BuildRequires: bind
 BuildRequires: krb5-server >= %{required_mit_krb5}
-%if 0%{?rhel}
+%if 0%{?rhel} > 0
 # Custom built compatility package
 BuildRequires: compat-nettle32-devel >= 3.1.1
 BuildRequires: compat-gnutls34-devel >= 3.4.7
 %else
 BuildRequires: gnutls-devel >= 3.4.7
 BuildRequires: nettle-devel >= 3.1.1
-%endif # rhel
+%endif # rhel > 0
 
 # Required by samba-tool to run tests
 BuildRequires: python%{python3_pkgversion}-crypto
@@ -745,8 +744,10 @@ Summary: CTDB clustered database test suite
 Requires: samba-client-libs = %{samba_depver}
 
 Requires: ctdb = %{samba_depver}
-# Stop using Recommends <nkadel@gmail.com>
-#Recommends: nc
+%if 0%{?fedora} > 0
+# Yum on RHEL does not support Recommends
+Recommends: nc
+%endif
 
 Provides: ctdb-devel = %{samba_depver}
 Obsoletes: ctdb-devel < %{samba_depver}
@@ -807,7 +808,7 @@ export LDFLAGS="%{__global_ldflags} -fuse-ld=gold"
 # Enforce __python3 compilation, including for RHEL
 sed -i.python3 's|#!/usr/bin/env python3.*|#!%{__python3}|g' buildtools/bin/waf
 
-%if 0%{?rhel}
+%if 0%{?rhel} > 0
 # Needed for compatibility packages on RHEL
 export PKG_CONFIG_PATH=%{_libdir}/compat-gnutls34/pkgconfig:%{_libdir}/compat-nettle32/pkgconfig
 /usr/bin/pkg-config "gnutls >= 3.4.7" --cflags --libs gnutls
@@ -1330,7 +1331,7 @@ fi
 %{_bindir}/cifsdd
 %{_bindir}/dbwrap_tool
 # Find why this is not in RHEL 7 <nkadel@gmail.com>
-%if 0%{?fedora}
+%if 0%{?fedora} > 0
 %{_bindir}/dumpmscat
 %endif
 %{_bindir}/findsmb
@@ -1436,7 +1437,7 @@ fi
 %{_libdir}/samba/liblibsmb-samba4.so
 %{_libdir}/samba/libmessages-dgm-samba4.so
 %{_libdir}/samba/libmessages-util-samba4.so
-%if 0%{?fedora}
+%if 0%{?fedora} > 0
 # Unclear why this is not on RHEL, 
 %{_libdir}/samba/libmscat-samba4.so
 %endif
@@ -1785,7 +1786,7 @@ fi
 ### VFS-CEPHFS
 %if %{with_vfs_cephfs}
 %files vfs-cephfs
-%if 0%{?fedora}
+%if 0%{?fedora} > 0
 %{_libdir}/samba/vfs/ceph.so
 %{_mandir}/man8/vfs_ceph.8*
 %endif
@@ -3484,6 +3485,10 @@ fi
 %endif # with_clustering_support
 
 %changelog
+* Wed Apr 24 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.10.2-0.2
+- Use rhel > 0 and fedora > 0 for RHEL 7 compilation
+- Discard python2_pkgversion
+
 * Thu Apr 18 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.10.2-0.1
 - Activate python3_pkgversion for RHEL 7 to use python36-devel
 - Disable Recommends for RHEL 7
@@ -5774,4 +5779,3 @@ fi
 - Added a number of options to smb.conf file
 - Added smbadduser command (missed from all previous RPMs) - Doooh!
 - Added smbuser file and smb.conf file updates for username map
-
