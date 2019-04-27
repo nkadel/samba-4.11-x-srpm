@@ -41,20 +41,21 @@
 %global with_profiling 1
 
 %global with_vfs_cephfs 0
-%if 0%{?fedora} > 0
+%if (0%{?fedora} > 0 || 0%{?rhel} > 7)
 %ifarch aarch64 ppc64le s390x x86_64
 %global with_vfs_cephfs 1
-%endif #aarch64 ppc64le s390x x86_64
-%endif # fedora > 0
+%endif # aarch64 ppc64le s390x x86_64
+%endif # fedora > 0 || rhel > 7
 
 %global with_vfs_glusterfs 1
-%if 0%{?rhel} >  0
-%global with_vfs_glusterfs 0
+%if (0%{?rhel} > 0 && 0%{?rhel} <= 7)
 # Only enable on x86_64
 %ifarch x86_64
 %global with_vfs_glusterfs 1
+%else
+%global with_vfs_glusterfs 0
 %endif # x86_64
-%endif # rhel > 0
+%endif # rhel && rhel <= 7
 
 %global with_intel_aes_accel 0
 %ifarch x86_64
@@ -65,21 +66,21 @@
 %global libwbc_alternatives_suffix %nil
 %if 0%{?__isa_bits} == 64
 %global libwbc_alternatives_suffix -64
-%endif # isa_bits == 64
+%endif # __isa_bits == 64
 
 %global with_dc 1
 
 %if %{with testsuite}
 %global with_dc 1
-%endif # testsuite
+%endif
+
+%global required_mit_krb5 1.15.1
 
 %global with_mitkrb5 1
 %if %with_dc
-# with_mitkrb5 is depreacted for with_dc
+# with_mitkrb5 is unreliable for with_dc
 %global with_mitkrb5 0
 %endif # with_dc
-
-%global required_mit_krb5 1.15.1
 
 %global with_clustering_support 0
 
@@ -176,7 +177,7 @@ BuildRequires: libarchive-devel
 BuildRequires: libattr-devel
 BuildRequires: libcap-devel
 BuildRequires: libcmocka-devel
-%if 0%{?fedora} > 0
+%if (0%{?fedora} > 0 || 0%{?rhel} > 7)
 BuildRequires: libnsl2-devel
 %endif
 BuildRequires: libtirpc-devel
@@ -198,19 +199,16 @@ BuildRequires: python%{python3_pkgversion}-devel
 # Add python%%{python3_pkgversion}-iso8601 to avoid that the
 # version in Samba is being packaged
 BuildRequires: python%{python3_pkgversion}-iso8601
-%if 0%{?fedora} > 0
-BuildRequires: python%{python3_pkgversion}-subunit-test
-%endif # fedora > 0
+#BuildRequires: python%{python3_pkgversion}-subunit-test
 %endif # with_dc
 BuildRequires: quota-devel
 BuildRequires: readline-devel
-%if 0%{?fedora} > 0
+%if (0%{?fedora} > 0 || 0%{?rhel} > 7)
 BuildRequires: rpcgen
 BuildRequires: rpcsvc-proto-devel
-%endif
-%if 0%{?rhel} > 0
+%else
 BuildRequires: rpcbind
-%endif
+%endif # fedora > 0 || rhel > 7
 BuildRequires: sed
 BuildRequires: xfsprogs-devel
 BuildRequires: xz
@@ -230,14 +228,14 @@ BuildRequires: libcephfs-devel
 %if %{with_dc}
 BuildRequires: bind
 BuildRequires: krb5-server >= %{required_mit_krb5}
-%if 0%{?rhel} > 0
+%if (0%{?rhel} > 0 && 0%{?rhel} < 8)
 # Custom built compatility package
 BuildRequires: compat-nettle32-devel >= 3.1.1
 BuildRequires: compat-gnutls34-devel >= 3.4.7
 %else
 BuildRequires: gnutls-devel >= 3.4.7
 BuildRequires: nettle-devel >= 3.1.1
-%endif # rhel > 0
+%endif # rhel > 0 && rhel < 8
 
 # Required by samba-tool to run tests
 BuildRequires: python%{python3_pkgversion}-crypto
@@ -739,7 +737,7 @@ Summary: CTDB clustered database test suite
 Requires: samba-client-libs = %{samba_depver}
 
 Requires: ctdb = %{samba_depver}
-%if 0%{?fedora} > 0
+%if (0%{?fedora} > 0 || 0%{?rhel} > 7)
 # Yum on RHEL does not support Recommends
 Recommends: nc
 %endif
@@ -800,8 +798,7 @@ export python_LDFLAGS="$(echo %{__global_ldflags} | sed -e 's/-Wl,-z,defs//g')"
 # Use the gold linker
 export LDFLAGS="%{__global_ldflags} -fuse-ld=gold"
 
-# Enforce __python3 compilation, including for RHEL
-sed -i.python3 's|#!/usr/bin/env python3.*|#!%{__python3}|g' buildtools/bin/waf
+pathfix.py -n -p -i %{__python3} buildtools/bin/waf
 
 %if 0%{?rhel} > 0
 # Needed for compatibility packages on RHEL
@@ -830,7 +827,7 @@ export PKG_CONFIG_PATH=%{_libdir}/compat-gnutls34/pkgconfig:%{_libdir}/compat-ne
 %endif
 %if %with_mitkrb5
         --with-system-mitkrb5 \
-	--with-experimental-mit-ad-dc \
+        --with-experimental-mit-ad-dc \
 %endif
 %if ! %with_dc
         --without-ad-dc \
@@ -1325,7 +1322,7 @@ fi
 %files client
 %{_bindir}/cifsdd
 %{_bindir}/dbwrap_tool
-# Find why this is not in RHEL 7 <nkadel@gmail.com>
+# Find why this is not in RHEL
 %if 0%{?fedora} > 0
 %{_bindir}/dumpmscat
 %endif
@@ -3490,7 +3487,9 @@ fi
 - Replace ldconfig_scriptlets for RHEL 7
 - Discard python2 compilation entirely, especially RHEL_ALLOW_PYTHON2_FOR_BUILD=1
 - Activate compat-gnutls34 and compat-nettle32 for RHEL 7
-- Discard obsolete v4.10_build_fix.patch
+
+* Mon Apr 15 2019 Andreas Schneider <asn@redhat.com> - 4.10.2-1
+- resolves: #1699230 - Rebuild for MIT Kerberos soname bump of libkadm5srv
 
 * Mon Apr 08 2019 Guenther Deschner <gdeschner@redhat.com> - 4.10.2-0
 - Update to Samba 4.10.2
@@ -5774,3 +5773,4 @@ fi
 - Added a number of options to smb.conf file
 - Added smbadduser command (missed from all previous RPMs) - Doooh!
 - Added smbuser file and smb.conf file updates for username map
+
