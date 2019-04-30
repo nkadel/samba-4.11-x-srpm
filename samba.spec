@@ -94,14 +94,14 @@ Name:           samba
 Version:        %{samba_version}
 Release:        %{samba_release}
 
-# Increase epoch to avoid confusion with native Fedora versions
-#%if 0%{?rhel} > 0
+#%if 0%%{?rhel} > 0
 #Epoch:          0
-Epoch:          1
 #%else
 #Epoch:          2
-Epoch:          3
 #%endif # rhel
+
+# Increase epoch to avoid confusion with native Fedora versions
+Epoch:          3
 
 %if 0%{?epoch} > 0
 %define samba_depver %{epoch}:%{version}-%{release}
