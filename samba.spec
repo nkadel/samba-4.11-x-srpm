@@ -94,11 +94,14 @@ Name:           samba
 Version:        %{samba_version}
 Release:        %{samba_release}
 
-%if 0%{?rhel} > 0
-Epoch:          0
-%else
-Epoch:          2
-%endif
+# Increase epoch to avoid confusion with native Fedora versions
+#%if 0%{?rhel} > 0
+#Epoch:          0
+Epoch:          1
+#%else
+#Epoch:          2
+Epoch:          3
+#%endif # rhel
 
 %if 0%{?epoch} > 0
 %define samba_depver %{epoch}:%{version}-%{release}
@@ -199,7 +202,7 @@ BuildRequires: python%{python3_pkgversion}-devel
 # Add python%%{python3_pkgversion}-iso8601 to avoid that the
 # version in Samba is being packaged
 BuildRequires: python%{python3_pkgversion}-iso8601
-#BuildRequires: python%{python3_pkgversion}-subunit-test
+#BuildRequires: python%%{python3_pkgversion}-subunit-test
 %endif # with_dc
 BuildRequires: quota-devel
 BuildRequires: readline-devel
@@ -3477,6 +3480,9 @@ fi
 %endif # with_clustering_support
 
 %changelog
+* Tue Apr 30 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 3:4.10.2-0.3
+- Upde epoch to avoid conflict with default Fedora 30 releases
+
 * Wed Apr 24 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.10.2-0.2
 - Use rhel > 0 and fedora > 0 for RHEL 7 compilation
 - Discard python2_pkgversion
