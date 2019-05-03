@@ -113,8 +113,8 @@ Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+.
 URL:            http://www.samba.org/
 
-Source0:        https://www.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.gz
-Source1:        https://www.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.asc
+Source0:        https://www.samba.org/ftp/samba/samba-%{version}%{pre_release}.tar.gz
+Source1:        https://www.samba.org/ftp/samba/samba-%{version}%{pre_release}.tar.asc
 Source2:        gpgkey-52FBC0B86D954B0843324CDC6F33915B6568B7EA.gpg
 
 # Red Hat specific replacement-files
