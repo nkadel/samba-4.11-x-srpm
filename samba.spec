@@ -9,9 +9,9 @@
 # Single python3 version in Fedora, python3_pkgversion macro not available
 %{!?python3_pkgversion:%global python3_pkgversion 3}
 
-%define main_release 0.3
+%define main_release 0.4
 
-%define samba_version 4.10.2
+%define samba_version 4.10.3
 %define talloc_version 2.1.16
 %define tdb_version 1.3.18
 %define tevent_version 0.9.39
@@ -204,7 +204,12 @@ BuildRequires: python%{python3_pkgversion}-devel
 BuildRequires: python%{python3_pkgversion}-iso8601
 #BuildRequires: python%%{python3_pkgversion}-subunit-test
 %endif # with_dc
+# RHEL 8 re-arranged quote packages
+%if 0%{?rhel} > 7
+BuildRequires: quota
+%else
 BuildRequires: quota-devel
+%endif
 BuildRequires: readline-devel
 %if (0%{?fedora} > 0 || 0%{?rhel} > 7)
 BuildRequires: rpcgen
@@ -1781,7 +1786,7 @@ fi
 ### VFS-CEPHFS
 %if %{with_vfs_cephfs}
 %files vfs-cephfs
-%if 0%{?fedora} > 0
+%if 0%{?fedora} > 0 || 0%{?rhel} > 7
 %{_libdir}/samba/vfs/ceph.so
 %{_mandir}/man8/vfs_ceph.8*
 %endif
@@ -3480,6 +3485,10 @@ fi
 %endif # with_clustering_support
 
 %changelog
+* Mon May 13 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 3:4.10.3-0
+- Modify dependencies for RHEL 8, especially quota and python-crypto
+- Update to 4.10.3
+
 * Tue Apr 30 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 3:4.10.2-0.3
 - Upde epoch to avoid conflict with default Fedora 30 releases
 
