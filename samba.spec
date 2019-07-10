@@ -11,7 +11,7 @@
 
 %define main_release 0
 
-%define samba_version 4.10.5
+%define samba_version 4.10.6
 %define talloc_version 2.1.16
 %define tdb_version 1.3.18
 %define tevent_version 0.9.39
@@ -3485,6 +3485,9 @@ fi
 %endif # with_clustering_support
 
 %changelog
+* Wed Jul 18 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 3:4.10.6-0
+- Update to 4.10.6
+
 * Wed Jun 19 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 3:4.10.5-0
 - Update to 4.10.5
 
