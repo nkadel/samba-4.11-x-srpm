@@ -15,7 +15,7 @@
 %define talloc_version 2.1.16
 %define tdb_version 1.3.18
 %define tevent_version 0.9.39
-%define ldb_version 1.5.4
+%define ldb_version 1.5.5
 # This should be rc1 or nil
 %define pre_release %nil
 
@@ -245,6 +245,7 @@ BuildRequires: gnutls-devel >= 3.4.7
 BuildRequires: nettle-devel >= 3.1.1
 %endif # rhel > 0 && rhel < 8
 
+BuildRequires: python%{python3_pkgversion}-Cython
 # Required by samba-tool to run tests
 BuildRequires: python%{python3_pkgversion}-crypto
 %endif # with_dc
@@ -2255,6 +2256,8 @@ fi
 %{python3_sitearch}/samba/tests/__pycache__/hostconfig.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/join.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/krb5_credentials.*.pyc
+%{python3_sitearch}/samba/tests/__pycache__/ldap_referrals.cpython-36.opt-1.pyc
+%{python3_sitearch}/samba/tests/__pycache__/ldap_referrals.cpython-36.pyc
 %{python3_sitearch}/samba/tests/__pycache__/loadparm.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/libsmb.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/lsa_string.*.pyc
@@ -2430,6 +2433,7 @@ fi
 %{python3_sitearch}/samba/tests/kcc/kcc_utils.py
 %{python3_sitearch}/samba/tests/kcc/ldif_import_export.py
 %{python3_sitearch}/samba/tests/krb5_credentials.py
+%{python3_sitearch}/samba/tests/ldap_referrals.py
 %{python3_sitearch}/samba/tests/libsmb.py
 %{python3_sitearch}/samba/tests/loadparm.py
 %{python3_sitearch}/samba/tests/lsa_string.py
@@ -3485,8 +3489,9 @@ fi
 %endif # with_clustering_support
 
 %changelog
-* Wed Jul 18 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 3:4.10.6-0
+* Wed Jul 10 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 3:4.10.6-0
 - Update to 4.10.6
+- Add python files to tests
 
 * Wed Jun 19 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 3:4.10.5-0
 - Update to 4.10.5
