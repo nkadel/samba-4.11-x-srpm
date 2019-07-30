@@ -11,13 +11,13 @@
 
 %define main_release 0
 
-%define samba_version 4.10.6
-%define talloc_version 2.1.16
-%define tdb_version 1.3.18
-%define tevent_version 0.9.39
-%define ldb_version 1.5.5
+%define samba_version 4.11.0
+%define talloc_version 2.2.0
+%define tdb_version 1.4.1
+%define tevent_version 0.10.0
+%define ldb_version 1.6.3
 # This should be rc1 or nil
-%define pre_release %nil
+%define pre_release rc1
 
 %if "x%{?pre_release}" != "x"
 %define samba_release 0.%{main_release}.%{pre_release}%{?dist}
@@ -94,14 +94,11 @@ Name:           samba
 Version:        %{samba_version}
 Release:        %{samba_release}
 
-#%if 0%%{?rhel} > 0
-#Epoch:          0
-#%else
-#Epoch:          2
-#%endif # rhel
-
-# Increase epoch to avoid confusion with native Fedora versions
-Epoch:          3
+%if 0%{?rhel} > 0
+Epoch:          0
+%else
+Epoch:          2
+%endif # rhel
 
 %if 0%{?epoch} > 0
 %define samba_depver %{epoch}:%{version}-%{release}

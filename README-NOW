@@ -1,0 +1,24 @@
+!== 
+!== README for release candidate directory
+!==
+!=================================================================
+
+This directory contains release candidates of
+the stable Samba source branch (currently v4-11-stable).
+These are not official releases and are therefore **not**
+recommended for production systems.  They are provided in an
+effort to obtain more widespread testing to enhance the
+quality of final releases.
+
+Please report the status of your testing to samba@samba.org.
+See https://lists.samba.org/ for details on the various
+mailing lists supported by Samba.org.  Thanks.
+
+The public key for verifying the pgp signatures can 
+be found one level up (../samba-pubkey.asc)
+
+
+
+The Samba Team
+2019-07-09
+
