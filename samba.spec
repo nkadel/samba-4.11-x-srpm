@@ -17,7 +17,7 @@
 %define tevent_version 0.10.0
 %define ldb_version 1.6.3
 # This should be rc1 or nil
-%define pre_release rc1
+%define pre_release rc2
 
 %if "x%{?pre_release}" != "x"
 %define samba_release 0.%{main_release}.%{pre_release}%{?dist}
@@ -247,8 +247,8 @@ BuildRequires: python%{python3_pkgversion}-Cython
 BuildRequires: python%{python3_pkgversion}-crypto
 %endif # with_dc
 
-# pidl requirements
-BuildRequires: perl(Parse::Yapp)
+## pidl requirements
+#BuildRequires: perl(Parse::Yapp)
 
 BuildRequires: libtalloc-devel >= %{talloc_version}
 BuildRequires: python%{python3_pkgversion}-talloc-devel >= %{talloc_version}
@@ -568,20 +568,20 @@ The python%{python3_pkgversion}-%{name}-dc package contains the Python libraries
 to manage Samba AD.
 %endif
 
-### PIDL
-%package pidl
-Summary: Perl IDL compiler
-Requires: perl-interpreter
-Requires: perl(Parse::Yapp)
-Requires: perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
-BuildArch: noarch
-
-Provides: samba4-pidl = %{samba_depver}
-Obsoletes: samba4-pidl < %{samba_depver}
-
-%description pidl
-The %{name}-pidl package contains the Perl IDL compiler used by Samba
-and Wireshark to parse IDL and similar protocols
+#### PIDL
+#%package pidl
+#Summary: Perl IDL compiler
+#Requires: perl-interpreter
+#Requires: perl(Parse::Yapp)
+#Requires: perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
+#BuildArch: noarch
+#
+#Provides: samba4-pidl = %{samba_depver}
+#Obsoletes: samba4-pidl < %{samba_depver}
+#
+#%description pidl
+#The %{name}-pidl package contains the Perl IDL compiler used by Samba
+#and Wireshark to parse IDL and similar protocols
 
 ### TEST
 %package test
@@ -806,11 +806,14 @@ export LDFLAGS="%{__global_ldflags} -fuse-ld=gold"
 
 pathfix.py -n -p -i %{__python3} buildtools/bin/waf
 
-%if 0%{?rhel} > 0
+%if 0%{?rhel} > 0 && 0%{?rhel} < 8
 # Needed for compatibility packages on RHEL
 export PKG_CONFIG_PATH=%{_libdir}/compat-gnutls34/pkgconfig:%{_libdir}/compat-nettle32/pkgconfig
 /usr/bin/pkg-config "gnutls >= 3.4.7" --cflags --libs gnutls
+# Cheat about gnutls
+%{__ln_s} -f /usr/include/gnutls .
 %endif
+
 
 %configure \
         --enable-fhs \
@@ -1319,7 +1322,7 @@ fi
 %endif
 
 %if ! %{with_vfs_cephfs}
-%exclude %{_mandir}/man8/vfs_ceph.8*
+#%exclude %{_mandir}/man8/vfs_ceph.8*
 %endif
 
 %attr(775,root,printadmin) %dir /var/lib/samba/drivers
@@ -1634,7 +1637,7 @@ fi
 %{_libdir}/samba/service/nbtd.so
 %{_libdir}/samba/service/ntp_signd.so
 %{_libdir}/samba/service/s3fs.so
-%{_libdir}/samba/service/web.so
+#%{_libdir}/samba/service/web.so
 %{_libdir}/samba/service/winbindd.so
 %{_libdir}/samba/service/wrepl.so
 %{_libdir}/libdcerpc-server.so.*
@@ -1786,7 +1789,7 @@ fi
 %files vfs-cephfs
 %if 0%{?fedora} > 0 || 0%{?rhel} > 7
 %{_libdir}/samba/vfs/ceph.so
-%{_mandir}/man8/vfs_ceph.8*
+#%{_mandir}/man8/vfs_ceph.8*
 %endif
 %endif
 
@@ -1814,7 +1817,7 @@ fi
 %{_libdir}/samba/libauth-unix-token-samba4.so
 %{_libdir}/samba/libcluster-samba4.so
 %{_libdir}/samba/libdcerpc-samba4.so
-%{_libdir}/samba/libnon-posix-acls-samba4.so
+#%{_libdir}/samba/libnon-posix-acls-samba4.so
 %{_libdir}/samba/libshares-samba4.so
 %{_libdir}/samba/libsmbpasswdparser-samba4.so
 %{_libdir}/samba/libxattr-tdb-samba4.so
@@ -1872,43 +1875,43 @@ fi
 %{_libdir}/pkgconfig/wbclient.pc
 %endif # with_libwbclient
 
-### PIDL
-%files pidl
-%attr(755,root,root) %{_bindir}/pidl
-%dir %{perl_vendorlib}/Parse
-%{perl_vendorlib}/Parse/Pidl.pm
-%dir %{perl_vendorlib}/Parse/Pidl
-%{perl_vendorlib}/Parse/Pidl/CUtil.pm
-%{perl_vendorlib}/Parse/Pidl/Samba4.pm
-%{perl_vendorlib}/Parse/Pidl/Expr.pm
-%{perl_vendorlib}/Parse/Pidl/ODL.pm
-%{perl_vendorlib}/Parse/Pidl/Typelist.pm
-%{perl_vendorlib}/Parse/Pidl/IDL.pm
-%{perl_vendorlib}/Parse/Pidl/Compat.pm
-%dir %{perl_vendorlib}/Parse/Pidl/Wireshark
-%{perl_vendorlib}/Parse/Pidl/Wireshark/Conformance.pm
-%{perl_vendorlib}/Parse/Pidl/Wireshark/NDR.pm
-%{perl_vendorlib}/Parse/Pidl/Dump.pm
-%dir %{perl_vendorlib}/Parse/Pidl/Samba3
-%{perl_vendorlib}/Parse/Pidl/Samba3/ServerNDR.pm
-%{perl_vendorlib}/Parse/Pidl/Samba3/ClientNDR.pm
-%dir %{perl_vendorlib}/Parse/Pidl/Samba4
-%{perl_vendorlib}/Parse/Pidl/Samba4/Header.pm
-%dir %{perl_vendorlib}/Parse/Pidl/Samba4/COM
-%{perl_vendorlib}/Parse/Pidl/Samba4/COM/Header.pm
-%{perl_vendorlib}/Parse/Pidl/Samba4/COM/Proxy.pm
-%{perl_vendorlib}/Parse/Pidl/Samba4/COM/Stub.pm
-%{perl_vendorlib}/Parse/Pidl/Samba4/Python.pm
-%{perl_vendorlib}/Parse/Pidl/Samba4/Template.pm
-%dir %{perl_vendorlib}/Parse/Pidl/Samba4/NDR
-%{perl_vendorlib}/Parse/Pidl/Samba4/NDR/Server.pm
-%{perl_vendorlib}/Parse/Pidl/Samba4/NDR/Client.pm
-%{perl_vendorlib}/Parse/Pidl/Samba4/NDR/Parser.pm
-%{perl_vendorlib}/Parse/Pidl/Samba4/TDR.pm
-%{perl_vendorlib}/Parse/Pidl/NDR.pm
-%{perl_vendorlib}/Parse/Pidl/Util.pm
-%{_mandir}/man1/pidl*
-%{_mandir}/man3/Parse::Pidl*
+#### PIDL
+#%files pidl
+#%attr(755,root,root) %{_bindir}/pidl
+##%dir %{perl_vendorlib}/Parse
+#%{perl_vendorlib}/Parse/Pidl.pm
+#%dir %{perl_vendorlib}/Parse/Pidl
+#%{perl_vendorlib}/Parse/Pidl/CUtil.pm
+#%{perl_vendorlib}/Parse/Pidl/Samba4.pm
+#%{perl_vendorlib}/Parse/Pidl/Expr.pm
+#%{perl_vendorlib}/Parse/Pidl/ODL.pm
+#%{perl_vendorlib}/Parse/Pidl/Typelist.pm
+#%{perl_vendorlib}/Parse/Pidl/IDL.pm
+#%{perl_vendorlib}/Parse/Pidl/Compat.pm
+#%dir %{perl_vendorlib}/Parse/Pidl/Wireshark
+#%{perl_vendorlib}/Parse/Pidl/Wireshark/Conformance.pm
+#%{perl_vendorlib}/Parse/Pidl/Wireshark/NDR.pm
+#%{perl_vendorlib}/Parse/Pidl/Dump.pm
+#%dir %{perl_vendorlib}/Parse/Pidl/Samba3
+#%{perl_vendorlib}/Parse/Pidl/Samba3/ServerNDR.pm
+#%{perl_vendorlib}/Parse/Pidl/Samba3/ClientNDR.pm
+#%dir %{perl_vendorlib}/Parse/Pidl/Samba4
+#%{perl_vendorlib}/Parse/Pidl/Samba4/Header.pm
+#%dir %{perl_vendorlib}/Parse/Pidl/Samba4/COM
+#%{perl_vendorlib}/Parse/Pidl/Samba4/COM/Header.pm
+#%{perl_vendorlib}/Parse/Pidl/Samba4/COM/Proxy.pm
+#%{perl_vendorlib}/Parse/Pidl/Samba4/COM/Stub.pm
+#%{perl_vendorlib}/Parse/Pidl/Samba4/Python.pm
+#%{perl_vendorlib}/Parse/Pidl/Samba4/Template.pm
+#%dir %{perl_vendorlib}/Parse/Pidl/Samba4/NDR
+#%{perl_vendorlib}/Parse/Pidl/Samba4/NDR/Server.pm
+#%{perl_vendorlib}/Parse/Pidl/Samba4/NDR/Client.pm
+#%{perl_vendorlib}/Parse/Pidl/Samba4/NDR/Parser.pm
+#%{perl_vendorlib}/Parse/Pidl/Samba4/TDR.pm
+#%{perl_vendorlib}/Parse/Pidl/NDR.pm
+#%{perl_vendorlib}/Parse/Pidl/Util.pm
+#%{_mandir}/man1/pidl*
+#%{_mandir}/man3/Parse::Pidl*
 
 ### PYTHON3
 %files -n python%{python3_pkgversion}-%{name}
@@ -2111,7 +2114,7 @@ fi
 %{python3_sitearch}/samba/samba3/smbd.*.so
 %{python3_sitearch}/samba/sd_utils.py
 %{python3_sitearch}/samba/sites.py
-%{python3_sitearch}/samba/smb.*.so
+#%{python3_sitearch}/samba/smb.*.so
 %{python3_sitearch}/samba/subnets.py
 %dir %{python3_sitearch}/samba/subunit
 %{python3_sitearch}/samba/subunit/__init__.py
@@ -2126,10 +2129,10 @@ fi
 %{python3_sitearch}/samba/third_party/__pycache__/__init__.*.pyc
 %{python3_sitearch}/samba/upgrade.py
 %{python3_sitearch}/samba/upgradehelpers.py
-%dir %{python3_sitearch}/samba/web_server
-%{python3_sitearch}/samba/web_server/__init__.py
-%dir %{python3_sitearch}/samba/web_server/__pycache__
-%{python3_sitearch}/samba/web_server/__pycache__/__init__.*.pyc
+#%dir %{python3_sitearch}/samba/web_server
+#%{python3_sitearch}/samba/web_server/__init__.py
+#%dir %{python3_sitearch}/samba/web_server/__pycache__
+#%{python3_sitearch}/samba/web_server/__pycache__/__init__.*.pyc
 %{python3_sitearch}/samba/werror.*.so
 %{python3_sitearch}/samba/xattr.py
 %{python3_sitearch}/samba/xattr_native.*.so
@@ -2386,9 +2389,9 @@ fi
 %{python3_sitearch}/samba/tests/dns_base.py
 %{python3_sitearch}/samba/tests/dns_forwarder.py
 %dir %{python3_sitearch}/samba/tests/dns_forwarder_helpers
-%{python3_sitearch}/samba/tests/dns_forwarder_helpers/__pycache__/dns_hub.*.pyc
+#%{python3_sitearch}/samba/tests/dns_forwarder_helpers/__pycache__/dns_hub.*.pyc
 %{python3_sitearch}/samba/tests/dns_forwarder_helpers/__pycache__/server.*.pyc
-%{python3_sitearch}/samba/tests/dns_forwarder_helpers/dns_hub.py
+#%{python3_sitearch}/samba/tests/dns_forwarder_helpers/dns_hub.py
 %{python3_sitearch}/samba/tests/dns_forwarder_helpers/server.py
 %{python3_sitearch}/samba/tests/dns_invalid.py
 %{python3_sitearch}/samba/tests/dns_tkey.py
@@ -2887,6 +2890,7 @@ fi
 %{_datadir}/ctdb/tests/eventd/eventd_044.sh
 %{_datadir}/ctdb/tests/eventd/eventd_051.sh
 %{_datadir}/ctdb/tests/eventd/eventd_052.sh
+
 %dir %{_datadir}/ctdb/tests/eventd/scripts
 %{_datadir}/ctdb/tests/eventd/scripts/local.sh
 
@@ -2919,10 +2923,10 @@ fi
 %{_datadir}/ctdb/tests/eventscripts/05.system.monitor.007.sh
 %{_datadir}/ctdb/tests/eventscripts/05.system.monitor.011.sh
 %{_datadir}/ctdb/tests/eventscripts/05.system.monitor.012.sh
-%{_datadir}/ctdb/tests/eventscripts/05.system.monitor.013.sh
+#%{_datadir}/ctdb/tests/eventscripts/05.system.monitor.013.sh
 %{_datadir}/ctdb/tests/eventscripts/05.system.monitor.014.sh
 %{_datadir}/ctdb/tests/eventscripts/05.system.monitor.015.sh
-%{_datadir}/ctdb/tests/eventscripts/05.system.monitor.016.sh
+#%{_datadir}/ctdb/tests/eventscripts/05.system.monitor.016.sh
 %{_datadir}/ctdb/tests/eventscripts/05.system.monitor.017.sh
 %{_datadir}/ctdb/tests/eventscripts/05.system.monitor.018.sh
 %{_datadir}/ctdb/tests/eventscripts/06.nfs.releaseip.001.sh
