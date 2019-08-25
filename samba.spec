@@ -964,6 +964,7 @@ for i in \
     %{_mandir}/man8/samba.8 \
     %{_mandir}/man8/samba-tool.8 \
     %{_mandir}/man8/samba-gpupdate.8 \
+    %{_libdir}/samba/ldb/count_attrs.so \
     %{_libdir}/samba/ldb/ildap.so \
     %{_libdir}/samba/ldb/ldbsamba_extensions.so \
     %{_unitdir}/samba.service \
@@ -1247,6 +1248,7 @@ fi
 %{_libdir}/samba/vfs/fileid.so
 %{_libdir}/samba/vfs/fruit.so
 %{_libdir}/samba/vfs/full_audit.so
+#%{_libdir}/samba/vfs/gpvfs.so
 %{_libdir}/samba/vfs/linux_xfs_sgid.so
 %{_libdir}/samba/vfs/media_harmony.so
 %{_libdir}/samba/vfs/netatalk.so
@@ -1295,6 +1297,7 @@ fi
 %{_mandir}/man8/vfs_fileid.8*
 %{_mandir}/man8/vfs_fruit.8*
 %{_mandir}/man8/vfs_full_audit.8*
+%{_mandir}/man8/vfs_gpfs.8.*
 %{_mandir}/man8/vfs_linux_xfs_sgid.8*
 %{_mandir}/man8/vfs_media_harmony.8*
 %{_mandir}/man8/vfs_netatalk.8*
@@ -2047,6 +2050,8 @@ fi
 %{python3_sitearch}/samba/netcmd/__pycache__/__init__.*.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/common.*.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/computer.*.pyc
+%{python3_sitearch}/samba/netcmd/__pycache__/contact.cpython-36*.pyc
+%{python3_sitearch}/samba/netcmd/__pycache__/contact.cpython-36.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/dbcheck.*.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/delegation.*.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/dns.*.pyc
@@ -2073,6 +2078,7 @@ fi
 %{python3_sitearch}/samba/netcmd/__pycache__/user.*.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/visualize.*.pyc
 %{python3_sitearch}/samba/netcmd/common.py
+%{python3_sitearch}/samba/netcmd/contact.py
 %{python3_sitearch}/samba/netcmd/computer.py
 %{python3_sitearch}/samba/netcmd/dbcheck.py
 %{python3_sitearch}/samba/netcmd/delegation.py
@@ -2221,6 +2227,8 @@ fi
 %{python3_sitearch}/samba/tests/__pycache__/audit_log_dsdb.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/audit_log_pass_change.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/auth.*.pyc
+%{python3_sitearch}/samba/tests/__pycache__/auth_log_winbind.cpython-36.*.pyc
+%{python3_sitearch}/samba/tests/__pycache__/auth_log_winbind.cpython-36.pyc
 %{python3_sitearch}/samba/tests/__pycache__/auth_log.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/auth_log_base.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/auth_log_pass_change.*.pyc
@@ -2301,6 +2309,8 @@ fi
 %{python3_sitearch}/samba/tests/__pycache__/samdb.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/samdb_api.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/security.*.pyc
+%{python3_sitearch}/samba/tests/__pycache__/segfault.cpython-36.*.pyc
+%{python3_sitearch}/samba/tests/__pycache__/segfault.cpython-36.pyc
 %{python3_sitearch}/samba/tests/__pycache__/smb.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/smbd_base.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/source.*.pyc
@@ -2311,6 +2321,8 @@ fi
 %{python3_sitearch}/samba/tests/__pycache__/upgradeprovision.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/upgradeprovisionneeddc.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/xattr.*.pyc
+%{python3_sitearch}/samba/tests/__pycache__/usage.cpython-36.*.pyc
+%{python3_sitearch}/samba/tests/__pycache__/usage.cpython-36.pyc
 %{python3_sitearch}/samba/tests/audit_log_base.py
 %{python3_sitearch}/samba/tests/audit_log_dsdb.py
 %{python3_sitearch}/samba/tests/audit_log_pass_change.py
@@ -3262,6 +3274,7 @@ fi
 %{_datadir}/ctdb/tests/simple/80_ctdb_traverse.sh
 %{_datadir}/ctdb/tests/simple/81_tunnel_ring.sh
 %{_datadir}/ctdb/tests/simple/90_debug_hung_script.sh
+%{_datadir}/ctdb/tests/simple/91_version_check.sh
 
 
 %dir %{_datadir}/ctdb/tests/simple/scripts
