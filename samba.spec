@@ -238,8 +238,7 @@ BuildRequires: krb5-server >= %{required_mit_krb5}
 BuildRequires: compat-nettle32-devel >= 3.1.1
 BuildRequires: compat-gnutls34-devel >= 3.4.7
 %else
-BuildRequires: gnutls-devel >= 3.4.7
-BuildRequires: nettle-devel >= 3.1.1
+BuildRequires: gnutls-devel
 %endif # rhel > 0 && rhel < 8
 
 BuildRequires: python%{python3_pkgversion}-Cython
