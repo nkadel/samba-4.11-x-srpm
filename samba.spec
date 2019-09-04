@@ -12,12 +12,12 @@
 %define main_release 0
 
 %define samba_version 4.11.0
-%define talloc_version 2.2.0
+%define talloc_version 2.3.0
 %define tdb_version 1.4.1
 %define tevent_version 0.10.0
-%define ldb_version 1.6.3
+%define ldb_version 2.0.7
 # This should be rc1 or nil
-%define pre_release rc2
+%define pre_release rc3
 
 %if "x%{?pre_release}" != "x"
 %define samba_release 0.%{main_release}.%{pre_release}%{?dist}
@@ -2048,8 +2048,8 @@ fi
 %{python3_sitearch}/samba/netcmd/__pycache__/__init__.*.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/common.*.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/computer.*.pyc
-%{python3_sitearch}/samba/netcmd/__pycache__/contact.cpython-36.o*.pyc
-%{python3_sitearch}/samba/netcmd/__pycache__/contact.cpython-36.pyc
+#%{python3_sitearch}/samba/netcmd/__pycache__/contact.cpython-36.*.pyc
+#%{python3_sitearch}/samba/netcmd/__pycache__/contact.cpython-36.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/dbcheck.*.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/delegation.*.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/dns.*.pyc
