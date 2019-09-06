@@ -13,8 +13,8 @@
 
 %define samba_version 4.11.0
 %define talloc_version 2.3.0
-%define tdb_version 1.4.1
-%define tevent_version 0.10.0
+%define tdb_version 1.4.2
+%define tevent_version 0.10.1
 %define ldb_version 2.0.7
 # This should be rc1 or nil
 %define pre_release rc3
@@ -1014,7 +1014,7 @@ for i in \
     ; do
     rm -f %{buildroot}$i
 done
-%endif
+%endif # ! %with_dc
 
 # This makes the right links, as rpmlint requires that
 # the ldconfig-created links be recorded in the RPM.
@@ -1552,6 +1552,7 @@ fi
 %{_sbindir}/samba-gpupdate
 %{_sbindir}/samba_spnupdate
 %{_sbindir}/samba_upgradedns
+%{_sbindir}/samba_downgrade_db
 %if %with_mitkrb5
 %{_libdir}/krb5/plugins/kdb/samba.so
 %endif
@@ -1613,6 +1614,7 @@ fi
 %dir /var/lib/samba/sysvol
 %{_datadir}/samba/setup
 %{_mandir}/man8/samba.8*
+%{_mandir}/man8/samba_downgrade_db.8*
 %{_mandir}/man8/samba-gpupdate.8*
 %{_mandir}/man8/samba-tool.8*
 
@@ -2521,18 +2523,6 @@ fi
 %{python3_sitearch}/samba/tests/samba_tool/help.py
 %{python3_sitearch}/samba/tests/samba_tool/join.py
 %{python3_sitearch}/samba/tests/samba_tool/ntacl.py
-%{python3_sitearch}/samba/tests/samba_tool/__pycache__/contact.cpython-36.opt-1.pyc
-%{python3_sitearch}/samba/tests/samba_tool/__pycache__/contact.cpython-36.pyc
-%{python3_sitearch}/samba/tests/samba_tool/__pycache__/drs_clone_dc_data_lmdb_size.cpython-36.opt-1.pyc
-%{python3_sitearch}/samba/tests/samba_tool/__pycache__/drs_clone_dc_data_lmdb_size.cpython-36.pyc
-%{python3_sitearch}/samba/tests/samba_tool/__pycache__/dsacl.cpython-36.opt-1.pyc
-%{python3_sitearch}/samba/tests/samba_tool/__pycache__/dsacl.cpython-36.pyc
-%{python3_sitearch}/samba/tests/samba_tool/__pycache__/join_lmdb_size.cpython-36.opt-1.pyc
-%{python3_sitearch}/samba/tests/samba_tool/__pycache__/join_lmdb_size.cpython-36.pyc
-%{python3_sitearch}/samba/tests/samba_tool/__pycache__/promote_dc_lmdb_size.cpython-36.opt-1.pyc
-%{python3_sitearch}/samba/tests/samba_tool/__pycache__/promote_dc_lmdb_size.cpython-36.pyc
-%{python3_sitearch}/samba/tests/samba_tool/__pycache__/provision_lmdb_size.cpython-36.opt-1.pyc
-%{python3_sitearch}/samba/tests/samba_tool/__pycache__/provision_lmdb_size.cpython-36.pyc
 %{python3_sitearch}/samba/tests/samba_tool/__pycache__/contact.cpython-36.opt-1.pyc
 %{python3_sitearch}/samba/tests/samba_tool/__pycache__/contact.cpython-36.pyc
 %{python3_sitearch}/samba/tests/samba_tool/__pycache__/drs_clone_dc_data_lmdb_size.cpython-36.opt-1.pyc
@@ -5842,4 +5832,3 @@ fi
 - Added a number of options to smb.conf file
 - Added smbadduser command (missed from all previous RPMs) - Doooh!
 - Added smbuser file and smb.conf file updates for username map
-
