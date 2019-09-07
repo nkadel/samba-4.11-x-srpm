@@ -1320,7 +1320,8 @@ fi
 %endif
 
 %if ! %{with_vfs_cephfs}
-#%exclude %{_mandir}/man8/vfs_ceph.8*
+%exclude %{_mandir}/man8/vfs_ceph.8*
+%exclude %{_mandir}/man8/vfs_ceph_snapshots.8*
 %endif
 
 %attr(775,root,printadmin) %dir /var/lib/samba/drivers
@@ -1792,7 +1793,9 @@ fi
 %files vfs-cephfs
 %if 0%{?fedora} > 0 || 0%{?rhel} > 7
 %{_libdir}/samba/vfs/ceph.so
-#%{_mandir}/man8/vfs_ceph.8*
+%{_libdir}/samba/vfs/ceph_snapshots.so
+%{_mandir}/man8/vfs_ceph.8*
+%{_mandir}/man8/vfs_ceph_snapshots.8*
 %endif # fedora || rhel > 7
 %endif # with_vfs_cephfs
 
@@ -3516,6 +3519,7 @@ fi
 %changelog
 * Sat Sep 7 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 3:4.11.0-0
 - Update cpython-36 to cpython-37
+- Add vfs_sceph_snapshots
 
 * Wed Jul 10 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 3:4.10.6-0
 - Update to 4.10.6
