@@ -785,15 +785,16 @@ zcat %{SOURCE0} | gpgv2 --quiet --keyring %{SOURCE2} %{SOURCE1} -
 
 %global _samba_modules %{_samba_idmap_modules},%{_samba_pdb_modules},%{_samba_auth_modules},%{_samba_vfs_modules}
 
-%global _libsmbclient %nil
-%global _libwbclient %nil
-
 %if ! %with_libsmbclient
 %global _libsmbclient smbclient,
+%else
+%global _libsmbclient %nil
 %endif
 
 %if ! %with_libwbclient
 %global _libwbclient wbclient,
+%else
+%global _libwbclient %nil
 %endif
 
 %global _samba_private_libraries %{_libsmbclient}%{_libwbclient}
@@ -814,6 +815,48 @@ export PKG_CONFIG_PATH=%{_libdir}/compat-gnutls34/pkgconfig:%{_libdir}/compat-ne
 %{__ln_s} -f /usr/include/gnutls .
 %endif
 
+echo LDFLAGS: ${LDFLAGS}
+echo CFLAGS: ${CFLAGS}
+echo
+echo PKG_CONFIG_PATH: ${PKG_CONFIG_PATH}
+echo
+echo
+echo
+
+echo samba_version: %{samba_version}
+echo pre_release: %{?samba_version}
+echo samba_release: %{?samba_release}
+echo
+echo testsuite: %{?testsuite}
+echo clustering: %{?clustering}
+echo talloc_version: %{?talloc_version}
+echo tdb_version: %{?tdb_version}
+echo tevent_version: %{?tevent_version}
+echo ldb_version: %{?ldb_version}
+echo
+echo _hardened_build: %{?_hardened_build}
+echo with_libsmbclient: %{?with_libsmbclient}
+echo with_libwbclient: %{?with_libwbclient}
+echo with_profiling: %{?with_profiling}
+echo rhel: %{?rhel}
+echo fedora: %{?fedora}
+echo
+echo with_vfs_cephfs: %{?with_vfs_cephfs}
+echo with_vfs_glusterfs: %{?with_vfs_glusterfs}
+echo with_intel_aes_accel: %{?with_intel_aes_accel}
+echo
+echo with_dc: %{?with_dc}
+echo with_mitkrb5: %{?with_mitkrb5}
+echo required_mit_krb5: %{?required_mit_krb5}
+echo
+echo with_clustering: %{?with_clustering}
+
+echo "rpmrc:"
+rpm --showrc
+echo
+echo
+echo
+echo Now configure:
 %configure \
         --enable-fhs \
         --with-piddir=/run \
@@ -1794,12 +1837,10 @@ fi
 ### VFS-CEPHFS
 %if %{with_vfs_cephfs}
 %files vfs-cephfs
-%if 0%{?fedora} > 0 || 0%{?rhel} > 7
 %{_libdir}/samba/vfs/ceph.so
 %{_libdir}/samba/vfs/ceph_snapshots.so
 %{_mandir}/man8/vfs_ceph.8*
 %{_mandir}/man8/vfs_ceph_snapshots.8*
-%endif # fedora || rhel > 7
 %endif # with_vfs_cephfs
 
 ### VFS-GLUSTERFS
@@ -3524,33 +3565,62 @@ fi
 - Update cpython-36 to cpython-37
 - Add vfs_sceph_snapshots
 
-* Wed Jul 10 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 3:4.10.6-0
-- Update to 4.10.6
-- Add python files to tests
+* Tue Sep 03 2019 Guenther Deschner <gdeschner@redhat.com> - 4.11.0rc3-2
+- Update to Samba 4.11.0rc3
+- resolves: #1746225, #1748308 - Security fixes for CVE-2019-10197
 
-* Wed Jun 19 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 3:4.10.5-0
-- Update to 4.10.5
+* Tue Aug 27 2019 Guenther Deschner <gdeschner@redhat.com> - 4.11.0rc2-2
+- resolves: #1746014 - re-add pidl
 
-* Wed May 22 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 3:4.10.4-0
-- Update to 4.10.4
+* Mon Aug 26 2019 Lubomir Rintel <lkundrak@v3.sk> - 2:4.11.0-0.1.rc2
+- Move the NetworkManager dispatcher script out of /etc
 
-* Mon May 13 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 3:4.10.3-0
-- Modify dependencies for RHEL 8, especially quota and python-crypto
-- Update to 4.10.3
+* Wed Aug 21 2019 Guenther Deschner <gdeschner@redhat.com> - 4.11.0rc2-0
+- Update to Samba 4.11.0rc2
 
-* Tue Apr 30 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 3:4.10.2-0.3
-- Upde epoch to avoid conflict with default Fedora 30 releases
+* Tue Aug 20 2019 Guenther Deschner <gdeschner@redhat.com> - 4.11.0rc1-0
+- Update to Samba 4.11.0rc1
 
-* Wed Apr 24 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.10.2-0.2
-- Use rhel > 0 and fedora > 0 for RHEL 7 compilation
-- Discard python2_pkgversion
+* Mon Aug 19 2019 Miro Hrončok <mhroncok@redhat.com> - 2:4.10.6-1.1
+- Rebuilt for Python 3.8
 
-* Thu Apr 18 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.10.2-0.1
-- Activate python3_pkgversion for RHEL 7 to use python36-devel
-- Disable Recommends for RHEL 7
-- Replace ldconfig_scriptlets for RHEL 7
-- Discard python2 compilation entirely, especially RHEL_ALLOW_PYTHON2_FOR_BUILD=1
-- Activate compat-gnutls34 and compat-nettle32 for RHEL 7
+* Fri Aug 16 2019 Alexander Bokovoy <abokovoy@redhat.com> - 2:4.10.6-1
+- Fix Samba bug https://bugzilla.samba.org/show_bug.cgi?id=14091
+- Fixes: Windows systems cannot resolve IPA users and groups over LSA RPC
+
+* Fri Jul 26 2019 Fedora Release Engineering <releng@fedoraproject.org> - 2:4.10.6-0.2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
+
+* Mon Jul 08 2019 Guenther Deschner <gdeschner@redhat.com> - 4.10.6-0
+- Update to Samba 4.10.6
+
+* Mon Jul 01 2019 Guenther Deschner <gdeschner@redhat.com> - 4.10.5-2
+- resolves: #1718113 - Avoid deprecated time.clock in wafsamba
+- resolves: #1711638 - Update to latest waf version 2.0.17
+
+* Thu Jun 20 2019 Guenther Deschner <gdeschner@redhat.com> - 4.10.5-1
+- resolves: #1602824 - Make vfs_fruit operable with other remote VFS modules
+- resolves: #1716455 - Avoid pathconf() in get_real_filename() VFS calls
+- resolves: #1706090, #1700791 - Fix smbspool
+
+* Wed Jun 19 2019 Guenther Deschner <gdeschner@redhat.com> - 4.10.5-0
+- Update to Samba 4.10.5
+- resolves: #1711816, #1721872 - Security fixes for CVE-2019-12435
+- resolves: #1711837, #1721873 - Security fixes for CVE-2019-12436
+
+* Fri May 31 2019 Jitka Plesnikova <jplesnik@redhat.com> - 2:4.10.4-1.1
+- Perl 5.30 rebuild
+
+* Tue May 28 2019 Guenther Deschner <gdeschner@redhat.com> - 4.10.4-1
+- Add missing ctdb directories
+- resolves: #1656777
+
+* Wed May 22 2019 Guenther Deschner <gdeschner@redhat.com> - 4.10.4-0
+- Update to Samba 4.10.4
+
+* Tue May 14 2019 Guenther Deschner <gdeschner@redhat.com> - 4.10.3-0
+- Update to Samba 4.10.3
+- resolves: #1705877, #1709679 - Security fixes for CVE-2018-16860
 
 * Mon Apr 15 2019 Andreas Schneider <asn@redhat.com> - 4.10.2-1
 - resolves: #1699230 - Rebuild for MIT Kerberos soname bump of libkadm5srv
