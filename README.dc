@@ -1,9 +1,0 @@
-MIT Kerberos 5 Support
-=======================
-
-The default Fedora build uses the MIT Kerberos infrastructure of
-choice. This build uses Heimdal in order to safely support the full
-domain controler featureset
-
-In case of further questions do not hesitate to send your inquiries to
-samba-owner@fedoraproject.org
