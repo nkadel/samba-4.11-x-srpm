@@ -72,7 +72,7 @@
 %endif
 
 # Use system MIT krb5 for DC, not built-in Heimdal
-%global with_system_mitkrb5 1
+%global with_system_mit_krb5 0
 
 %global required_mit_krb5 1.15.1
 
@@ -104,8 +104,7 @@ Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+
 URL:            http://www.samba.org/
 
-# This is a xz recompressed file of https://ftp.samba.org/pub/samba/samba-%%{version}%%{pre_release}.tar.gz
-Source0:        samba-%{version}%{pre_release}.tar.xz
+Source0:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.gz
 Source1:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.asc
 Source2:        gpgkey-52FBC0B86D954B0843324CDC6F33915B6568B7EA.gpg
 
@@ -215,7 +214,6 @@ BuildRequires: libtasn1-devel
 # We need asn1Parser
 BuildRequires: libtasn1-tools
 BuildRequires: xfsprogs-devel
-BuildRequires: xz
 BuildRequires: zlib-devel >= 1.2.3
 
 BuildRequires: pkgconfig(libsystemd)
@@ -234,11 +232,15 @@ BuildRequires: bind
 BuildRequires: krb5-server >= %{required_mit_krb5}
 # Required by samba-tool to run tests
 BuildRequires: python%{python3_pkgversion}-crypto
+%if %{with_system_mit_krb5}
 %if 0%{?rhel} && 0%{?rhel} < 8
 BuildRequires: compat-gnutls34-devel >= 3.4.7
 %else
 BuildRequires: gnutls-devel >= 3.4.7
 %endif # rhel < 8
+%else
+BuildRequires: gnutls-devel >= 3.2.0
+%endif # with_system_mit_krb5
 %else
 BuildRequires: gnutls-devel >= 3.2.0
 %endif # with_dc
@@ -796,7 +798,6 @@ and use CTDB instead.
 
 
 %prep
-xzcat %{SOURCE0} | gpgv2 --quiet --keyring %{SOURCE2} %{SOURCE1} -
 %autosetup -n samba-%{version}%{pre_release} -p1
 
 %build
@@ -867,10 +868,10 @@ export CFLAGS="%{__global_cflags} -I%{__includedir}/compat-gnutls34 "
 %if ! %with_dc
         --without-ad-dc \
 %else
-%if %with_system_mitkrb5
+%if %with_system_mit_krb5
         --with-system-mitkrb5 \
         --with-experimental-mit-ad-dc \
-%endif # with_system_mitkrb5
+%endif # with_system_mit_krb5
 %endif # with_dc
 %if ! %with_vfs_glusterfs
         --disable-glusterfs \
@@ -1575,7 +1576,9 @@ fi
 %{_sbindir}/samba_spnupdate
 %{_sbindir}/samba_upgradedns
 
+%if %{with_system_mit_krb5}
 %{_libdir}/krb5/plugins/kdb/samba.so
+%endif # with_system_mit_krb5
 
 %{_libdir}/samba/auth/samba4.so
 %{_libdir}/samba/libpac-samba4.so
@@ -1841,7 +1844,7 @@ fi
 %{_libdir}/samba/libxattr-tdb-samba4.so
 
 # with_dc means very different layout, this needs work to split among packages
-%if ! %{with_dc}
+%if ! %{with_dc} || ! %{with_system_mit_krb5}
 %{_libdir}/samba/libasn1-samba4.so.*
 %{_libdir}/samba/libcom_err-samba4.so.*
 %{_libdir}/samba/libgssapi-samba4.so.*
@@ -1854,8 +1857,10 @@ fi
 %{_libdir}/samba/libkrb5-samba4.so.*
 %{_libdir}/samba/libroken-samba4.so.*
 %{_libdir}/samba/libwind-samba4.so.*
-%{_libdir}/samba/libasn1-samba4.so.*
-%endif # ! with_dc
+%endif # ! with_dc |! ! with_system_mit_krb5
+%if %with_dc && ! %{with_system_mit_krb5}
+%{_libdir}/samba/libHDB-SAMBA4-samba4.so
+%endif # with_dc && ! with_system_mit_krb5
 
 
 ### LIBSMBCLIENT
@@ -2614,8 +2619,10 @@ fi
 %{_mandir}/man1/ntlm_auth.1.gz
 %{_mandir}/man1/wbinfo.1*
 %if %{with_dc}
+%if %{with_system_mit_krb5}
 %{_libdir}/samba/krb5/winbind_krb5_localauth.so
 %{_mandir}/man8/winbind_krb5_localauth.8*
+%endif # with_system_mit_krb5
 %endif # with_dc
 
 ### WINBIND-KRB5-LOCATOR
