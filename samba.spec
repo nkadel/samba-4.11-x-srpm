@@ -7,7 +7,7 @@
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
 
-%define main_release 3
+%define main_release 4
 
 %define samba_version 4.11.0
 %define talloc_version 2.2.0
@@ -227,22 +227,18 @@ BuildRequires: glusterfs-devel >= 3.4.0.16
 BuildRequires: libcephfs-devel
 %endif
 
+%if 0%{?rhel} && 0%{?rhel} < 8
+BuildRequires: compat-gnutls34-devel >= 3.4.7
+BuildRequires: compat-nettle32-devel
+%else
+BuildRequires: gnutls-devel >= 3.4.7
+%endif # rhel < 8
+
 %if %{with_dc}
 BuildRequires: bind
 BuildRequires: krb5-server >= %{required_mit_krb5}
 # Required by samba-tool to run tests
 BuildRequires: python%{python3_pkgversion}-crypto
-%if %{with_system_mit_krb5}
-%if 0%{?rhel} && 0%{?rhel} < 8
-BuildRequires: compat-gnutls34-devel >= 3.4.7
-%else
-BuildRequires: gnutls-devel >= 3.4.7
-%endif # rhel < 8
-%else
-BuildRequires: gnutls-devel >= 3.2.0
-%endif # with_system_mit_krb5
-%else
-BuildRequires: gnutls-devel >= 3.2.0
 %endif # with_dc
 
 # pidl requirements
@@ -841,10 +837,12 @@ export LDFLAGS="%{__global_ldflags} -fuse-ld=gold"
 
 export LDFLAGS="%{__global_ldflags} -fuse-ld=gold"
 
-# Enable compat-gnutls34-devel
+# Enable compat-gnutls34 and compat-nettle32 packages
 %if 0%{?rhel} && 0%{?rhel} < 8
-export CFLAGS="%{__global_cflags} -I%{__includedir}/compat-gnutls34 "
+export PKG_CONFIG_PATH=%{_libdir}/compat-gnutls34/pkgconfig:%{_libdir}/compat-nettle32/pkgconfig:
 %endif
+
+/usr/bin/pkg-config "gnutls >= 3.4.7" --cflags --libs gnutls
 
 %configure \
         --enable-fhs \
@@ -1348,9 +1346,7 @@ fi
 %files client
 %{_bindir}/cifsdd
 %{_bindir}/dbwrap_tool
-%if (0%{?fedora} || 0%{?rhel} >= 8)
 %{_bindir}/dumpmscat
-%endif
 %{_bindir}/findsmb
 %{_bindir}/mvxattr
 %{_bindir}/nmblookup
@@ -1456,9 +1452,7 @@ fi
 %{_libdir}/samba/liblibsmb-samba4.so
 %{_libdir}/samba/libmessages-dgm-samba4.so
 %{_libdir}/samba/libmessages-util-samba4.so
-%if (0%{?fedora} || 0%{?rhel} >= 8)
 %{_libdir}/samba/libmscat-samba4.so
-%endif
 %{_libdir}/samba/libmsghdr-samba4.so
 %{_libdir}/samba/libmsrpc3-samba4.so
 %{_libdir}/samba/libndr-samba-samba4.so
@@ -3521,7 +3515,10 @@ fi
 %endif # with_clustering_support
 
 %changelog
-* Sun Oct  6 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.11.0
+* Thu Oct 10 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.11.0-4
+- Update compat-gnutls handling to always require gnutls >= 3.4.7
+
+* Sun Oct 6 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.11.0-3
 - Strip whitespace and replace contractions in .spec file
 - Flag experimental system_mit_krb5
 - Set RHEL exclusions for dumpmscat
