@@ -7,9 +7,9 @@
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
 
-%define main_release 4
+%define main_release 0
 
-%define samba_version 4.11.0
+%define samba_version 4.11.1
 %define talloc_version 2.2.0
 %define tdb_version 1.4.2
 %define tevent_version 0.10.0
@@ -117,8 +117,6 @@ Source14:       samba.pamd
 
 Source201:      README.downgrade
 
-Patch0:         pidl.patch
-
 Requires(pre): /usr/sbin/groupadd
 Requires(post): systemd
 Requires(preun): systemd
@@ -138,6 +136,10 @@ Requires: pam
 
 Provides: samba4 = %{samba_depver}
 Obsoletes: samba4 < %{samba_depver}
+
+# PIDL has been discarded
+Obsoletes: ssamba-pidl <  %{samba_depver}
+Obsoletes: ssamba4-pidl <  %{samba_depver}
 
 # We do not build it outdated docs anymore
 Provides: samba-doc = %{samba_depver}
@@ -240,9 +242,6 @@ BuildRequires: krb5-server >= %{required_mit_krb5}
 # Required by samba-tool to run tests
 BuildRequires: python%{python3_pkgversion}-crypto
 %endif # with_dc
-
-# pidl requirements
-BuildRequires: perl(Parse::Yapp)
 
 BuildRequires: libtalloc-devel >= %{talloc_version}
 BuildRequires: python%{python3_pkgversion}-talloc-devel >= %{talloc_version}
@@ -586,21 +585,6 @@ Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
 The python%{python3_pkgversion}-%{name}-dc package contains the Python libraries needed by programs
 to manage Samba AD.
 %endif
-
-### PIDL
-%package pidl
-Summary: Perl IDL compiler
-Requires: perl-interpreter
-Requires: perl(Parse::Yapp)
-Requires: perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
-BuildArch: noarch
-
-Provides: samba4-pidl = %{samba_depver}
-Obsoletes: samba4-pidl < %{samba_depver}
-
-%description pidl
-The %{name}-pidl package contains the Perl IDL compiler used by Samba
-and Wireshark to parse IDL and similar protocols
 
 ### TEST
 %package test
@@ -1882,44 +1866,6 @@ fi
 %{_libdir}/samba/wbclient/libwbclient.so
 %{_libdir}/pkgconfig/wbclient.pc
 %endif # with_libwbclient
-
-### PIDL
-%files pidl
-%attr(755,root,root) %{_bindir}/pidl
-%dir %{perl_vendorlib}/Parse
-%{perl_vendorlib}/Parse/Pidl.pm
-%dir %{perl_vendorlib}/Parse/Pidl
-%{perl_vendorlib}/Parse/Pidl/CUtil.pm
-%{perl_vendorlib}/Parse/Pidl/Samba4.pm
-%{perl_vendorlib}/Parse/Pidl/Expr.pm
-%{perl_vendorlib}/Parse/Pidl/ODL.pm
-%{perl_vendorlib}/Parse/Pidl/Typelist.pm
-%{perl_vendorlib}/Parse/Pidl/IDL.pm
-%{perl_vendorlib}/Parse/Pidl/Compat.pm
-%dir %{perl_vendorlib}/Parse/Pidl/Wireshark
-%{perl_vendorlib}/Parse/Pidl/Wireshark/Conformance.pm
-%{perl_vendorlib}/Parse/Pidl/Wireshark/NDR.pm
-%{perl_vendorlib}/Parse/Pidl/Dump.pm
-%dir %{perl_vendorlib}/Parse/Pidl/Samba3
-%{perl_vendorlib}/Parse/Pidl/Samba3/ServerNDR.pm
-%{perl_vendorlib}/Parse/Pidl/Samba3/ClientNDR.pm
-%dir %{perl_vendorlib}/Parse/Pidl/Samba4
-%{perl_vendorlib}/Parse/Pidl/Samba4/Header.pm
-%dir %{perl_vendorlib}/Parse/Pidl/Samba4/COM
-%{perl_vendorlib}/Parse/Pidl/Samba4/COM/Header.pm
-%{perl_vendorlib}/Parse/Pidl/Samba4/COM/Proxy.pm
-%{perl_vendorlib}/Parse/Pidl/Samba4/COM/Stub.pm
-%{perl_vendorlib}/Parse/Pidl/Samba4/Python.pm
-%{perl_vendorlib}/Parse/Pidl/Samba4/Template.pm
-%dir %{perl_vendorlib}/Parse/Pidl/Samba4/NDR
-%{perl_vendorlib}/Parse/Pidl/Samba4/NDR/Server.pm
-%{perl_vendorlib}/Parse/Pidl/Samba4/NDR/Client.pm
-%{perl_vendorlib}/Parse/Pidl/Samba4/NDR/Parser.pm
-%{perl_vendorlib}/Parse/Pidl/Samba4/TDR.pm
-%{perl_vendorlib}/Parse/Pidl/NDR.pm
-%{perl_vendorlib}/Parse/Pidl/Util.pm
-%{_mandir}/man1/pidl*
-%{_mandir}/man3/Parse::Pidl*
 
 ### PYTHON3
 %files -n python%{python3_pkgversion}-%{name}
@@ -3515,6 +3461,9 @@ fi
 %endif # with_clustering_support
 
 %changelog
+* Fri Oct 18 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.11.1-0
+- Discard and obsolete PIDL
+
 * Thu Oct 10 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.11.0-4
 - Update compat-gnutls handling to always require gnutls >= 3.4.7
 
@@ -5873,4 +5822,3 @@ fi
 - Added a number of options to smb.conf file
 - Added smbadduser command (missed from all previous RPMs) - Doooh!
 - Added smbuser file and smb.conf file updates for username map
-
