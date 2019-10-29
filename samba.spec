@@ -9,7 +9,7 @@
 
 %define main_release 0
 
-%define samba_version 4.11.1
+%define samba_version 4.11.2
 %define talloc_version 2.2.0
 %define tdb_version 1.4.2
 %define tevent_version 0.10.0
@@ -3461,6 +3461,9 @@ fi
 %endif # with_clustering_support
 
 %changelog
+* Tue Oct 29 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.11.2-0
+- Updte to 4.11.2
+
 * Fri Oct 18 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.11.1-0
 - Discard and obsolete PIDL
 
