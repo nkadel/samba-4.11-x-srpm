@@ -9,7 +9,7 @@
 
 %define main_release 0
 
-%define samba_version 4.11.2
+%define samba_version 4.11.3
 %define talloc_version 2.2.0
 %define tdb_version 1.4.2
 %define tevent_version 0.10.0
