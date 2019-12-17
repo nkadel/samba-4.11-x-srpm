@@ -9,7 +9,7 @@
 
 %define main_release 0
 
-%define samba_version 4.11.3
+%define samba_version 4.11.4
 %define talloc_version 2.2.0
 %define tdb_version 1.4.2
 %define tevent_version 0.10.0
@@ -3461,6 +3461,9 @@ fi
 %endif # with_clustering_support
 
 %changelog
+* Mon Dec 16 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.11.4-0
+- Update to 4.11.4
+
 * Tue Dec 10 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.11.3-0
 - Update to 4.11.3
 - Update libldb requirement to 2.0.8
