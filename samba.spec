@@ -102,14 +102,14 @@ Epoch:          2
 
 Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+
-URL:            http://www.samba.org/
+URL:            https://www.samba.org/
 
 Source0:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.gz
 Source1:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.asc
 Source2:        gpgkey-52FBC0B86D954B0843324CDC6F33915B6568B7EA.gpg
 
 # Red Hat specific replacement-files
-Source10:       samba.log
+Source10:       samba.logrotate
 Source11:       smb.conf.vendor
 Source12:       smb.conf.example
 Source13:       pam_winbind.conf
@@ -138,8 +138,8 @@ Provides: samba4 = %{samba_depver}
 Obsoletes: samba4 < %{samba_depver}
 
 # PIDL has been discarded
-Obsoletes: ssamba-pidl <  %{samba_depver}
-Obsoletes: ssamba4-pidl <  %{samba_depver}
+Obsoletes: samba-pidl <  %{samba_depver}
+Obsoletes: samba4-pidl <  %{samba_depver}
 
 # We do not build it outdated docs anymore
 Provides: samba-doc = %{samba_depver}
@@ -3465,26 +3465,36 @@ fi
 %changelog
 * Mon Dec 16 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.11.4-0
 - Update to 4.11.4
-
-* Tue Dec 10 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.11.3-0
-- Update to 4.11.3
 - Update libldb requirement to 2.0.8
-
-* Tue Oct 29 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.11.2-0
-- Updte to 4.11.2
-
-* Fri Oct 18 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.11.1-0
 - Discard and obsolete PIDL
-
-* Thu Oct 10 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.11.0-4
 - Update compat-gnutls handling to always require gnutls >= 3.4.7
-
-* Sun Oct 6 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.11.0-3
 - Strip whitespace and replace contractions in .spec file
 - Flag experimental system_mit_krb5
 - Set RHEL exclusions for dumpmscat
 - Activate epel-rpm-macros for RHEL
 - Discard excludes for vfs_cephs files
+
+* Tue Dec 10 2019 Guenther Deschner <gdeschner@redhat.com> - 4.11.3-0
+- Update to Samba 4.11.3
+- resolves: #1778586, #1781542 - Security fixes for CVE-2019-14861
+- resolves: #1778589, #1781545 - Security fixes for CVE-2019-14870
+
+* Thu Dec 05 2019 Andreas Schneider <asn@redhat.com> - 4.11.2-2
+- Restart winbindd on samba-winbind package upgrade
+
+* Wed Nov 06 2019 Alexander Bokovoy <abokovoy@redhat.com> - 4.11.2-1
+- Update DES removal patch
+
+* Tue Oct 29 2019 Guenther Deschner <gdeschner@redhat.com> - 4.11.2-0
+- Update to Samba 4.11.2
+- resolves: #1763137, #1766558 - Security fixes for CVE-2019-10218
+- resolves: #1764126, #1766559 - Security fixes for CVE-2019-14833
+
+* Sun Oct 27 2019 Alexander Bokovoy <abokovoy@redhat.com> - 4.11.1-1
+- resolves: #1757071 - Deploy new samba DC fails
+
+* Fri Oct 18 2019 Guenther Deschner <gdeschner@redhat.com> - 4.11.1-0
+- Update to Samba 4.11.1
 
 * Tue Sep 17 2019 Guenther Deschner <gdeschner@redhat.com> - 4.11.0-3
 - Update to Samba 4.11.0
@@ -5230,7 +5240,7 @@ fi
 
 * Wed Dec 17 2003 Felipe Alfaro Solana <felipe_alfaro@linuxmail.org> 3.0.1-1
 - Update to 3.0.1
-- Removed testparm patch as it already merged
+- Removed testparm patch as it is already merged
 - Removed Samba.7* man pages
 - Fixed .buildroot patch
 - Fixed .pie patch
