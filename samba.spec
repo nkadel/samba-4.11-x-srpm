@@ -1,6 +1,5 @@
 # rpmbuild --rebuild --with testsuite --without clustering samba.src.rpm
 #
-
 # The testsuite is disabled by default. Set --with testsuite or bcond_without
 # to run the Samba torture testsuite.
 %bcond_with testsuite
@@ -243,6 +242,10 @@ BuildRequires: krb5-server >= %{required_mit_krb5}
 BuildRequires: python%{python3_pkgversion}-crypto
 %endif # with_dc
 
+# pidl requirements
+BuildRequires: perl(ExtUtils::MakeMaker)
+BuildRequires: perl(Parse::Yapp)
+
 BuildRequires: libtalloc-devel >= %{talloc_version}
 BuildRequires: python%{python3_pkgversion}-talloc-devel >= %{talloc_version}
 
@@ -277,7 +280,7 @@ Samba is the standard Windows interoperability suite of programs for Linux and
 Unix.
 
 ### CLIENT
-%package client
+o%package client
 Summary: Samba client programs
 Requires(pre): %{name}-common = %{samba_depver}
 Requires: %{name}-common = %{samba_depver}
@@ -585,6 +588,21 @@ Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
 The python%{python3_pkgversion}-%{name}-dc package contains the Python libraries needed by programs
 to manage Samba AD.
 %endif
+
+### PIDL
+%package pidl
+Summary: Perl IDL compiler
+Requires: perl-interpreter
+Requires: perl(Parse::Yapp)
+Requires: perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
+BuildArch: noarch
+
+Provides: samba4-pidl = %{samba_depver}
+Obsoletes: samba4-pidl < %{samba_depver}
+
+%description pidl
+The %{name}-pidl package contains the Perl IDL compiler used by Samba
+and Wireshark to parse IDL and similar protocols
 
 ### TEST
 %package test
