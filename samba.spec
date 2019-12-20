@@ -1,5 +1,6 @@
 # rpmbuild --rebuild --with testsuite --without clustering samba.src.rpm
 #
+
 # The testsuite is disabled by default. Set --with testsuite or bcond_without
 # to run the Samba torture testsuite.
 %bcond_with testsuite
@@ -49,8 +50,8 @@
 %global with_vfs_glusterfs 0
 %ifarch x86_64
 %global with_vfs_glusterfs 1
-%endif # x86_64
-%endif # rhel
+%endif x86_64
+%endif rhel
 
 %global with_intel_aes_accel 0
 %ifarch x86_64
@@ -101,7 +102,7 @@ Epoch:          2
 
 Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+
-URL:            https://www.samba.org/
+URL:            http://www.samba.org/
 
 Source0:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.gz
 Source1:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.asc
@@ -187,8 +188,6 @@ BuildRequires: pam-devel
 BuildRequires: perl-interpreter
 BuildRequires: perl-generators
 BuildRequires: perl(Archive::Tar)
-BuildRequires: perl(ExtUtils::MakeMaker)
-BuildRequires: perl(Parse::Yapp)
 BuildRequires: perl(Test::More)
 BuildRequires: popt-devel
 BuildRequires: python%{python3_pkgversion}-devel
@@ -199,8 +198,8 @@ BuildRequires: python%{python3_pkgversion}-iso8601
 %if 0%{?fedora}
 # Optional testing package, enormous dependency chain to build on RHEL
 BuildRequires: python%{python3_pkgversion}-subunit-test
-%endif # fedora
-%endif # with_dc
+%endif fedora
+%endif with_dc
 BuildRequires: quota-devel
 BuildRequires: readline-devel
 %if (0%{?fedora} || 0%{?rhel} >= 8)
@@ -209,7 +208,7 @@ BuildRequires: rpcgen
 BuildRequires: rpcsvc-proto-devel
 %else
 BuildRequires: rpcbind
-%endif # fedora > 0 || rhel >= 8
+%endif fedora > 0 || rhel >= 8
 BuildRequires: sed
 BuildRequires: libtasn1-devel
 # We need asn1Parser
@@ -233,14 +232,14 @@ BuildRequires: compat-gnutls34-devel >= 3.4.7
 BuildRequires: compat-nettle32-devel
 %else
 BuildRequires: gnutls-devel >= 3.4.7
-%endif # rhel < 8
+%endif rhel < 8
 
 %if %{with_dc}
 BuildRequires: bind
 BuildRequires: krb5-server >= %{required_mit_krb5}
 # Required by samba-tool to run tests
 BuildRequires: python%{python3_pkgversion}-crypto
-%endif # with_dc
+%endif with_dc
 
 # pidl requirements
 BuildRequires: perl(ExtUtils::MakeMaker)
@@ -280,7 +279,7 @@ Samba is the standard Windows interoperability suite of programs for Linux and
 Unix.
 
 ### CLIENT
-o%package client
+%package client
 Summary: Samba client programs
 Requires(pre): %{name}-common = %{samba_depver}
 Requires: %{name}-common = %{samba_depver}
@@ -420,7 +419,7 @@ Requires: bind
 %description dc-bind-dlz
 The %{name}-dc-bind-dlz package contains the libraries for bind to manage all
 name server related details of Samba AD.
-%endif # with_dc
+%endif with_dc
 
 ### DEVEL
 %package devel
@@ -522,7 +521,7 @@ Requires: libsmbclient = %{samba_depver}
 The libsmbclient-devel package contains the header files and libraries needed
 to develop programs that link against the SMB client library in the Samba
 suite.
-%endif # with_libsmbclient
+%endif with_libsmbclient
 
 ### LIBWBCLIENT
 %if %with_libwbclient
@@ -544,7 +543,7 @@ Obsoletes: samba-winbind-devel < %{samba_depver}
 %description -n libwbclient-devel
 The libwbclient-devel package provides developer tools for the wbclient
 library.
-%endif # with_libwbclient
+%endif with_libwbclient
 
 ### PYTHON3
 %package -n python%{python3_pkgversion}-%{name}
@@ -791,7 +790,7 @@ CTDB is a cluster implementation of the TDB database used by Samba and other
 projects to store temporary data. If an application is already using TDB for
 temporary data it is very easy to convert that application to be cluster aware
 and use CTDB instead.
-%endif # with_clustering_support
+%endif with_clustering_support
 
 
 
@@ -871,8 +870,8 @@ export PKG_CONFIG_PATH=%{_libdir}/compat-gnutls34/pkgconfig:%{_libdir}/compat-ne
 %if %with_system_mit_krb5
         --with-system-mitkrb5 \
         --with-experimental-mit-ad-dc \
-%endif # with_system_mit_krb5
-%endif # with_dc
+%endif with_system_mit_krb5
+%endif with_dc
 %if ! %with_vfs_glusterfs
         --disable-glusterfs \
 %endif
@@ -897,6 +896,9 @@ export PKG_CONFIG_PATH=%{_libdir}/compat-gnutls34/pkgconfig:%{_libdir}/compat-ne
         --systemd-samba-extra=%{_systemd_extra}
 
 make %{?_smp_mflags}
+
+pushd pidl
+%__perl Makefile.PL PREFIX=%{_prefix}
 
 %install
 rm -rf %{buildroot}
@@ -1063,12 +1065,22 @@ for f in samba/libsamba-net-samba4.so \
          pkgconfig/samba-policy.pc ; do
     rm -f %{buildroot}%{_libdir}/$f
 done
-%endif # ! with_dc
+%endif ! with_dc
+
+pushd pidl
+make DESTDIR=%{buildroot} install_vendor
+
+rm -f %{buildroot}%{perl_archlib}/perllocal.pod
+rm -f %{buildroot}%{perl_archlib}/vendor_perl/auto/Parse/Pidl/.packlist
+
+# Already packaged by perl Parse:Yapp
+rm -rf %{buildroot}%{perl_vendorlib}/Parse/Yapp
+popd
 
 %if %{with testsuite}
 %check
 TDB_NO_FSYNC=1 make %{?_smp_mflags} test
-%endif # with testsuite
+%endif with testsuite
 
 %post
 %systemd_post smb.service
@@ -1120,7 +1132,7 @@ fi
 
 %postun dc
 %systemd_postun_with_restart samba.service
-%endif # with_dc
+%endif with_dc
 
 %post krb5-printing
 %{_sbindir}/update-alternatives --install %{_libexecdir}/samba/cups_backend_smb \
@@ -1176,7 +1188,7 @@ else
     %{_sbindir}/update-alternatives --remove libwbclient.so%{libwbc_alternatives_suffix} %{_libdir}/samba/wbclient/libwbclient.so
 fi
 
-%endif # with_libwbclient
+%endif with_libwbclient
 
 %ldconfig_scriptlets test
 
@@ -1498,12 +1510,12 @@ fi
 %if ! %with_libwbclient
 %{_libdir}/samba/libwbclient.so.*
 %{_libdir}/samba/libwinbind-client-samba4.so
-%endif # ! with_libwbclient
+%endif ! with_libwbclient
 
 %if ! %with_libsmbclient
 %{_libdir}/samba/libsmbclient.so.*
 %{_mandir}/man7/libsmbclient.7*
-%endif # ! with_libsmbclient
+%endif ! with_libsmbclient
 
 ### COMMON
 %files common
@@ -1574,7 +1586,7 @@ fi
 
 %if %{with_system_mit_krb5}
 %{_libdir}/krb5/plugins/kdb/samba.so
-%endif # with_system_mit_krb5
+%endif with_system_mit_krb5
 
 %{_libdir}/samba/auth/samba4.so
 %{_libdir}/samba/libpac-samba4.so
@@ -1676,7 +1688,7 @@ fi
 %{_libdir}/samba/bind9/dlz_bind9_10.so
 %{_libdir}/samba/bind9/dlz_bind9_11.so
 %{_libdir}/samba/bind9/dlz_bind9_12.so
-%endif # with_dc
+%endif with_dc
 
 ### DEVEL
 %files devel
@@ -1799,11 +1811,11 @@ fi
 
 %if ! %with_libsmbclient
 %{_includedir}/samba-4.0/libsmbclient.h
-%endif # ! with_libsmbclient
+%endif ! with_libsmbclient
 
 %if ! %with_libwbclient
 %{_includedir}/samba-4.0/wbclient.h
-%endif # ! with_libwbclient
+%endif ! with_libwbclient
 
 ### VFS-CEPHFS
 %if %{with_vfs_cephfs}
@@ -1853,10 +1865,10 @@ fi
 %{_libdir}/samba/libkrb5-samba4.so.*
 %{_libdir}/samba/libroken-samba4.so.*
 %{_libdir}/samba/libwind-samba4.so.*
-%endif # ! with_dc |! ! with_system_mit_krb5
+%endif ! with_dc |! ! with_system_mit_krb5
 %if %with_dc && ! %{with_system_mit_krb5}
 %{_libdir}/samba/libHDB-SAMBA4-samba4.so
-%endif # with_dc && ! with_system_mit_krb5
+%endif with_dc && ! with_system_mit_krb5
 
 
 ### LIBSMBCLIENT
@@ -1870,7 +1882,7 @@ fi
 %{_libdir}/libsmbclient.so
 %{_libdir}/pkgconfig/smbclient.pc
 %{_mandir}/man7/libsmbclient.7*
-%endif # with_libsmbclient
+%endif with_libsmbclient
 
 ### LIBWBCLIENT
 %if %with_libwbclient
@@ -1883,7 +1895,51 @@ fi
 %{_includedir}/samba-4.0/wbclient.h
 %{_libdir}/samba/wbclient/libwbclient.so
 %{_libdir}/pkgconfig/wbclient.pc
-%endif # with_libwbclient
+%endif with_libwbclient
+
+### PIDL
+%files pidl
+%doc pidl/README
+%attr(755,root,root) %{_bindir}/pidl
+%dir %{perl_vendorlib}/Parse
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl.pm
+%dir %{perl_vendorlib}/Parse/Pidl
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/CUtil.pm
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Samba4.pm
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Expr.pm
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/ODL.pm
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Typelist.pm
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/IDL.pm
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Compat.pm
+%dir %{perl_vendorlib}/Parse/Pidl/Wireshark
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Wireshark/Conformance.pm
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Wireshark/NDR.pm
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Dump.pm
+%dir %{perl_vendorlib}/Parse/Pidl/Samba3
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Samba3/ServerNDR.pm
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Samba3/ClientNDR.pm
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Samba3/Template.pm
+%dir %{perl_vendorlib}/Parse/Pidl/Samba4
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Samba4/Header.pm
+%dir %{perl_vendorlib}/Parse/Pidl/Samba4/COM
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Samba4/COM/Header.pm
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Samba4/COM/Proxy.pm
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Samba4/COM/Stub.pm
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Samba4/Python.pm
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Samba4/Template.pm
+%dir %{perl_vendorlib}/Parse/Pidl/Samba4/NDR
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Samba4/NDR/Server.pm
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Samba4/NDR/Client.pm
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Samba4/NDR/Parser.pm
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Samba4/TDR.pm
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/NDR.pm
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Util.pm
+%attr(644,root,root) %{_mandir}/man1/pidl.1*
+%attr(644,root,root) %{_mandir}/man3/Parse::Pidl::Dump.3pm*
+%attr(644,root,root) %{_mandir}/man3/Parse::Pidl::NDR.3pm*
+%attr(644,root,root) %{_mandir}/man3/Parse::Pidl::Util.3pm*
+%attr(644,root,root) %{_mandir}/man3/Parse::Pidl::Wireshark::Conformance.3pm*
+%attr(644,root,root) %{_mandir}/man3/Parse::Pidl::Wireshark::NDR.3pm*
 
 ### PYTHON3
 %files -n python%{python3_pkgversion}-%{name}
@@ -2582,8 +2638,8 @@ fi
 %if %{with_system_mit_krb5}
 %{_libdir}/samba/krb5/winbind_krb5_localauth.so
 %{_mandir}/man8/winbind_krb5_localauth.8*
-%endif # with_system_mit_krb5
-%endif # with_dc
+%endif with_system_mit_krb5
+%endif with_dc
 
 ### WINBIND-KRB5-LOCATOR
 %files winbind-krb5-locator
@@ -3478,13 +3534,12 @@ fi
 %dir %{_datadir}/ctdb/tests/tool/scripts
 %{_datadir}/ctdb/tests/tool/scripts/local.sh
 
-%endif # with_clustering_support
+%endif with_clustering_support
 
 %changelog
 * Mon Dec 16 2019 Nico Kadel-Garcia <nkadel@gmail.com> - 4.11.4-0
 - Update to 4.11.4
 - Update libldb requirement to 2.0.8
-- Discard and obsolete PIDL
 - Update compat-gnutls handling to always require gnutls >= 3.4.7
 - Strip whitespace and replace contractions in .spec file
 - Flag experimental system_mit_krb5
