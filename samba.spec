@@ -1,6 +1,5 @@
 # rpmbuild --rebuild --with testsuite --without clustering samba.src.rpm
 #
-
 # The testsuite is disabled by default. Set --with testsuite or bcond_without
 # to run the Samba torture testsuite.
 %bcond_with testsuite
@@ -102,7 +101,7 @@ Epoch:          2
 
 Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+
-URL:            http://www.samba.org/
+URL:            https://www.samba.org/
 
 Source0:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.gz
 Source1:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.asc
@@ -116,6 +115,10 @@ Source13:       pam_winbind.conf
 Source14:       samba.pamd
 
 Source201:      README.downgrade
+
+Patch100:       0000-use-gnutls-for-des-cbc.patch
+Patch101:       0001-handle-removal-des-enctypes-from-krb5.patch
+Patch102:       0002-samba-tool-create-working-private-krb5.conf.patch
 
 Requires(pre): /usr/sbin/groupadd
 Requires(post): systemd
@@ -136,10 +139,6 @@ Requires: pam
 
 Provides: samba4 = %{samba_depver}
 Obsoletes: samba4 < %{samba_depver}
-
-# PIDL has been discarded
-Obsoletes: samba-pidl <  %{samba_depver}
-Obsoletes: samba4-pidl <  %{samba_depver}
 
 # We do not build it outdated docs anymore
 Provides: samba-doc = %{samba_depver}
@@ -1247,7 +1246,6 @@ fi
 %{_sbindir}/eventlogadm
 %{_sbindir}/nmbd
 %{_sbindir}/smbd
-
 %if %{with_dc}
 # This is only used by vfs_dfs_samba4
 %{_libdir}/samba/libdfs-server-ad-samba4.so
@@ -1358,6 +1356,7 @@ fi
 
 ### CLIENT
 %files client
+%doc source3/client/README.smbspool
 %{_bindir}/cifsdd
 %{_bindir}/dbwrap_tool
 %{_bindir}/dumpmscat
@@ -1651,7 +1650,6 @@ fi
 
 ### DC-LIBS
 %files dc-libs
-# with_dc
 %{_libdir}/samba/libdb-glue-samba4.so
 %{_libdir}/samba/libprocess-model-samba4.so
 %{_libdir}/samba/libservice-samba4.so
