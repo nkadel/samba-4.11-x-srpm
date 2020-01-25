@@ -41,16 +41,21 @@
 %if 0%{?fedora}
 %ifarch aarch64 ppc64le s390x x86_64
 %global with_vfs_cephfs 1
+#endifarch
 %endif
+#endif fedora
 %endif
 
 %global with_vfs_glusterfs 1
 %if 0%{?rhel}
 %global with_vfs_glusterfs 0
+# Only enable on x86_64
 %ifarch x86_64
 %global with_vfs_glusterfs 1
-%endif x86_64
-%endif rhel
+#endif x86_64
+%endif
+#endif rhel
+%endif
 
 %global with_intel_aes_accel 0
 %ifarch x86_64
@@ -70,7 +75,7 @@
 %global with_dc 1
 %endif
 
-# Use system MIT krb5 for DC, not built-in Heimdal
+# Use Samba supported internal Heimdal, not experimental system krb5
 %global with_system_mit_krb5 0
 
 %global required_mit_krb5 1.15.1
@@ -329,6 +334,11 @@ Summary: Files used by both Samba servers and clients
 BuildArch: noarch
 
 Requires(post): systemd
+
+Requires(post): systemd
+%if (0%{?fedora} || 0%{?rhel} >= 8)
+Recommends:     logrotate
+%endif
 
 Provides: samba4-common = %{samba_depver}
 Obsoletes: samba4-common < %{samba_depver}
@@ -785,7 +795,6 @@ Requires: %{name}-client-libs = %{samba_depver}
 
 Requires: ctdb = %{samba_depver}
 %if (0%{?fedora} || 0%{?rhel} >= 8)
-# RPM on RHEL does not support Recommends
 Recommends: nc
 %endif
 
@@ -3553,8 +3562,6 @@ fi
 
 %changelog
 * Wed Jan 22 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.11.5-0
-- Update libldb requirement to 2.0.8
-- Update compat-gnutls handling to always require gnutls >= 3.4.7
 - Strip whitespace and replace contractions in .spec file
 - Flag experimental system_mit_krb5
 - Set RHEL exclusions for dumpmscat
