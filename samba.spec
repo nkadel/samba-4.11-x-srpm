@@ -334,8 +334,6 @@ Summary: Files used by both Samba servers and clients
 BuildArch: noarch
 
 Requires(post): systemd
-
-Requires(post): systemd
 %if (0%{?fedora} || 0%{?rhel} >= 8)
 Recommends:     logrotate
 %endif
