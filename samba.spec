@@ -3585,6 +3585,8 @@ fi
 - Strip whitespace and replace contractions in .spec file
 - Flag experimental system_mit_krb5
 - Activate epel-rpm-macros for RHEL
+- Discard obsolete patches
+- Update libldb to 2.1.1
 
 * Fri Jan 24 2020 Alexander Bokovoy <abokovoy@redhat.com> - 4.12.0.rc1-1
 - Allow building against krb5 1.18 beta and require it for Rawhide
