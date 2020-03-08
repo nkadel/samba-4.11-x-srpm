@@ -78,7 +78,6 @@
 # Use Samba supported internal Heimdal, not experimental system krb5
 %global with_system_mit_krb5 0
 
-#%%global required_mit_krb5 1.18
 %global required_mit_krb5 1.15.1
 
 %global with_clustering_support 0
@@ -855,6 +854,18 @@ export PKG_CONFIG_PATH=%{_libdir}/compat-gnutls34/pkgconfig:%{_libdir}/compat-ne
 
 /usr/bin/pkg-config "gnutls >= 3.4.7" --cflags --libs gnutls
 
+echo with_libsmbclient: %with_libsmbclient
+echo with_libwblient: %with_libwbclient
+echo with_profiling: %with_profiling
+echo with_vfs_cephfs: %with_vfs_cephfs
+echo with_vfs_glusterfs: %with_vfs_glusterfs
+echo with_intel_aes_accel: %with_intel_aes_accel
+echo libwbc_alternatives_suffix: %libwbc_alternatives_suffix
+echo with_dc: %with_dc
+echo with_system_mit_krb5: %with_system_mit_krb5
+echo with_clustering_support: %with_clustering_support
+echo with_systemd_extra: %with_systemd_extra
+
 %configure \
         --enable-fhs \
         --with-piddir=/run \
@@ -1296,7 +1307,6 @@ fi
 %{_libdir}/samba/vfs/glusterfs_fuse.so
 %{_libdir}/samba/vfs/linux_xfs_sgid.so
 %{_libdir}/samba/vfs/media_harmony.so
-%{_libdir}/samba/vfs/netatalk.so
 %{_libdir}/samba/vfs/offline.so
 %{_libdir}/samba/vfs/preopen.so
 %{_libdir}/samba/vfs/readahead.so
@@ -1346,7 +1356,6 @@ fi
 %{_mandir}/man8/vfs_glusterfs_fuse.8*
 %{_mandir}/man8/vfs_linux_xfs_sgid.8*
 %{_mandir}/man8/vfs_media_harmony.8*
-%{_mandir}/man8/vfs_netatalk.8*
 %{_mandir}/man8/vfs_offline.8*
 %{_mandir}/man8/vfs_preopen.8*
 %{_mandir}/man8/vfs_readahead.8*
@@ -1383,6 +1392,7 @@ fi
 %{_bindir}/dbwrap_tool
 %{_bindir}/dumpmscat
 %{_bindir}/findsmb
+%{_bindir}/mdfind
 %{_bindir}/mvxattr
 %{_bindir}/nmblookup
 %{_bindir}/oLschema2ldif
@@ -1404,6 +1414,7 @@ fi
 %dir %{_libexecdir}/samba
 %ghost %{_libexecdir}/samba/cups_backend_smb
 %{_mandir}/man1/dbwrap_tool.1*
+%{_mandir}/man1/mdfind.1*
 %{_mandir}/man1/nmblookup.1*
 %{_mandir}/man1/oLschema2ldif.1*
 %{_mandir}/man1/regdiff.1*
@@ -1519,6 +1530,7 @@ fi
 %{_libdir}/samba/libsmbldaphelper-samba4.so
 %{_libdir}/samba/libsys-rw-samba4.so
 %{_libdir}/samba/libsocket-blocking-samba4.so
+%{_libdir}/samba/libtalloc-report-printf-samba4.so
 %{_libdir}/samba/libtalloc-report-samba4.so
 %{_libdir}/samba/libtdb-wrap-samba4.so
 %{_libdir}/samba/libtime-basic-samba4.so
@@ -1568,9 +1580,9 @@ fi
 # common libraries
 %{_libdir}/samba/libpopt-samba3-cmdline-samba4.so
 %{_libdir}/samba/libpopt-samba3-samba4.so
-%if %{with_intel_aes_accel}
+#%%if %%{with_intel_aes_accel}
 #%%{_libdir}/samba/libaesni-intel-samba4.so
-%endif
+#%%endif
 
 %dir %{_libdir}/samba/ldb
 
@@ -1635,7 +1647,6 @@ fi
 %{_libdir}/samba/ldb/lazy_commit.so
 %{_libdir}/samba/ldb/ldbsamba_extensions.so
 %{_libdir}/samba/ldb/linked_attributes.so
-%{_libdir}/samba/ldb/local_password.so
 %{_libdir}/samba/ldb/new_partition.so
 %{_libdir}/samba/ldb/objectclass.so
 %{_libdir}/samba/ldb/objectclass_attrs.so
@@ -1657,8 +1668,6 @@ fi
 %{_libdir}/samba/ldb/schema_load.so
 %{_libdir}/samba/ldb/secrets_tdb_sync.so
 %{_libdir}/samba/ldb/show_deleted.so
-%{_libdir}/samba/ldb/simple_dn.so
-%{_libdir}/samba/ldb/simple_ldap_map.so
 %{_libdir}/samba/ldb/subtree_delete.so
 %{_libdir}/samba/ldb/subtree_rename.so
 %{_libdir}/samba/ldb/tombstone_reanimate.so
@@ -1668,6 +1677,7 @@ fi
 %{_libdir}/samba/ldb/wins_ldb.so
 %{_libdir}/samba/vfs/posix_eadb.so
 %dir /var/lib/samba/sysvol
+%{_datadir}/samba/mdssvc
 %{_datadir}/samba/setup
 %{_mandir}/man8/samba.8*
 %{_mandir}/man8/samba-gpupdate.8*
@@ -1937,6 +1947,7 @@ fi
 %dir %{perl_vendorlib}/Parse
 %attr(644,root,root) %{perl_vendorlib}/Parse/Pidl.pm
 %dir %{perl_vendorlib}/Parse/Pidl
+%attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Base.pm
 %attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/CUtil.pm
 %attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Samba4.pm
 %attr(644,root,root) %{perl_vendorlib}/Parse/Pidl/Expr.pm
@@ -2038,6 +2049,7 @@ fi
 %{python3_sitearch}/samba/dcerpc/irpc.*.so
 %{python3_sitearch}/samba/dcerpc/krb5pac.*.so
 %{python3_sitearch}/samba/dcerpc/lsa.*.so
+%{python3_sitearch}/samba/dcerpc/mdssvc.*.so
 %{python3_sitearch}/samba/dcerpc/messaging.*.so
 %{python3_sitearch}/samba/dcerpc/mgmt.*.so
 %{python3_sitearch}/samba/dcerpc/misc.*.so
