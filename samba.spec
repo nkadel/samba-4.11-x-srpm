@@ -37,6 +37,12 @@
 
 %global with_profiling 1
 
+# Not available for RHEL 7
+%global with_gpgme 1
+%if 0%{?rhel} && 0%{?rhel} < 8
+%global with_gpgme 0
+%endif
+
 %global with_vfs_cephfs 0
 %if 0%{?fedora} || 0%{?rhel} >= 8
 %ifarch aarch64 ppc64le s390x x86_64
@@ -252,8 +258,10 @@ BuildRequires: python%{python3_pkgversion}-ldb-devel >= %{ldb_version}
 %if %{with_dc}
 BuildRequires: ldb-tools
 BuildRequires: tdb-tools
-BuildRequires: python%{python3_pkgversion}-gpg
 BuildRequires: python%{python3_pkgversion}-markdown
+%if %{with_gpgme}
+BuildRequires: python%{python3_pkgversion}-gpg
+%endif
 
 BuildRequires: krb5-server >= %{required_mit_krb5}
 %if 0%{?fedora}
@@ -884,6 +892,11 @@ export PYTHON=%{__python3}
         --with-experimental-mit-ad-dc \
 %endif
 %endif
+%if %with_gpgme
+        --with-gpgme \
+%else
+        --without-gpgme \
+%endif
 %if ! %with_vfs_glusterfs
         --disable-glusterfs \
 %endif
@@ -1402,8 +1415,8 @@ fi
 %{_bindir}/smbspool
 %{_bindir}/smbtar
 %{_bindir}/smbtree
-%dir %{_datadir}/samba/mdssvc
-%{_datadir}/samba/mdssvc/elasticsearch_mappings.json
+#%dir %{_datadir}/samba/mdssvc
+#%{_datadir}/samba/mdssvc/elasticsearch_mappings.json
 %dir %{_libexecdir}/samba
 %ghost %{_libexecdir}/samba/cups_backend_smb
 %{_mandir}/man1/dbwrap_tool.1*
