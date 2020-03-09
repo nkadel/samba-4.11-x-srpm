@@ -1,7 +1,7 @@
 samba-4.12.x-srpm
 ================
 
-SRPM building tools for Samba 4.11 on Fedora and RHEL. Samba 4.11.x
+SRPM building tools for Samba 4.12 on Fedora and RHEL. Samba 4.12.x
 with domain controller is enabled with the experimental MIT kerberos.
 dc is only enabled on Fedora.
 
