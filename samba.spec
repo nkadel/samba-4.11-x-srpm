@@ -849,22 +849,13 @@ export LDFLAGS="%{__global_ldflags} -fuse-ld=gold"
 
 # Enable compat-gnutls34 and compat-nettle32 packages
 %if 0%{?rhel} && 0%{?rhel} < 8
-export PKG_CONFIG_PATH=%{_libdir}/compat-gnutls34/pkgconfig:%{_libdir}/compat-nettle32/pkgconfig:
+export PKG_CONFIG_PATH=%{_libdir}/compat-gnutls34/pkgconfig:%{_libdir}/compat-nettle32/pkgconfig
 %endif
 
 /usr/bin/pkg-config "gnutls >= 3.4.7" --cflags --libs gnutls
 
-echo with_libsmbclient: %with_libsmbclient
-echo with_libwblient: %with_libwbclient
-echo with_profiling: %with_profiling
-echo with_vfs_cephfs: %with_vfs_cephfs
-echo with_vfs_glusterfs: %with_vfs_glusterfs
-echo with_intel_aes_accel: %with_intel_aes_accel
-echo libwbc_alternatives_suffix: %libwbc_alternatives_suffix
-echo with_dc: %with_dc
-echo with_system_mit_krb5: %with_system_mit_krb5
-echo with_clustering_support: %with_clustering_support
-echo with_systemd_extra: %with_systemd_extra
+# Avoid ./configure: line 16: python: command not found
+export PYTHON=%{__python3}
 
 %configure \
         --enable-fhs \
@@ -1411,6 +1402,8 @@ fi
 %{_bindir}/smbspool
 %{_bindir}/smbtar
 %{_bindir}/smbtree
+%dir %{_datadir}/samba/mdssvc
+%{_datadir}/samba/mdssvc/elasticsearch_mappings.json
 %dir %{_libexecdir}/samba
 %ghost %{_libexecdir}/samba/cups_backend_smb
 %{_mandir}/man1/dbwrap_tool.1*
@@ -1677,7 +1670,6 @@ fi
 %{_libdir}/samba/ldb/wins_ldb.so
 %{_libdir}/samba/vfs/posix_eadb.so
 %dir /var/lib/samba/sysvol
-%{_datadir}/samba/mdssvc
 %{_datadir}/samba/setup
 %{_mandir}/man8/samba.8*
 %{_mandir}/man8/samba-gpupdate.8*
