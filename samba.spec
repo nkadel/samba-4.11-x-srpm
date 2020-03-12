@@ -44,13 +44,13 @@
 %endif
 
 %global with_vfs_cephfs 0
-%if 0%{?fedora} || 0%{?rhel} >= 8
+#%if 0%{?fedora} || 0%{?rhel} >= 8
 %ifarch aarch64 ppc64le s390x x86_64
 %global with_vfs_cephfs 1
 #endifarch aarch64 ppc64le s390x x86_64
 %endif
 #endif fedora
-%endif
+#%endif
 
 %global with_vfs_glusterfs 1
 %if 0%{?rhel}
@@ -61,11 +61,6 @@
 #endifarch x86_64
 %endif
 #endif rhel
-%endif
-
-%global with_intel_aes_accel 0
-%ifarch x86_64
-%global with_intel_aes_accel 1
 %endif
 
 %global libwbc_alternatives_version 0.15
@@ -865,6 +860,14 @@ export PKG_CONFIG_PATH=%{_libdir}/compat-gnutls34/pkgconfig:%{_libdir}/compat-ne
 # Avoid ./configure: line 16: python: command not found
 export PYTHON=%{__python3}
 
+echo Report compilation values
+echo with_dc: %{with_dc}
+echo with_gpgme: %{with_gpgme}
+echo with_vfs_cephfs: %{with_vfs_cephfs}
+echo with_vfs_glusterfs: %{with_vfs_glusterfs}
+echo with_intel_aes_accel: %{with_intel_aes_accel}
+echo libwbc_alternatives_suffix: %{libwbc_alternatives_suffix}
+
 %configure \
         --enable-fhs \
         --with-piddir=/run \
@@ -908,9 +911,6 @@ export PYTHON=%{__python3}
 %endif
 %if %{with testsuite}
         --enable-selftest \
-%endif
-%if %with_intel_aes_accel
-        --accel-aes=intelaesni \
 %endif
         --with-systemd \
         --systemd-install-services \
@@ -1586,9 +1586,6 @@ fi
 # common libraries
 %{_libdir}/samba/libpopt-samba3-cmdline-samba4.so
 %{_libdir}/samba/libpopt-samba3-samba4.so
-#%%if %%{with_intel_aes_accel}
-#%%{_libdir}/samba/libaesni-intel-samba4.so
-#%%endif
 
 %dir %{_libdir}/samba/ldb
 
@@ -3604,6 +3601,21 @@ fi
 - Activate epel-rpm-macros for RHEL
 - Discard obsolete patches
 - Update libldb to 2.1.1
+
+* Tue Mar 03 2020 Guenther Deschner <gdeschner@redhat.com> - 4.12.0-3
+- Update to Samba 4.12.0
+
+* Wed Feb 26 2020 Guenther Deschner <gdeschner@redhat.com> - 4.12.0rc4-2
+- Update to Samba 4.12.0rc4
+
+* Wed Feb 19 2020 Guenther Deschner <gdeschner@redhat.com> - 4.12.0rc3-2
+- Update to Samba 4.12.0rc3
+
+* Tue Feb 04 2020 Guenther Deschner <gdeschner@redhat.com> - 4.12.0rc2-2
+- Update to Samba 4.12.0rc2
+
+* Thu Jan 30 2020 Fedora Release Engineering <releng@fedoraproject.org> - 2:4.12.0-0.1.rc1.1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
 
 * Fri Jan 24 2020 Alexander Bokovoy <abokovoy@redhat.com> - 4.12.0.rc1-1
 - Allow building against krb5 1.18 beta and require it for Rawhide
