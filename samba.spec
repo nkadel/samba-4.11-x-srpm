@@ -44,13 +44,9 @@
 %endif
 
 %global with_vfs_cephfs 0
-#%if 0%{?fedora} || 0%{?rhel} >= 8
 %ifarch aarch64 ppc64le s390x x86_64
 %global with_vfs_cephfs 1
-#endifarch aarch64 ppc64le s390x x86_64
 %endif
-#endif fedora
-#%endif
 
 %global with_vfs_glusterfs 1
 %if 0%{?rhel}
@@ -158,7 +154,7 @@ Provides: samba4-swat = %{samba_depver}
 Obsoletes: samba4-swat < %{samba_depver}
 
 %if 0%{?rhel}
-# Addresses python36- versus python%{python3_pkgversion}- dependencies
+# Addresses python36- versus python3- dependencies
 BuildRequires: epel-rpm-macros
 %endif
 
@@ -1415,8 +1411,8 @@ fi
 %{_bindir}/smbspool
 %{_bindir}/smbtar
 %{_bindir}/smbtree
-#%dir %{_datadir}/samba/mdssvc
-#%{_datadir}/samba/mdssvc/elasticsearch_mappings.json
+#%%dir %%{_datadir}/samba/mdssvc
+#%%{_datadir}/samba/mdssvc/elasticsearch_mappings.json
 %dir %{_libexecdir}/samba
 %ghost %{_libexecdir}/samba/cups_backend_smb
 %{_mandir}/man1/dbwrap_tool.1*
@@ -3594,7 +3590,7 @@ fi
 %endif
 
 %changelog
-* Sun Feb 2 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.12.0
+* Thu Mar 12 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.12.0
 - Roll back krb5 requirements to 1.15
 - Strip whitespace and replace contractions in .spec file
 - Flag experimental system_mit_krb5
