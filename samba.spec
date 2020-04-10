@@ -6,20 +6,20 @@
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
 
-%define main_release 0
+%global main_release 0
 
-%define samba_version 4.12.0
-%define talloc_version 2.3.1
-%define tdb_version 1.4.3
-%define tevent_version 0.10.2
-%define ldb_version 2.1.1
+%global samba_version 4.12.1
+%global talloc_version 2.3.1
+%global tdb_version 1.4.3
+%global tevent_version 0.10.2
+%global ldb_version 2.1.1
 # This should be rc1 or nil
-%define pre_release %nil
+%global pre_release %nil
 
 %if "x%{?pre_release}" != "x"
-%define samba_release 0.%{main_release}.%{pre_release}%{?dist}
+%global samba_release 0.%{main_release}.%{pre_release}%{?dist}
 %else
-%define samba_release %{main_release}%{?dist}
+%global samba_release %{main_release}%{?dist}
 %endif
 
 # This is a network daemon, do a hardened build
@@ -98,9 +98,9 @@ Epoch:          2
 %endif
 
 %if 0%{?epoch} > 0
-%define samba_depver %{epoch}:%{version}-%{release}
+%global samba_depver %{epoch}:%{version}-%{release}
 %else
-%define samba_depver %{version}-%{release}
+%global samba_depver %{version}-%{release}
 %endif
 
 Summary:        Server and Client software to interoperate with Windows machines
@@ -3592,6 +3592,10 @@ fi
 %endif
 
 %changelog
+* Fri Apr 10 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.12.1
+- Update to 4.12.1
+- Switch %%define to %%global
+
 * Thu Mar 12 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.12.0
 - Roll back krb5 requirements to 1.15
 - Strip whitespace and replace contractions in .spec file
