@@ -12,7 +12,7 @@
 %define talloc_version 2.3.1
 %define tdb_version 1.4.3
 %define tevent_version 0.10.2
-%define ldb_version 2.1.1
+%define ldb_version 2.1.2
 # This should be rc1 or nil
 %define pre_release %nil
 
