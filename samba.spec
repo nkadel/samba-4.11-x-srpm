@@ -8,7 +8,7 @@
 
 %global main_release 0
 
-%global samba_version 4.12.1
+%global samba_version 4.12.2
 %global talloc_version 2.3.1
 %global tdb_version 1.4.3
 %global tevent_version 0.10.2
@@ -3592,6 +3592,9 @@ fi
 %endif
 
 %changelog
+* Tue Apr 28 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.12.2
+- Update to 2.12.2
+
 * Fri Apr 10 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.12.1
 - Update to 4.12.1
 - Switch %%define to %%global
