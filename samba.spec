@@ -2331,6 +2331,7 @@ fi
 %{python3_sitearch}/samba/tests/__pycache__/hostconfig.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/join.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/krb5_credentials.*.pyc
+%{python3_sitearch}/samba/tests/__pycache__/ldap_raw.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/ldap_referrals.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/loadparm.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/libsmb.*.pyc
@@ -2516,6 +2517,7 @@ fi
 %{python3_sitearch}/samba/tests/kcc/kcc_utils.py
 %{python3_sitearch}/samba/tests/kcc/ldif_import_export.py
 %{python3_sitearch}/samba/tests/krb5_credentials.py
+%{python3_sitearch}/samba/tests/ldap_raw.py
 %{python3_sitearch}/samba/tests/ldap_referrals.py
 %{python3_sitearch}/samba/tests/libsmb.py
 %{python3_sitearch}/samba/tests/loadparm.py
@@ -3594,6 +3596,7 @@ fi
 %changelog
 * Tue Apr 28 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.12.2
 - Update to 2.12.2
+- Update ldap_raw files
 
 * Fri Apr 10 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.12.1
 - Update to 4.12.1
