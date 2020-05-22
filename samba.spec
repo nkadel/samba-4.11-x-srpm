@@ -47,7 +47,9 @@
 %if 0%{?fedora} || 0%{?rhel} >= 8
 %ifarch aarch64 ppc64le s390x x86_64
 %global with_vfs_cephfs 1
+#endifarch
 %endif
+#endif fedora || rhel >= 8
 %endif
 
 %global with_vfs_glusterfs 1
@@ -56,7 +58,7 @@
 # Only enable on x86_64
 %ifarch x86_64
 %global with_vfs_glusterfs 1
-#endifarch x86_64
+#endif arch x86_64
 %endif
 #endif rhel
 %endif
@@ -67,7 +69,6 @@
 %global libwbc_alternatives_suffix -64
 %endif
 
-# Always compile with_dc! Enable for RHEL as well as fedora!
 %global with_dc 1
 
 %if %{with testsuite}
@@ -77,12 +78,17 @@
 # Use Samba supported internal Heimdal, not experimental system krb5
 %global with_system_mit_krb5 0
 
-%global required_mit_krb5 1.15.1
+%global required_mit_krb5 1.18
 
 %global with_clustering_support 0
 
 %if %{with clustering}
 %global with_clustering_support 1
+%endif
+
+%global with_winexe 1
+%if 0%{?rhel}
+%global with_winexe 0
 %endif
 
 %global _systemd_extra "Environment=KRB5CCNAME=FILE:/run/samba/krb5cc_samba"
@@ -179,10 +185,22 @@ BuildRequires: libarchive-devel
 BuildRequires: libattr-devel
 BuildRequires: libcap-devel
 BuildRequires: libcmocka-devel
+%if (0%{?fedora} || 0%{?rhel} >= 8)
+BuildRequires: libnsl2-devel
+BuildRequires: rpcgen
+BuildRequires: rpcsvc-proto-devel
+%else
+BuildRequires: rpcbind
+#endif fedora > 0 || rhel >= 8
+%endif
 BuildRequires: libtirpc-devel
 BuildRequires: libuuid-devel
 BuildRequires: libxslt
 BuildRequires: lmdb
+%if %{with_winexe}
+BuildRequires: mingw32-gcc
+BuildRequires: mingw64-gcc
+%endif
 BuildRequires: ncurses-devel
 BuildRequires: openldap-devel
 BuildRequires: pam-devel
@@ -194,14 +212,6 @@ BuildRequires: popt-devel
 BuildRequires: python%{python3_pkgversion}-devel
 BuildRequires: quota-devel
 BuildRequires: readline-devel
-%if (0%{?fedora} || 0%{?rhel} >= 8)
-BuildRequires: libnsl2-devel
-BuildRequires: rpcgen
-BuildRequires: rpcsvc-proto-devel
-%else
-BuildRequires: rpcbind
-#endif fedora > 0 || rhel >= 8
-%endif
 BuildRequires: sed
 BuildRequires: libtasn1-devel
 # We need asn1Parser
@@ -228,7 +238,7 @@ BuildRequires: compat-nettle32-devel
 BuildRequires: gnutls-devel >= 3.4.7
 #endif rhel < 8
 %endif
-# Add python%%{python3_pkgversion}-iso8601 to avoid that the
+# Add python%%%{python3_pkgversion}-iso8601 to avoid that the
 # version in Samba is being packaged
 BuildRequires: python%{python3_pkgversion}-iso8601
 
@@ -246,16 +256,20 @@ BuildRequires: libtdb-devel >= %{tdb_version}
 BuildRequires: python%{python3_pkgversion}-tdb >= %{tdb_version}
 
 BuildRequires: libldb-devel >= %{ldb_version}
+BuildRequires: python%{python3_pkgversion}-ldb >= %{ldb_version}
 BuildRequires: python%{python3_pkgversion}-ldb-devel >= %{ldb_version}
 
-%if %{with_dc}
+%if %{with testsuite} || %{with_dc}
 BuildRequires: ldb-tools
 BuildRequires: tdb-tools
 BuildRequires: python%{python3_pkgversion}-markdown
 %if %{with_gpgme}
 BuildRequires: python%{python3_pkgversion}-gpg
 %endif
+# 
+%endif
 
+%if %{with_dc}
 BuildRequires: krb5-server >= %{required_mit_krb5}
 %if 0%{?fedora}
 # Optional testing package, enormous dependency chain to build on RHEL
@@ -745,6 +759,16 @@ Requires: pam
 The samba-winbind-modules package provides the NSS library and a PAM module
 necessary to communicate to the Winbind Daemon
 
+### WINEXE
+%if %{with_winexe}
+%package winexe
+Summary: Samba Winexe Windows Binary
+License: GPLv3
+
+%description winexe
+Winexe is a Remote Windows®-command executor
+%endif
+
 ### CTDB
 %if %with_clustering_support
 %package -n ctdb
@@ -807,6 +831,7 @@ and use CTDB instead.
 
 
 %prep
+#zcat %{SOURCE0} | gpgv2 --quiet --keyring %{SOURCE2} %{SOURCE1} -
 %autosetup -n samba-%{version}%{pre_release} -p1
 
 %build
@@ -858,14 +883,6 @@ export PKG_CONFIG_PATH=%{_libdir}/compat-gnutls34/pkgconfig:%{_libdir}/compat-ne
 # Avoid ./configure: line 16: python: command not found
 export PYTHON=%{__python3}
 
-echo Report compilation values
-echo with_dc: %{with_dc}
-echo with_gpgme: %{with_gpgme}
-echo with_vfs_cephfs: %{with_vfs_cephfs}
-echo with_vfs_glusterfs: %{with_vfs_glusterfs}
-echo with_intel_aes_accel: %{with_intel_aes_accel}
-echo libwbc_alternatives_suffix: %{libwbc_alternatives_suffix}
-
 %configure \
         --enable-fhs \
         --with-piddir=/run \
@@ -909,6 +926,9 @@ echo libwbc_alternatives_suffix: %{libwbc_alternatives_suffix}
 %endif
 %if %{with testsuite}
         --enable-selftest \
+%endif
+%if ! %with_winexe
+	--without-winexe \
 %endif
         --with-systemd \
         --systemd-install-services \
@@ -1212,12 +1232,18 @@ fi
 # When downgrading to a version where alternatives is not used and
 # libwbclient.so is a link and not a file it will be removed. The following
 # check removes the alternatives files manually if that is the case.
-if [ "`readlink %{_libdir}/libwbclient.so`" == "libwbclient.so.%{libwbc_alternatives_version}" ]; then
-    /bin/rm -f /etc/alternatives/libwbclient.so%{libwbc_alternatives_suffix} /var/lib/alternatives/libwbclient.so%{libwbc_alternatives_suffix} 2> /dev/null
-else
-    %{_sbindir}/update-alternatives --remove libwbclient.so%{libwbc_alternatives_suffix} %{_libdir}/samba/wbclient/libwbclient.so
+if [ $1 -eq 0 ]; then
+    if [ "`readlink %{_libdir}/libwbclient.so`" == "libwbclient.so.%{libwbc_alternatives_version}" ]; then
+        /bin/rm -f \
+	    /etc/alternatives/libwbclient.so%{libwbc_alternatives_suffix} \
+            /var/lib/alternatives/libwbclient.so%{libwbc_alternatives_suffix} 2> /dev/null
+    else
+        %{_sbindir}/update-alternatives \
+            --remove \
+            libwbclient.so%{libwbc_alternatives_suffix} \
+            %{_libdir}/samba/wbclient/libwbclient.so
+    fi
 fi
-
 #endif with_libwbclient
 %endif
 
@@ -1413,8 +1439,6 @@ fi
 %{_bindir}/smbspool
 %{_bindir}/smbtar
 %{_bindir}/smbtree
-#%%dir %%{_datadir}/samba/mdssvc
-#%%{_datadir}/samba/mdssvc/elasticsearch_mappings.json
 %dir %{_libexecdir}/samba
 %ghost %{_libexecdir}/samba/cups_backend_smb
 %{_mandir}/man1/dbwrap_tool.1*
@@ -3593,22 +3617,42 @@ fi
 #endif with_clustering_support
 %endif
 
+%if %{with_winexe}
+### WINEXE
+%files winexe
+%{_bindir}/winexe
+%endif
+
 %changelog
-* Tue Apr 28 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.12.2
-- Update to 2.12.2
-- Update ldap_raw files
-
-* Fri Apr 10 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.12.1
-- Update to 4.12.1
+* Fri May 22 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.12.3
+- Update to 2.12.3
+- Backport to RHEL 7 compatibility 
 - Switch %%define to %%global
-
-* Thu Mar 12 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.12.0
-- Roll back krb5 requirements to 1.15
-- Strip whitespace and replace contractions in .spec file
+- Flush trailing whitespace and unnecessary contractions in comments
 - Flag experimental system_mit_krb5
 - Activate epel-rpm-macros for RHEL
-- Discard obsolete patches
-- Update libldb to 2.1.1
+- Discard obsolete security patches
+- Discard gpg check of tarball
+
+* Tue Apr 28 2020 Guenther Deschner <gdeschner@redhat.com> - 4.12.2-0
+- Update to Samba 4.12.2
+- resolves: #1825731, #1828870 - Security fixes for CVE-2020-10700
+- resolves: #1825734, #1828872 - Security fixes for CVE-2020-10704
+
+* Sun Apr 12 2020 Alexander Bokovoy <abokovoy@redhat.com> - 4.12.1-1
+- Revert POSIX stat tuning in libsmbclient
+- Resolves: rhbz#1801442
+
+* Tue Apr 07 2020 Guenther Deschner <gdeschner@redhat.com> - 4.12.1-0
+- Update to Samba 4.12.1
+
+* Sat Mar 21 2020 Alexander Bokovoy <abokovoy@redhat.com> - 4.12.0-6
+- Fix samba_requires_eq macro definition
+- Resolves rhbz#1815739
+
+* Tue Mar 10 2020 Guenther Deschner <gdeschner@redhat.com> - 4.12.0-5
+- Add build requirement for perl-FindBin
+- resolves: #1661213 - Add winexe subpackage for remote windows command execution
 
 * Tue Mar 03 2020 Guenther Deschner <gdeschner@redhat.com> - 4.12.0-3
 - Update to Samba 4.12.0
@@ -6010,3 +6054,4 @@ fi
 - Added a number of options to smb.conf file
 - Added smbadduser command (missed from all previous RPMs) - Doooh!
 - Added smbuser file and smb.conf file updates for username map
+
