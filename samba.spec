@@ -78,7 +78,9 @@
 # Use Samba supported internal Heimdal, not experimental system krb5
 %global with_system_mit_krb5 0
 
-%global required_mit_krb5 1.18
+# Rolled back for RHEL
+#%%global required_mit_krb5 1.18
+%global required_mit_krb5 1.15.1
 
 %global with_clustering_support 0
 
@@ -86,10 +88,11 @@
 %global with_clustering_support 1
 %endif
 
+#%if 0%{?rhel}
+#%global with_winexe 0
+#%else
 %global with_winexe 1
-%if 0%{?rhel}
-%global with_winexe 0
-%endif
+#%endif
 
 %global _systemd_extra "Environment=KRB5CCNAME=FILE:/run/samba/krb5cc_samba"
 
@@ -1472,7 +1475,6 @@ fi
 %{_mandir}/man8/samba-regedit.8*
 %{_mandir}/man8/smbspool.8*
 %dir %{_datadir}/samba
-#%dir %{_datadir}/samba/mdssvc
 
 ### CLIENT-LIBS
 %files client-libs
@@ -3640,7 +3642,10 @@ fi
 - Discard obsolete security patches
 - Discard gpg check of tarball
 - Use python%%{python3_pkgversion} instead of python3- for RHEL 7 syntax
+- Rolled back %%required_mit_krb5 for RHEL
 - Add epel-rpm-macros for RHEL
+- Discard invalid --without-winexe option from ./configure, 
+- Discard samba/mdssvc
 
 * Tue Apr 28 2020 Guenther Deschner <gdeschner@redhat.com> - 4.12.2-0
 - Update to Samba 4.12.2
