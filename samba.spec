@@ -244,6 +244,7 @@ BuildRequires: python%{python3_pkgversion}-iso8601
 
 # pidl requirements
 BuildRequires: perl(ExtUtils::MakeMaker)
+BuildRequires: perl(FindBin)
 BuildRequires: perl(Parse::Yapp)
 
 BuildRequires: libtalloc-devel >= %{talloc_version}
@@ -387,6 +388,7 @@ SMB/CIFS clients.
 Summary: Samba AD Domain Controller
 Requires: %{name} = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
+Requires: %{name}-dc-provision = %{samba_depver}
 Requires: %{name}-dc-libs = %{samba_depver}
 Requires: %{name}-winbind = %{samba_depver}
 # samba-tool needs tdbbackup
@@ -618,6 +620,7 @@ to manage Samba AD.
 %package pidl
 Summary: Perl IDL compiler
 Requires: perl-interpreter
+Requires: perl(FindBin)
 Requires: perl(Parse::Yapp)
 Requires: perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 BuildArch: noarch
@@ -1127,7 +1130,7 @@ popd
 
 %if %{with testsuite}
 %check
-TDB_NO_FSYNC=1 make %{?_smp_mflags} test
+TDB_NO_FSYNC=1 make %{?_smp_mflags} test FAIL_IMMEDIATELY=1
 #endif with testsuite
 %endif
 
@@ -1213,10 +1216,12 @@ fi
 %{?ldconfig}
 
 %preun -n libwbclient
-%{_sbindir}/update-alternatives \
-        --remove \
-        libwbclient.so.%{libwbc_alternatives_version}%{libwbc_alternatives_suffix} \
-        %{_libdir}/samba/wbclient/libwbclient.so.%{libwbc_alternatives_version}
+if [ $1 -eq 0 ]; then
+    %{_sbindir}/update-alternatives \
+            --remove \
+            libwbclient.so.%{libwbc_alternatives_version}%{libwbc_alternatives_suffix} \
+            %{_libdir}/samba/wbclient/libwbclient.so.%{libwbc_alternatives_version}
+fi
 /sbin/ldconfig
 
 %posttrans -n libwbclient-devel
@@ -1235,7 +1240,7 @@ fi
 if [ $1 -eq 0 ]; then
     if [ "`readlink %{_libdir}/libwbclient.so`" == "libwbclient.so.%{libwbc_alternatives_version}" ]; then
         /bin/rm -f \
-	    /etc/alternatives/libwbclient.so%{libwbc_alternatives_suffix} \
+            /etc/alternatives/libwbclient.so%{libwbc_alternatives_suffix} \
             /var/lib/alternatives/libwbclient.so%{libwbc_alternatives_suffix} 2> /dev/null
     else
         %{_sbindir}/update-alternatives \
@@ -1442,30 +1447,33 @@ fi
 %dir %{_libexecdir}/samba
 %ghost %{_libexecdir}/samba/cups_backend_smb
 %{_mandir}/man1/dbwrap_tool.1*
+%{_mandir}/man1/findsmb.1*
+%{_mandir}/man1/log2pcap.1*
 %{_mandir}/man1/mdfind.1*
+%{_mandir}/man1/mvxattr.1*
 %{_mandir}/man1/nmblookup.1*
 %{_mandir}/man1/oLschema2ldif.1*
 %{_mandir}/man1/regdiff.1*
 %{_mandir}/man1/regpatch.1*
 %{_mandir}/man1/regshell.1*
 %{_mandir}/man1/regtree.1*
-%{_mandir}/man1/findsmb.1*
-%{_mandir}/man1/log2pcap.1*
-%{_mandir}/man1/mvxattr.1*
 %{_mandir}/man1/rpcclient.1*
 %{_mandir}/man1/sharesec.1*
 %{_mandir}/man1/smbcacls.1*
 %{_mandir}/man1/smbclient.1*
 %{_mandir}/man1/smbcquotas.1*
 %{_mandir}/man1/smbget.1*
-%{_mandir}/man5/smbgetrc.5*
 %{_mandir}/man1/smbtar.1*
 %{_mandir}/man1/smbtree.1*
+%{_mandir}/man5/smbgetrc.5*
 %{_mandir}/man7/traffic_learner.7.*
 %{_mandir}/man7/traffic_replay.7.*
 %{_mandir}/man8/cifsdd.8.*
 %{_mandir}/man8/samba-regedit.8*
 %{_mandir}/man8/smbspool.8*
+%dir %{_datadir}/samba
+%dir %{_datadir}/samba/mdssvc
+%{_datadir}/samba/mdssvc/elasticsearch_mappings.json
 
 ### CLIENT-LIBS
 %files client-libs
@@ -1702,7 +1710,6 @@ fi
 %{_libdir}/samba/ldb/wins_ldb.so
 %{_libdir}/samba/vfs/posix_eadb.so
 %dir /var/lib/samba/sysvol
-%{_datadir}/samba/setup
 %{_mandir}/man8/samba.8*
 %{_mandir}/man8/samba-gpupdate.8*
 %{_mandir}/man8/samba-tool.8*
@@ -3633,6 +3640,8 @@ fi
 - Activate epel-rpm-macros for RHEL
 - Discard obsolete security patches
 - Discard gpg check of tarball
+- Use python%%{python3_pkgversion} instead of python3- for RHEL 7 syntax
+- Add epel-rpm-macros for RHEL
 
 * Tue Apr 28 2020 Guenther Deschner <gdeschner@redhat.com> - 4.12.2-0
 - Update to Samba 4.12.2
