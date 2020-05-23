@@ -1472,7 +1472,7 @@ fi
 %{_mandir}/man8/samba-regedit.8*
 %{_mandir}/man8/smbspool.8*
 %dir %{_datadir}/samba
-%dir %{_datadir}/samba/mdssvc
+#%dir %{_datadir}/samba/mdssvc
 
 ### CLIENT-LIBS
 %files client-libs
