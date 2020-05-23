@@ -238,7 +238,7 @@ BuildRequires: compat-nettle32-devel
 BuildRequires: gnutls-devel >= 3.4.7
 #endif rhel < 8
 %endif
-# Add python%%%{python3_pkgversion}-iso8601 to avoid that the
+# Add python%%{python3_pkgversion}-iso8601 to avoid that the
 # version in Samba is being packaged
 BuildRequires: python%{python3_pkgversion}-iso8601
 
@@ -1473,7 +1473,6 @@ fi
 %{_mandir}/man8/smbspool.8*
 %dir %{_datadir}/samba
 %dir %{_datadir}/samba/mdssvc
-%{_datadir}/samba/mdssvc/elasticsearch_mappings.json
 
 ### CLIENT-LIBS
 %files client-libs
