@@ -37,7 +37,7 @@
 
 %global with_profiling 1
 
-# Not available for RHEL 7
+# Not available for EL 7
 %global with_gpgme 1
 %if 0%{?rhel} && 0%{?rhel} < 8
 %global with_gpgme 0
@@ -78,7 +78,7 @@
 # Use Samba supported internal Heimdal, not experimental system krb5
 %global with_system_mit_krb5 0
 
-# Rolled back for RHEL
+# Rolled back for EL
 #%%global required_mit_krb5 1.18
 %global required_mit_krb5 1.15.1
 
@@ -88,11 +88,11 @@
 %global with_clustering_support 1
 %endif
 
-#%if 0%{?rhel}
-#%global with_winexe 0
-#%else
 %global with_winexe 1
-#%endif
+# EL 7 had mingw deleted
+%if 0%{?rhel} && 0%{?rhel} <= 7
+%global with_winexe 0
+%endif
 
 %global _systemd_extra "Environment=KRB5CCNAME=FILE:/run/samba/krb5cc_samba"
 
@@ -276,7 +276,7 @@ BuildRequires: python%{python3_pkgversion}-gpg
 %if %{with_dc}
 BuildRequires: krb5-server >= %{required_mit_krb5}
 %if 0%{?fedora}
-# Optional testing package, enormous dependency chain to build on RHEL
+# Optional testing package, enormous dependency chain to build on EL
 BuildRequires: python%{python3_pkgversion}-subunit-test
 #endif fedora
 %endif
@@ -932,9 +932,6 @@ export PYTHON=%{__python3}
 %endif
 %if %{with testsuite}
         --enable-selftest \
-%endif
-%if ! %with_winexe
-	--without-winexe \
 %endif
         --with-systemd \
         --systemd-install-services \
@@ -3634,18 +3631,17 @@ fi
 %changelog
 * Fri May 22 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.12.3
 - Update to 2.12.3
-- Backport to RHEL 7 compatibility 
-- Switch %%define to %%global
-- Flush trailing whitespace and unnecessary contractions in comments
-- Flag experimental system_mit_krb5
-- Activate epel-rpm-macros for RHEL
-- Discard obsolete security patches
+- Add epel-rpm-macros for EL
+- Disable winexe only for EL 7
 - Discard gpg check of tarball
-- Use python%%{python3_pkgversion} instead of python3- for RHEL 7 syntax
-- Rolled back %%required_mit_krb5 for RHEL
-- Add epel-rpm-macros for RHEL
-- Discard invalid --without-winexe option from ./configure, 
+- Discard invalid --without-winexe option
+- Discard obsolete patches
 - Discard samba/mdssvc
+- Flag experimental system_mit_krb5
+- Flush trailing whitespace and unnecessary contractions in comments
+- Rolled back %%required_mit_krb5 for EL
+- Switch %%define to %%global
+- Use python%%{python3_pkgversion} instead of python3- for EL 7 syntax
 
 * Tue Apr 28 2020 Guenther Deschner <gdeschner@redhat.com> - 4.12.2-0
 - Update to Samba 4.12.2
