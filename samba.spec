@@ -8,11 +8,11 @@
 
 %global main_release 0
 
-%global samba_version 4.12.3
+%global samba_version 4.12.5
 %global talloc_version 2.3.1
 %global tdb_version 1.4.3
 %global tevent_version 0.10.2
-%global ldb_version 2.1.3
+%global ldb_version 2.1.4
 # This should be rc1 or nil
 %global pre_release %nil
 
@@ -3629,8 +3629,12 @@ fi
 %endif
 
 %changelog
+* Thu Jul 2 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.12.5
+- Update to 4.12.5
+- Update ldb_version to 2.1.4
+
 * Fri May 22 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.12.3
-- Update to 2.12.3
+- Update to 4.12.3
 - Add epel-rpm-macros for EL
 - Disable winexe only for EL 7
 - Discard gpg check of tarball
