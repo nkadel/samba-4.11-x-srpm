@@ -2341,6 +2341,7 @@ fi
 %{python3_sitearch}/samba/tests/__pycache__/dns_base.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/dns_forwarder.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/dns_invalid.*.pyc
+%{python3_sitearch}/samba/tests/__pycache__/dns_packet.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/dns_tkey.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/dns_wildcard.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/dsdb.*.pyc
@@ -2507,6 +2508,7 @@ fi
 %{python3_sitearch}/samba/tests/dns_forwarder_helpers/__pycache__/server.*.pyc
 %{python3_sitearch}/samba/tests/dns_forwarder_helpers/server.py
 %{python3_sitearch}/samba/tests/dns_invalid.py
+%{python3_sitearch}/samba/tests/dns_packet.py
 %{python3_sitearch}/samba/tests/dns_tkey.py
 %{python3_sitearch}/samba/tests/dns_wildcard.py
 %{python3_sitearch}/samba/tests/dsdb.py
@@ -3632,6 +3634,7 @@ fi
 * Thu Jul 2 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.12.5
 - Update to 4.12.5
 - Update ldb_version to 2.1.4
+- Add tests/dns_packet files
 
 * Fri May 22 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.12.3
 - Update to 4.12.3
