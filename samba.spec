@@ -6,7 +6,7 @@
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
 
-%global main_release 0
+%global main_release 0.2
 
 %global samba_version 4.12.5
 %global talloc_version 2.3.1
@@ -3635,6 +3635,7 @@ fi
 - Update to 4.12.5
 - Update ldb_version to 2.1.4
 - Add tests/dns_packet files
+- Update libldb to 2.2.0
 
 * Fri May 22 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.12.3
 - Update to 4.12.3
