@@ -8,13 +8,14 @@
 
 %global main_release 0.2
 
-%global samba_version 4.12.5
+%global samba_version 4.12.6
 %global talloc_version 2.3.1
 %global tdb_version 1.4.3
 %global tevent_version 0.10.2
 %global ldb_version 2.2.0
 # This should be rc1 or nil
-%global pre_release %nil
+#%global pre_release %nil
+%global pre_release rc1
 
 %if "x%{?pre_release}" != "x"
 %global samba_release 0.%{main_release}.%{pre_release}%{?dist}
