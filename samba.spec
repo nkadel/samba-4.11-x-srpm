@@ -956,18 +956,18 @@ export PYTHON=%{__python3}
         --systemd-winbind-extra=%{_systemd_extra} \
         --systemd-samba-extra=%{_systemd_extra}
 
-make %{?_smp_mflags}
+%{make_build}
 
 pushd pidl
 %__perl Makefile.PL PREFIX=%{_prefix}
 
-make %{?_smp_mflags}
+%{make_build}
 popd
 
 %install
 rm -rf %{buildroot}
 
-make %{?_smp_mflags} install DESTDIR=%{buildroot}
+%{make_build} install DESTDIR=%{buildroot}
 
 install -d -m 0755 %{buildroot}/usr/{sbin,bin}
 install -d -m 0755 %{buildroot}%{_libdir}/security
@@ -1145,7 +1145,7 @@ popd
 
 %if %{with testsuite}
 %check
-TDB_NO_FSYNC=1 make %{?_smp_mflags} test FAIL_IMMEDIATELY=1
+TDB_NO_FSYNC=1 %{make_build} test FAIL_IMMEDIATELY=1
 #endif with testsuite
 %endif
 
