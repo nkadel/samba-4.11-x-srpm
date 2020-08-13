@@ -488,6 +488,7 @@ Requires: %{name}-libs = %{samba_depver}
 
 %description vfs-cephfs
 Samba VFS module for Ceph distributed storage system integration.
+#endif with_vfs_cephfs
 %endif
 
 ### GLUSTER
@@ -1406,6 +1407,9 @@ fi
 %{_mandir}/man8/vfs_full_audit.8*
 %{_mandir}/man8/vfs_gpfs.8*
 %{_mandir}/man8/vfs_glusterfs_fuse.8*
+%if %{with_vfs_io_uring}
+%{_mandir}/man8/vfs_io_uring.8*
+%endif
 %{_mandir}/man8/vfs_linux_xfs_sgid.8*
 %{_mandir}/man8/vfs_media_harmony.8*
 %{_mandir}/man8/vfs_offline.8*
