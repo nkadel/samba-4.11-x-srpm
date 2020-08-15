@@ -16,7 +16,7 @@
 %global tevent_version 0.10.2
 %global ldb_version 2.2.0
 # This should be rc1 or nil
-%global pre_release rc1
+%global pre_release rc2
 
 %if "x%{?pre_release}" != "x"
 %global samba_release 0.%{main_release}.%{pre_release}%{?dist}
@@ -3419,6 +3419,7 @@ fi
 %{_datadir}/ctdb/tests/UNIT/eventscripts/stubs/killall
 %{_datadir}/ctdb/tests/UNIT/eventscripts/stubs/multipath
 %{_datadir}/ctdb/tests/UNIT/eventscripts/stubs/net
+%{_datadir}/ctdb/tests/UNIT/eventscripts/stubs/nfsconf
 %{_datadir}/ctdb/tests/UNIT/eventscripts/stubs/pidof
 %{_datadir}/ctdb/tests/UNIT/eventscripts/stubs/pkill
 %{_datadir}/ctdb/tests/UNIT/eventscripts/stubs/ps
@@ -3695,13 +3696,17 @@ fi
 %endif
 
 %changelog
+* Sat Aug 15 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.0rc2
+- Update to 4.13.0rc2
+- Discard nsbconf
+
 * Tue Aug 11 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.0rc1
 - Add epel-rpm-macros for EL
 - Discard gpg check of tarball
 - Discard samba/mdssvc
 - Flag experimental system_mit_krb5
 - Flush trailing whitespace and unnecessary contractions in comments
-- Rolled back %%required_mit_krb5 for EL
+- Roll back %%required_mit_krb5 for EL
 - Switch %%define to %%global
 - Use python%%{python3_pkgversion} instead of python3- for EL 7 syntax
 
