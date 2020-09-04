@@ -16,7 +16,7 @@
 %global tevent_version 0.10.2
 %global ldb_version 2.2.0
 # This should be rc1 or nil
-%global pre_release rc2
+%global pre_release rc3
 
 %if "x%{?pre_release}" != "x"
 %global samba_release 0.%{main_release}.%{pre_release}%{?dist}
@@ -98,11 +98,11 @@
 
 %global with_vfs_io_uring 0
 # We need liburing >= 0.4 which is not available in RHEL yet
-%if 0%{?fedora}
+%if 0%{?fedora} >= 33
 %ifarch aarch64 ppc64le s390x x86_64 i686
 %global with_vfs_io_uring 1
 %endif
-# /fedora
+# /fedora >= 33
 %endif
 
 %global _systemd_extra "Environment=KRB5CCNAME=FILE:/run/samba/krb5cc_samba"
@@ -175,11 +175,6 @@ Obsoletes: samba-swat < %{samba_depver}
 Provides: samba4-swat = %{samba_depver}
 Obsoletes: samba4-swat < %{samba_depver}
 
-%if 0%{?rhel}
-# Addresses python36- versus python3- dependencies
-BuildRequires: epel-rpm-macros
-%endif
-
 BuildRequires: gcc
 BuildRequires: avahi-devel
 BuildRequires: bison
@@ -223,7 +218,7 @@ BuildRequires: perl-generators
 BuildRequires: perl(Archive::Tar)
 BuildRequires: perl(Test::More)
 BuildRequires: popt-devel
-BuildRequires: python%{python3_pkgversion}-devel
+BuildRequires: python3-devel
 BuildRequires: quota-devel
 BuildRequires: readline-devel
 BuildRequires: sed
@@ -256,9 +251,9 @@ BuildRequires: compat-nettle32-devel
 BuildRequires: gnutls-devel >= 3.4.7
 #endif rhel < 8
 %endif
-# Add python%%{python3_pkgversion}-iso8601 to avoid that the
+# Add python3-iso8601 to avoid that the
 # version in Samba is being packaged
-BuildRequires: python%{python3_pkgversion}-iso8601
+BuildRequires: python3-iso8601
 
 # pidl requirements
 BuildRequires: perl(ExtUtils::MakeMaker)
@@ -266,24 +261,24 @@ BuildRequires: perl(FindBin)
 BuildRequires: perl(Parse::Yapp)
 
 BuildRequires: libtalloc-devel >= %{talloc_version}
-BuildRequires: python%{python3_pkgversion}-talloc-devel >= %{talloc_version}
+BuildRequires: python3-talloc-devel >= %{talloc_version}
 
 BuildRequires: libtevent-devel >= %{tevent_version}
-BuildRequires: python%{python3_pkgversion}-tevent >= %{tevent_version}
+BuildRequires: python3-tevent >= %{tevent_version}
 
 BuildRequires: libtdb-devel >= %{tdb_version}
-BuildRequires: python%{python3_pkgversion}-tdb >= %{tdb_version}
+BuildRequires: python3-tdb >= %{tdb_version}
 
 BuildRequires: libldb-devel >= %{ldb_version}
-BuildRequires: python%{python3_pkgversion}-ldb >= %{ldb_version}
-BuildRequires: python%{python3_pkgversion}-ldb-devel >= %{ldb_version}
+BuildRequires: python3-ldb >= %{ldb_version}
+BuildRequires: python3-ldb-devel >= %{ldb_version}
 
 %if %{with testsuite} || %{with_dc}
 BuildRequires: ldb-tools
 BuildRequires: tdb-tools
-BuildRequires: python%{python3_pkgversion}-markdown
+BuildRequires: python3-markdown
 %if %{with_gpgme}
-BuildRequires: python%{python3_pkgversion}-gpg
+BuildRequires: python3-gpg
 %endif
 # 
 %endif
@@ -292,12 +287,12 @@ BuildRequires: python%{python3_pkgversion}-gpg
 BuildRequires: krb5-server >= %{required_mit_krb5}
 %if 0%{?fedora}
 # Optional testing package, enormous dependency chain to build on EL
-BuildRequires: python%{python3_pkgversion}-subunit-test
+BuildRequires: python3-subunit-test
 #endif fedora
 %endif
 BuildRequires: bind
 # Required by samba-tool to run tests
-BuildRequires: python%{python3_pkgversion}-crypto
+BuildRequires: python3-crypto
 %endif
 
 # filter out perl requirements pulled in from examples in the docdir.
@@ -419,9 +414,9 @@ Requires: ldb-tools
 # See bug 1507420
 %requires_eq libldb
 
-Requires: python%{python3_pkgversion}-crypto
-Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
-Requires: python%{python3_pkgversion}-%{name}-dc = %{samba_depver}
+Requires: python3-crypto
+Requires: python3-%{name} = %{samba_depver}
+Requires: python3-%{name}-dc = %{samba_depver}
 Requires: krb5-server >= %{required_mit_krb5}
 
 Provides: samba4-dc = %{samba_depver}
@@ -593,17 +588,17 @@ library.
 %endif
 
 ### PYTHON3
-%package -n python%{python3_pkgversion}-%{name}
+%package -n python3-%{name}
 Summary: Samba Python3 libraries
 Requires: %{name} = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
-Requires: python%{python3_pkgversion}-talloc
-Requires: python%{python3_pkgversion}-tevent
-Requires: python%{python3_pkgversion}-tdb
-Requires: python%{python3_pkgversion}-ldb
-Requires: python%{python3_pkgversion}-dns
+Requires: python3-talloc
+Requires: python3-tevent
+Requires: python3-tdb
+Requires: python3-ldb
+Requires: python3-dns
 %if %with_libsmbclient
 Requires: libsmbclient = %{samba_depver}
 %endif
@@ -611,27 +606,27 @@ Requires: libsmbclient = %{samba_depver}
 Requires: libwbclient = %{samba_depver}
 %endif
 
-%description -n python%{python3_pkgversion}-%{name}
-The python%{python3_pkgversion}-%{name} package contains the Python 3 libraries needed by programs
+%description -n python3-%{name}
+The python3-%{name} package contains the Python 3 libraries needed by programs
 that use SMB, RPC and other Samba provided protocols in Python 3 programs.
 
-%package -n python%{python3_pkgversion}-samba-test
+%package -n python3-samba-test
 Summary: Samba Python libraries
-Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
+Requires: python3-%{name} = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
 
-%description -n python%{python3_pkgversion}-samba-test
-The python%{python3_pkgversion}-%{name}-test package contains the Python libraries used by the test suite of Samba.
+%description -n python3-samba-test
+The python3-%{name}-test package contains the Python libraries used by the test suite of Samba.
 If you want to run full set of Samba tests, you need to install this package.
 
 %if %{with_dc}
-%package -n python%{python3_pkgversion}-samba-dc
+%package -n python3-samba-dc
 Summary: Samba Python libraries for Samba AD
-Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
+Requires: python3-%{name} = %{samba_depver}
 
-%description -n python%{python3_pkgversion}-samba-dc
-The python%{python3_pkgversion}-%{name}-dc package contains the Python libraries needed by programs
+%description -n python3-samba-dc
+The python3-%{name}-dc package contains the Python libraries needed by programs
 to manage Samba AD.
 %endif
 
@@ -672,7 +667,7 @@ Requires: libsmbclient = %{samba_depver}
 %if %with_libwbclient
 Requires: libwbclient = %{samba_depver}
 %endif
-Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
+Requires: python3-%{name} = %{samba_depver}
 Requires: perl(Archive::Tar)
 
 Provides: samba4-test = %{samba_depver}
@@ -2043,7 +2038,7 @@ fi
 %attr(644,root,root) %{_mandir}/man3/Parse::Pidl::Wireshark::NDR.3pm*
 
 ### PYTHON3
-%files -n python%{python3_pkgversion}-%{name}
+%files -n python3-%{name}
 %dir %{python3_sitearch}/samba/
 %{python3_sitearch}/samba/__init__.py
 %dir %{python3_sitearch}/samba/__pycache__
@@ -2284,7 +2279,7 @@ fi
 %{_libdir}/samba/libsamba-python.*-samba4.so
 
 %if %{with_dc}
-%files -n python%{python3_pkgversion}-%{name}-dc
+%files -n python3-%{name}-dc
 %{python3_sitearch}/samba/samdb.py
 %{python3_sitearch}/samba/schema.py
 
@@ -2345,7 +2340,7 @@ fi
 #endif with_dc
 %endif
 
-%files -n python%{python3_pkgversion}-%{name}-test
+%files -n python3-%{name}-test
 %dir %{python3_sitearch}/samba/tests
 %{python3_sitearch}/samba/tests/__init__.py
 %dir %{python3_sitearch}/samba/tests/__pycache__
@@ -3696,19 +3691,24 @@ fi
 %endif
 
 %changelog
-* Sat Aug 15 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.0rc2
-- Update to 4.13.0rc2
+* Sat Sep 5 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.0rc2
 - Discard nsbconf
-
-* Tue Aug 11 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.0rc1
-- Add epel-rpm-macros for EL
-- Discard gpg check of tarball
 - Discard samba/mdssvc
+- Discard gpg check of tarball
 - Flag experimental system_mit_krb5
 - Flush trailing whitespace and unnecessary contractions in comments
 - Roll back %%required_mit_krb5 for EL
 - Switch %%define to %%global
-- Use python%%{python3_pkgversion} instead of python3- for EL 7 syntax
+
+* Fri Aug 28 2020 Guenther Deschner <gdeschner@redhat.com> - 4.13.0rc2-5
+- Update to Samba 4.13.0rc3
+
+* Fri Aug 14 2020 Guenther Deschner <gdeschner@redhat.com> - 4.13.0rc2-4
+- Update to Samba 4.13.0rc2
+
+* Wed Aug 12 2020 Andreas Schneider <asn@redhat.com> - 4.13.0rc1-3
+- resolves: #1865831 - Add missing /usr/lib64/samba/krb5 directory
+- resolves: #1866989 - Remove obsolete python3-crypto dependency
 
 * Wed Jul 29 2020 Fedora Release Engineering <releng@fedoraproject.org> - 2:4.13.0-0.2.rc1.1
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
@@ -6177,4 +6177,3 @@ fi
 - Added a number of options to smb.conf file
 - Added smbadduser command (missed from all previous RPMs) - Doooh!
 - Added smbuser file and smb.conf file updates for username map
-
