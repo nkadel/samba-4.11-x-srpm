@@ -92,7 +92,7 @@
 
 %global with_winexe 1
 # EL 7 had mingw deleted
-%if 0%{?rhel} && 0%{?rhel} <= 7
+%if 0%{?el7}
 %global with_winexe 0
 %endif
 
@@ -127,8 +127,8 @@ Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+
 URL:            https://www.samba.org
 
-Source0:        https://ftp.samba.org/pub/samba/%{?pre_release:rc/}samba-%{version}%{pre_release}.tar.gz
-Source1:        https://ftp.samba.org/pub/samba/%{?pre_release:rc/}samba-%{version}%{pre_release}.tar.asc
+Source0:        https://ftp.samba.org/pub/samba/%{?pre_release:rc/}samba-%{version}%{?pre_release}.tar.gz
+Source1:        https://ftp.samba.org/pub/samba/%{?pre_release:rc/}samba-%{version}%{?pre_release}.tar.asc
 Source2:        gpgkey-52FBC0B86D954B0843324CDC6F33915B6568B7EA.gpg
 
 # Red Hat specific replacement-files
@@ -219,6 +219,7 @@ BuildRequires: perl(Archive::Tar)
 BuildRequires: perl(Test::More)
 BuildRequires: popt-devel
 BuildRequires: python3-devel
+BuildRequires: python3-setuptools
 BuildRequires: quota-devel
 BuildRequires: readline-devel
 BuildRequires: sed
@@ -253,7 +254,8 @@ BuildRequires: gnutls-devel >= 3.4.7
 %endif
 # Add python3-iso8601 to avoid that the
 # version in Samba is being packaged
-BuildRequires: python3-iso8601
+# RHEL 7 pulls from EPEL
+BuildRequires: python%{python3_pkgversion}-iso8601
 
 # pidl requirements
 BuildRequires: perl(ExtUtils::MakeMaker)
@@ -270,29 +272,26 @@ BuildRequires: libtdb-devel >= %{tdb_version}
 BuildRequires: python3-tdb >= %{tdb_version}
 
 BuildRequires: libldb-devel >= %{ldb_version}
-BuildRequires: python3-ldb >= %{ldb_version}
 BuildRequires: python3-ldb-devel >= %{ldb_version}
 
 %if %{with testsuite} || %{with_dc}
 BuildRequires: ldb-tools
 BuildRequires: tdb-tools
-BuildRequires: python3-markdown
+# RHEL 7 pulls from EPEL
+BuildRequires: python%{python3_pkgversion}-markdown
 %if %{with_gpgme}
 BuildRequires: python3-gpg
 %endif
-# 
+# with_gpgme
 %endif
+# with testsuite || with_dc
 
 %if %{with_dc}
 BuildRequires: krb5-server >= %{required_mit_krb5}
-%if 0%{?fedora}
-# Optional testing package, enormous dependency chain to build on EL
-BuildRequires: python3-subunit-test
-#endif fedora
-%endif
 BuildRequires: bind
 # Required by samba-tool to run tests
-BuildRequires: python3-crypto
+# RHEL 7 pulls from EPEL
+BuildRequires: python%{python3_pkgversion}-crypto
 %endif
 
 # filter out perl requirements pulled in from examples in the docdir.
@@ -412,7 +411,7 @@ Requires: ldb-tools
 # Force using libldb version to be the same as build version
 # Otherwise LDB modules will not be loaded and samba-tool will fail
 # See bug 1507420
-%requires_eq libldb
+%samba_requires_eq libldb
 
 Requires: python3-crypto
 Requires: python3-%{name} = %{samba_depver}
@@ -1141,7 +1140,7 @@ popd
 
 %if %{with testsuite}
 %check
-TDB_NO_FSYNC=1 %{make_build} test FAIL_IMMEDIATELY=1
+TDB_NO_FSYNC=1 %make_build test FAIL_IMMEDIATELY=1
 #endif with testsuite
 %endif
 
@@ -1495,21 +1494,21 @@ fi
 ### CLIENT-LIBS
 %files client-libs
 %{_libdir}/libdcerpc-binding.so.*
-%{_libdir}/libndr.so.*
+%{_libdir}/libdcerpc.so.*
 %{_libdir}/libndr-krb5pac.so.*
 %{_libdir}/libndr-nbt.so.*
 %{_libdir}/libndr-standard.so.*
+%{_libdir}/libndr.so.*
 %{_libdir}/libnetapi.so.*
 %{_libdir}/libsamba-credentials.so.*
 %{_libdir}/libsamba-errors.so.*
+%{_libdir}/libsamba-hostconfig.so.*
 %{_libdir}/libsamba-passdb.so.*
 %{_libdir}/libsamba-util.so.*
-%{_libdir}/libsamba-hostconfig.so.*
 %{_libdir}/libsamdb.so.*
 %{_libdir}/libsmbconf.so.*
 %{_libdir}/libsmbldap.so.*
 %{_libdir}/libtevent-util.so.*
-%{_libdir}/libdcerpc.so.*
 
 %dir %{_libdir}/samba
 %{_libdir}/samba/libCHARSET3-samba4.so
@@ -3693,13 +3692,13 @@ fi
 
 %changelog
 * Sat Sep 5 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.0rc2
-- Discard nsbconf
-- Discard samba/mdssvc
 - Discard gpg check of tarball
+- Enable with_dc for all operating systems
 - Flag experimental system_mit_krb5
-- Flush trailing whitespace and unnecessary contractions in comments
-- Roll back %%required_mit_krb5 for EL
+- Flush trailing whitespace and unnecessary contractions
+- Roll back %%required_mit_krb5 for EL 7
 - Switch %%define to %%global
+- Use python3_pkgversion as needed for EL
 
 * Fri Aug 28 2020 Guenther Deschner <gdeschner@redhat.com> - 4.13.0rc2-5
 - Update to Samba 4.13.0rc3
