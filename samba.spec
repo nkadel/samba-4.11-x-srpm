@@ -3688,6 +3688,7 @@ fi
 ### WINEXE
 %files winexe
 %{_bindir}/winexe
+%{_mandir}/man1/winexe.1*
 %endif
 
 %changelog
