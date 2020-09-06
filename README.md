@@ -1,4 +1,4 @@
-samba-4.12.x-srpm
+samba-4.13.x-srpm
 ================
 
 SRPM building tools for Samba 4.12 on Fedora and RHEL. Samba 4.12.x
@@ -13,7 +13,7 @@ installed in the following order.
 	libldb-2.2.x-srpm
 	libtevent-0.10.x-srpm
 
-	samba-4.12.x-srpm
+	samba-4.13.x-srpm
 
 The "make" command will do these steps.
 
