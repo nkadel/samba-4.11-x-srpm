@@ -16,7 +16,7 @@
 %global tevent_version 0.10.2
 %global ldb_version 2.2.0
 # This should be rc1 or nil
-%global pre_release rc3
+%global pre_release rc4
 
 %if "x%{?pre_release}" != "x"
 %global samba_release 0.%{main_release}.%{pre_release}%{?dist}
@@ -72,10 +72,6 @@
 %endif
 
 %global with_dc 1
-
-%if %{with testsuite}
-%global with_dc 1
-%endif
 
 # Use Samba supported internal Heimdal, not experimental system krb5
 %global with_system_mit_krb5 0
@@ -200,7 +196,7 @@ BuildRequires: rpcgen
 BuildRequires: rpcsvc-proto-devel
 %else
 BuildRequires: rpcbind
-#endif fedora > 0 || rhel >= 8
+#endif fedora || rhel >= 8
 %endif
 BuildRequires: libtirpc-devel
 BuildRequires: libuuid-devel
@@ -289,9 +285,6 @@ BuildRequires: python3-gpg
 %if %{with_dc}
 BuildRequires: krb5-server >= %{required_mit_krb5}
 BuildRequires: bind
-# Required by samba-tool to run tests
-# RHEL 7 pulls from EPEL
-BuildRequires: python%{python3_pkgversion}-crypto
 %endif
 
 # filter out perl requirements pulled in from examples in the docdir.
@@ -413,7 +406,6 @@ Requires: ldb-tools
 # See bug 1507420
 %samba_requires_eq libldb
 
-Requires: python3-crypto
 Requires: python3-%{name} = %{samba_depver}
 Requires: python3-%{name}-dc = %{samba_depver}
 Requires: krb5-server >= %{required_mit_krb5}
@@ -847,7 +839,7 @@ and use CTDB instead.
 
 
 %prep
-#zcat %{SOURCE0} | gpgv2 --quiet --keyring %{SOURCE2} %{SOURCE1} -
+#zcat %%{SOURCE0} | gpgv2 --quiet --keyring %%{SOURCE2} %%{SOURCE1} -
 %autosetup -n samba-%{version}%{pre_release} -p1
 
 %build
@@ -865,7 +857,7 @@ and use CTDB instead.
 
 %global _samba_idmap_modules idmap_ad,idmap_rid,idmap_ldap,idmap_hash,idmap_tdb2
 %global _samba_pdb_modules pdb_tdbsam,pdb_ldap,pdb_smbpasswd,pdb_wbc_sam,pdb_samba4
-%global _samba_auth_modules auth_wbc,auth_unix,auth_server,auth_script,auth_samba4
+%global _samba_auth_modules auth_wbc,auth_unix,auth_server,auth_samba4
 %global _samba_vfs_modules vfs_dfs_samba4
 
 %global _samba_modules %{_samba_idmap_modules},%{_samba_pdb_modules},%{_samba_auth_modules},%{_samba_vfs_modules}
@@ -1140,7 +1132,7 @@ popd
 
 %if %{with testsuite}
 %check
-TDB_NO_FSYNC=1 %make_build test FAIL_IMMEDIATELY=1
+TDB_NO_FSYNC=1 %{make_build} test FAIL_IMMEDIATELY=1
 #endif with testsuite
 %endif
 
@@ -1740,8 +1732,13 @@ fi
 
 ### DC-LIBS
 %files dc-libs
+%{_libdir}/libdcerpc-server.so.*
 %{_libdir}/samba/libdb-glue-samba4.so
+%{_libdir}/samba/libdnsserver-common-samba4.so
+%{_libdir}/samba/libdsdb-garbage-collect-tombstones-samba4.so
+%{_libdir}/samba/libdsdb-module-samba4.so
 %{_libdir}/samba/libprocess-model-samba4.so
+%{_libdir}/samba/libscavenge-dns-records-samba4.so
 %{_libdir}/samba/libservice-samba4.so
 %dir %{_libdir}/samba/process_model
 %{_libdir}/samba/process_model/prefork.so
@@ -1760,12 +1757,6 @@ fi
 %{_libdir}/samba/service/s3fs.so
 %{_libdir}/samba/service/winbindd.so
 %{_libdir}/samba/service/wrepl.so
-%{_libdir}/libdcerpc-server.so.*
-%{_libdir}/libdcerpc-server-core.so.*
-%{_libdir}/samba/libdnsserver-common-samba4.so
-%{_libdir}/samba/libdsdb-module-samba4.so
-%{_libdir}/samba/libdsdb-garbage-collect-tombstones-samba4.so
-%{_libdir}/samba/libscavenge-dns-records-samba4.so
 
 ### DC-BIND
 %files dc-bind-dlz
@@ -1933,6 +1924,7 @@ fi
 ### LIBS
 %files libs
 %{_libdir}/libdcerpc-samr.so.*
+%{_libdir}/libdcerpc-server-core.so.*
 
 %{_libdir}/samba/libLIBWBCLIENT-OLD-samba4.so
 %{_libdir}/samba/libauth4-samba4.so
@@ -2782,6 +2774,7 @@ fi
 ### WINBIND-KRB5-LOCATOR
 %files winbind-krb5-locator
 %ghost %{_libdir}/krb5/plugins/libkrb5/winbind_krb5_locator.so
+%dir %{_libdir}/samba/krb5
 %{_libdir}/samba/krb5/winbind_krb5_locator.so
 %{_mandir}/man8/winbind_krb5_locator.8*
 
@@ -3691,7 +3684,9 @@ fi
 %endif
 
 %changelog
-* Sat Sep 5 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.0rc2
+* 
+
+* Mon Sep 14 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.0rc4
 - Discard gpg check of tarball
 - Enable with_dc for all operating systems
 - Flag experimental system_mit_krb5
