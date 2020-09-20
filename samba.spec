@@ -242,10 +242,10 @@ BuildRequires: liburing-devel >= 0.4
 %endif
 
 %if 0%{?rhel} && 0%{?rhel} < 8
-BuildRequires: compat-gnutls34-devel >= 3.4.7
-BuildRequires: compat-nettle32-devel
+BuildRequires: compat-gnutls36-devel >= 3.6.8
+BuildRequires: compat-nettle34-devel
 %else
-BuildRequires: gnutls-devel >= 3.4.7
+BuildRequires: gnutls-devel >= 3.6.8
 #endif rhel < 8
 %endif
 # Add python3-iso8601 to avoid that the
@@ -881,12 +881,12 @@ export python_LDFLAGS="$(echo %{__global_ldflags} | sed -e 's/-Wl,-z,defs//g')"
 # Use the gold linker
 export LDFLAGS="%{__global_ldflags} -fuse-ld=gold"
 
-# Enable compat-gnutls34 and compat-nettle32 packages
+# Enable compat-gnutls36 and compat-nettle34 packages
 %if 0%{?rhel} && 0%{?rhel} < 8
-export PKG_CONFIG_PATH=%{_libdir}/compat-gnutls34/pkgconfig:%{_libdir}/compat-nettle32/pkgconfig
+export PKG_CONFIG_PATH=%{_libdir}/compat-gnutls36/pkgconfig:%{_libdir}/compat-nettle34/pkgconfig
 %endif
 
-/usr/bin/pkg-config "gnutls >= 3.4.7" --cflags --libs gnutls
+/usr/bin/pkg-config "gnutls >= 3.6.8" --cflags --libs gnutls
 
 # Avoid ./configure: line 16: python: command not found
 export PYTHON=%{__python3}
@@ -3686,6 +3686,7 @@ fi
 %changelog
 * Sat Sep 19 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.0rc6
 - Update to 4.13.0rc6
+- Update gnutls requirement to 3.6.8
 
 * Mon Sep 14 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.0rc4
 - Discard gpg check of tarball
