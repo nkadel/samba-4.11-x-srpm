@@ -16,7 +16,7 @@
 %global tevent_version 0.10.2
 %global ldb_version 2.2.0
 # This should be rc1 or nil
-%global pre_release rc4
+%global pre_release rc6
 
 %if "x%{?pre_release}" != "x"
 %global samba_release 0.%{main_release}.%{pre_release}%{?dist}
@@ -3684,7 +3684,8 @@ fi
 %endif
 
 %changelog
-* 
+* Sat Sep 19 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.0rc6
+- Update to 4.13.0rc6
 
 * Mon Sep 14 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.0rc4
 - Discard gpg check of tarball
