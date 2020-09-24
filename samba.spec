@@ -16,7 +16,7 @@
 %global tevent_version 0.10.2
 %global ldb_version 2.2.0
 # This should be rc1 or nil
-%global pre_release rc6
+%global pre_release %{nil}
 
 %if "x%{?pre_release}" != "x"
 %global samba_release 0.%{main_release}.%{pre_release}%{?dist}
@@ -123,8 +123,8 @@ Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+
 URL:            https://www.samba.org
 
-Source0:        https://ftp.samba.org/pub/samba/%{?pre_release:rc/}samba-%{version}%{?pre_release}.tar.gz
-Source1:        https://ftp.samba.org/pub/samba/%{?pre_release:rc/}samba-%{version}%{?pre_release}.tar.asc
+Source0:        https://ftp.samba.org/pub/samba/%{!?pre_release:rc/}samba-%{version}%{?pre_release}.tar.gz
+Source1:        https://ftp.samba.org/pub/samba/%{!?pre_release:rc/}samba-%{version}%{?pre_release}.tar.asc
 Source2:        gpgkey-52FBC0B86D954B0843324CDC6F33915B6568B7EA.gpg
 
 # Red Hat specific replacement-files
@@ -3684,6 +3684,9 @@ fi
 %endif
 
 %changelog
+* Wed Sep 23 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.0
+- Update to 4.13.0
+
 * Sat Sep 19 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.0rc6
 - Update to 4.13.0rc6
 - Update gnutls requirement to 3.6.8
