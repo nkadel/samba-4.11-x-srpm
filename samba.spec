@@ -3684,23 +3684,53 @@ fi
 %endif
 
 %changelog
-* Wed Sep 23 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.0
-- Update to 4.13.0
-
-* Sat Sep 19 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.0rc6
-- Update to 4.13.0rc6
+* Tue Nov  3 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.1
+- Update to 4.13.1
 - Update gnutls requirement to 3.6.8
-
-* Mon Sep 14 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.0rc4
 - Discard gpg check of tarball
 - Enable with_dc for all operating systems
 - Flag experimental system_mit_krb5
 - Flush trailing whitespace and unnecessary contractions
 - Roll back %%required_mit_krb5 for EL 7
-- Switch %%define to %%global
 - Use python3_pkgversion as needed for EL
 
-* Fri Aug 28 2020 Guenther Deschner <gdeschner@redhat.com> - 4.13.0rc2-5
+* Thu Oct 29 2020 Guenther Deschner <gdeschner@redhat.com> - 4.13.1-0
+- Update to Samba 4.13.1
+- resolves: #1892631, #1892634 - Security fixes for CVE-2020-14318
+- resolves: #1891685, #1892628 - Security fixes for CVE-2020-14323
+- resolves: #1892636, #1892640 - Security fixes for CVE-2020-14383
+
+* Mon Oct 26 2020 Andreas Schneider <asn@redhat.com> - 4.13.0-14
+- Fixed dbcheck running in a release tarball
+- Updated internal resolv_wrapper copy to verison 1.1.7
+
+* Sun Oct 25 2020 Alexander Bokovoy <abokovoy@redhat.com> - 4.13.0-13
+- Report 'samba' daemon status back to systemd
+- Support dnspython 2.0.0 or later in samba_dnsupdate
+
+* Thu Oct 22 2020 Alexander Bokovoy <abokovoy@redhat.com> - 4.13.0-12
+- Add preliminary support for S4U operations in Samba AD DC
+  resolves: #1836630 - Samba DC: Remote Desktop cannot access files
+- Fix lookup_unix_user_name to allow lookup of realm-qualified users and groups
+  required for upcoming FreeIPA Global Catalog support
+
+* Tue Sep 22 2020 Guenther Deschner <gdeschner@redhat.com> - 4.13.0-11
+- Update to Samba 4.13.0
+
+* Fri Sep 18 2020 Guenther Deschner <gdeschner@redhat.com> - 4.13.0rc6-10
+- Update to Samba 4.13.0rc6
+- resolves: #1879822, #1880703 - Security fixes for CVE-2020-1472
+
+* Wed Sep 16 2020 Guenther Deschner <gdeschner@redhat.com> - 4.13.0rc5-9
+- Update to Samba 4.13.0rc5
+
+* Mon Sep 07 2020 Guenther Deschner <gdeschner@redhat.com> - 4.13.0rc4-8
+- Update to Samba 4.13.0rc4
+
+* Fri Aug 28 2020 Neal Gompa <ngompa13@gmail.com> - 4.13.0rc3-6
+- Enable winexe by default everywhere
+
+* Fri Aug 28 2020 Guenther Deschner <gdeschner@redhat.com> - 4.13.0rc3-5
 - Update to Samba 4.13.0rc3
 
 * Fri Aug 14 2020 Guenther Deschner <gdeschner@redhat.com> - 4.13.0rc2-4
@@ -4643,7 +4673,7 @@ fi
 
 * Fri Mar 22 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.4-3
 - resolves: #919405 - Fix and improve large_readx handling for broken clients.
-- resolves: #924525 - Do not use waf caching.
+- resolves: #924525 - do not use waf caching.
 
 * Wed Mar 20 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.4-2
 - resolves: #923765 - Improve packaging of README files.
@@ -5723,7 +5753,7 @@ fi
 - Make it build
 
 * Wed Apr 10 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.3a-6
-- Do not use /etc/samba.d in smbadduser, it should be /etc/samba
+- do not use /etc/samba.d in smbadduser, it should be /etc/samba
 
 * Thu Apr  4 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.3a-5
 - Add libsmbclient.a w/headerfile for KDE (#62202)
@@ -5782,7 +5812,7 @@ fi
 - Add patch from Jeremy Allison to fix IA64 alignment problems (#51497)
 
 * Mon Aug 13 2001 Trond Eivind Glomsrød <teg@redhat.com>
-- Do not include smbpasswd in samba, it is in samba-common (#51598)
+- do not include smbpasswd in samba, it is in samba-common (#51598)
 - Add a disabled "obey pam restrictions" statement - it is not
   active, as we use encrypted passwords, but if the admin turns
   encrypted passwords off the choice is available. (#31351)
@@ -5815,7 +5845,7 @@ fi
 
 * Tue Jun 19 2001 Trond Eivind Glomsrød <teg@redhat.com>
 - (these changes are from the non-head version)
-- Do not include /usr/sbin/samba, it is the same as the initscript
+- do not include /usr/sbin/samba, it is the same as the initscript
 - unset TMPDIR, as samba cannot write into a TMPDIR owned
   by root (#41193)
 - Add pidfile: lines for smbd and nmbd and a config: line
