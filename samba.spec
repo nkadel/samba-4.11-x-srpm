@@ -1392,8 +1392,8 @@ fi
 %config(noreplace) %{_sysconfdir}/pam.d/samba
 %{_mandir}/man1/smbstatus.1*
 %{_mandir}/man8/eventlogadm.8*
-%{_mandir}/man8/smbd.8*
 %{_mandir}/man8/nmbd.8*
+%{_mandir}/man8/smbd.8*
 %{_mandir}/man8/vfs_acl_tdb.8*
 %{_mandir}/man8/vfs_acl_xattr.8*
 %{_mandir}/man8/vfs_aio_fork.8*
@@ -1411,8 +1411,8 @@ fi
 %{_mandir}/man8/vfs_fileid.8*
 %{_mandir}/man8/vfs_fruit.8*
 %{_mandir}/man8/vfs_full_audit.8*
-%{_mandir}/man8/vfs_gpfs.8*
 %{_mandir}/man8/vfs_glusterfs_fuse.8*
+%{_mandir}/man8/vfs_gpfs.8*
 %if %{with vfs_io_uring}
 %{_mandir}/man8/vfs_io_uring.8*
 %endif
