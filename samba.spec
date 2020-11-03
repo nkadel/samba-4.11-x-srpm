@@ -66,7 +66,7 @@
 %endif
 
 %global libwbc_alternatives_version 0.15
-%global libwbc_alternatives_suffix %nil
+%global libwbc_alternatives_suffix %{nil}
 %if 0%{?__isa_bits} == 64
 %global libwbc_alternatives_suffix -64
 %endif
@@ -862,8 +862,8 @@ and use CTDB instead.
 
 %global _samba_modules %{_samba_idmap_modules},%{_samba_pdb_modules},%{_samba_auth_modules},%{_samba_vfs_modules}
 
-%global _libsmbclient %nil
-%global _libwbclient %nil
+%global _libsmbclient %{nil}
+%global _libwbclient %{nil}
 
 %if ! %{with_libsmbclient}
 %global _libsmbclient smbclient,
