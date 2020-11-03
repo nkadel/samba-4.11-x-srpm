@@ -147,7 +147,7 @@ Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-common-tools = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -303,10 +303,10 @@ Requires(pre): %{name}-common = %{samba_depver}
 Requires: %{name}-common = %{samba_depver}
 Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
-%if %with_libsmbclient
+%if %{with_libsmbclient}
 Requires: libsmbclient = %{samba_depver}
 %endif
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -327,7 +327,7 @@ Summary: Samba client libraries
 Requires(pre): %{name}-common = %{samba_depver}
 Requires: %{name}-common = %{samba_depver}
 Requires: %{name}-common-libs = %{samba_depver}
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 Requires: krb5-libs >= %{required_mit_krb5}
@@ -365,7 +365,7 @@ Summary: Libraries used by both Samba servers and clients
 Requires(pre): samba-common = %{samba_depver}
 Requires: samba-common = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -379,7 +379,7 @@ Summary: Tools for Samba servers and clients
 Requires: samba-common-libs = %{samba_depver}
 Requires: samba-client-libs = %{samba_depver}
 Requires: samba-libs = %{samba_depver}
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -487,7 +487,7 @@ Requires: %{name} = %{samba_depver}
 Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -518,7 +518,7 @@ the Kerberos credentials cache of the user issuing the print job.
 Summary: Samba libraries
 Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -530,14 +530,14 @@ The %{name}-libs package contains the libraries needed by programs that link
 against the SMB, RPC and other protocols provided by the Samba suite.
 
 ### LIBSMBCLIENT
-%if %with_libsmbclient
+%if %{with_libsmbclient}
 %package -n libsmbclient
 Summary: The SMB client library
 Requires(pre): %{name}-common = %{samba_depver}
 Requires: %{name}-common = %{samba_depver}
 Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -556,7 +556,7 @@ suite.
 %endif
 
 ### LIBWBCLIENT
-%if %with_libwbclient
+%if %{with_libwbclient}
 %package -n libwbclient
 Summary: The winbind client library
 Requires: %{name}-client-libs = %{samba_depver}
@@ -590,10 +590,10 @@ Requires: python3-tevent
 Requires: python3-tdb
 Requires: python3-ldb
 Requires: python3-dns
-%if %with_libsmbclient
+%if %{with_libsmbclient}
 Requires: libsmbclient = %{samba_depver}
 %endif
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -648,14 +648,14 @@ Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
 Requires: %{name}-test-libs = %{samba_depver}
-%if %with_dc
+%if %{with_dc}
 Requires: %{name}-dc-libs = %{samba_depver}
 %endif
 Requires: %{name}-libs = %{samba_depver}
-%if %with_libsmbclient
+%if %{with_libsmbclient}
 Requires: libsmbclient = %{samba_depver}
 %endif
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 Requires: python3-%{name} = %{samba_depver}
@@ -674,7 +674,7 @@ Summary: Libraries need by the testing tools for Samba servers and clients
 Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -715,7 +715,7 @@ Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
 Requires: %{name}-winbind = %{samba_depver}
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -729,7 +729,7 @@ tool.
 ### WINBIND-KRB5-LOCATOR
 %package winbind-krb5-locator
 Summary: Samba winbind krb5 locator
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 Requires: %{name}-winbind = %{samba_depver}
 %else
@@ -758,7 +758,7 @@ the local kerberos library to use the same KDC as samba and winbind use
 Summary: Samba winbind modules
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
-%if %with_libwbclient
+%if %{with_libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 Requires: pam
@@ -778,7 +778,7 @@ Winexe is a Remote Windows®-command executor
 %endif
 
 ### CTDB
-%if %with_clustering_support
+%if %{with_clustering_support}
 %package -n ctdb
 Summary: A Clustered Database based on Samba Trivial Database (TDB)
 
@@ -865,11 +865,11 @@ and use CTDB instead.
 %global _libsmbclient %nil
 %global _libwbclient %nil
 
-%if ! %with_libsmbclient
+%if ! %{with_libsmbclient}
 %global _libsmbclient smbclient,
 %endif
 
-%if ! %with_libwbclient
+%if ! %{with_libwbclient}
 %global _libwbclient wbclient,
 %endif
 
@@ -907,29 +907,29 @@ export PYTHON=%{__python3}
         --with-pie \
         --with-relro \
         --without-fam \
-%if (! %with_libsmbclient) || (! %with_libwbclient)
+%if (! %{with_libsmbclient}) || (! %{with_libwbclient})
         --private-libraries=%{_samba_private_libraries} \
 %endif
-%if ! %with_dc
+%if ! %{with_dc}
         --without-ad-dc \
 %else
-%if %with_system_mit_krb5
+%if %{with_system_mit_krb5}
         --with-system-mitkrb5 \
         --with-experimental-mit-ad-dc \
 %endif
 %endif
-%if %with_gpgme
+%if %{with_gpgme}
         --with-gpgme \
 %else
         --without-gpgme \
 %endif
-%if ! %with_vfs_glusterfs
+%if ! %{with_vfs_glusterfs}
         --disable-glusterfs \
 %endif
-%if %with_clustering_support
+%if %{with_clustering_support}
         --with-cluster-support \
 %endif
-%if %with_profiling
+%if %{with_profiling}
         --with-profiling-data \
 %endif
 %if %{with testsuite}
@@ -1010,13 +1010,13 @@ install -m 0744 packaging/printing/smbprint %{buildroot}%{_bindir}/smbprint
 install -d -m 0755 %{buildroot}%{_tmpfilesdir}
 # Create /run/samba.
 echo "d /run/samba  755 root root" > %{buildroot}%{_tmpfilesdir}/samba.conf
-%if %with_clustering_support
+%if %{with_clustering_support}
 echo "d /run/ctdb 755 root root" > %{buildroot}%{_tmpfilesdir}/ctdb.conf
 %endif
 
 install -d -m 0755 %{buildroot}%{_sysconfdir}/sysconfig
 install -m 0644 packaging/systemd/samba.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/samba
-%if %with_clustering_support
+%if %{with_clustering_support}
 cat > %{buildroot}%{_sysconfdir}/sysconfig/ctdb <<EOF
 # CTDB configuration is now in %%{_sysconfdir}/ctdb/ctdb.conf
 EOF
@@ -1027,7 +1027,7 @@ install -m 0644 ctdb/config/ctdb.conf %{buildroot}%{_sysconfdir}/ctdb/ctdb.conf
 
 install -m 0644 %{SOURCE201} packaging/README.downgrade
 
-%if %with_clustering_support
+%if %{with_clustering_support}
 install -m 0644 ctdb/config/ctdb.service %{buildroot}%{_unitdir}
 %endif
 
@@ -1040,7 +1040,7 @@ install -m 0755 packaging/NetworkManager/30-winbind-systemd \
 install -d -m 0755 %{buildroot}%{_libdir}/krb5/plugins/libkrb5
 touch %{buildroot}%{_libdir}/krb5/plugins/libkrb5/winbind_krb5_locator.so
 
-%if ! %with_dc
+%if ! %{with_dc}
 for i in \
     %{_libdir}/samba/libdfs-server-ad-samba4.so \
     %{_libdir}/samba/libdnsserver-common-samba4.so \
@@ -1110,7 +1110,7 @@ done
 # the ldconfig-created links be recorded in the RPM.
 /sbin/ldconfig -N -n %{buildroot}%{_libdir}
 
-%if ! %with_dc
+%if ! %{with_dc}
 for f in samba/libsamba-net-samba4.so \
          samba/libsamba-python-samba4.so \
          libsamba-policy.so* \
@@ -1201,11 +1201,11 @@ fi
 
 %ldconfig_scriptlets libs
 
-%if %with_libsmbclient
+%if %{with_libsmbclient}
 %ldconfig_scriptlets -n libsmbclient
 %endif
 
-%if %with_libwbclient
+%if %{with_libwbclient}
 %posttrans -n libwbclient
 # It has to be posttrans here to make sure all files of a previous version
 # without alternatives support are removed
@@ -1286,7 +1286,7 @@ fi
 
 %ldconfig_scriptlets winbind-modules
 
-%if %with_clustering_support
+%if %{with_clustering_support}
 %post -n ctdb
 /usr/bin/systemd-tmpfiles --create %{_tmpfilesdir}/ctdb.conf
 %systemd_post ctdb.service
@@ -1585,13 +1585,13 @@ fi
 %{_libdir}/samba/libutil-setid-samba4.so
 %{_libdir}/samba/libutil-tdb-samba4.so
 
-%if ! %with_libwbclient
+%if ! %{with_libwbclient}
 %{_libdir}/samba/libwbclient.so.*
 %{_libdir}/samba/libwinbind-client-samba4.so
 #endif ! with_libwbclient
 %endif
 
-%if ! %with_libsmbclient
+%if ! %{with_libsmbclient}
 %{_libdir}/samba/libsmbclient.so.*
 %{_mandir}/man7/libsmbclient.7*
 #endif ! with_libsmbclient
@@ -1883,19 +1883,19 @@ fi
 %{_libdir}/libsamba-passdb.so
 %{_libdir}/libsmbldap.so
 
-%if %with_dc
+%if %{with_dc}
 %{_includedir}/samba-4.0/dcerpc_server.h
 %{_libdir}/libdcerpc-server.so
 %{_libdir}/libdcerpc-server-core.so
 %{_libdir}/pkgconfig/dcerpc_server.pc
 %endif
 
-%if ! %with_libsmbclient
+%if ! %{with_libsmbclient}
 %{_includedir}/samba-4.0/libsmbclient.h
 #endif ! with_libsmbclient
 %endif
 
-%if ! %with_libwbclient
+%if ! %{with_libwbclient}
 %{_includedir}/samba-4.0/wbclient.h
 #endif ! with_libwbclient
 %endif
@@ -1949,13 +1949,13 @@ fi
 %{_libdir}/samba/libroken-samba4.so.*
 %{_libdir}/samba/libwind-samba4.so.*
 %endif
-%if %with_dc && ! %{with_system_mit_krb5}
+%if %{with_dc} && ! %{with_system_mit_krb5}
 %{_libdir}/samba/libHDB-SAMBA4-samba4.so
 %endif
 
 
 ### LIBSMBCLIENT
-%if %with_libsmbclient
+%if %{with_libsmbclient}
 %files -n libsmbclient
 %{_libdir}/libsmbclient.so.*
 
@@ -1969,7 +1969,7 @@ fi
 %endif
 
 ### LIBWBCLIENT
-%if %with_libwbclient
+%if %{with_libwbclient}
 %files -n libwbclient
 %{_libdir}/samba/wbclient/libwbclient.so.*
 %{_libdir}/samba/libwinbind-client-samba4.so
@@ -2737,7 +2737,7 @@ fi
 
 ### TEST-LIBS
 %files test-libs
-%if %with_dc
+%if %{with_dc}
 %{_libdir}/samba/libdlz-bind9-for-torture-samba4.so
 %else
 %{_libdir}/samba/libdsdb-module-samba4.so
@@ -2787,7 +2787,7 @@ fi
 %{_mandir}/man5/pam_winbind.conf.5*
 %{_mandir}/man8/pam_winbind.8*
 
-%if %with_clustering_support
+%if %{with_clustering_support}
 %files -n ctdb
 %doc ctdb/README
 %doc ctdb/doc/examples
