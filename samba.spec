@@ -34,8 +34,11 @@
 # https://src.fedoraproject.org/rpms/redhat-rpm-config/blob/master/f/buildflags.md
 %undefine _strict_symbol_defs_build
 
-%global with_libsmbclient 1
-%global with_libwbclient 1
+# Build a libsmbclient package by default
+%bcond_without libsmbclient
+
+# Build a libwbclient package by default
+%bcond_without libwbclient
 
 %global with_profiling 1
 
@@ -45,24 +48,34 @@
 %global with_gpgme 0
 %endif
 
-%global with_vfs_cephfs 0
-%if 0%{?fedora} || 0%{?rhel} >= 8
+# Build vfs_ceph module by default on 64bit Fedora
+%if 0%{?fedora}
+
 %ifarch aarch64 ppc64le s390x x86_64
-%global with_vfs_cephfs 1
+%bcond_without vfs_cephfs
+%else
+%bcond_with vfs_cephfs
 #endifarch
 %endif
-#endif fedora || rhel >= 8
+
+%else
+%bcond_with vfs_cephfs
+#endif fedora
 %endif
 
-%global with_vfs_glusterfs 1
-%if 0%{?rhel}
-%global with_vfs_glusterfs 0
-# Only enable on x86_64
-%ifarch x86_64
-%global with_vfs_glusterfs 1
-#endif arch x86_64
+# Build vfs_gluster module by default on 64bit Fedora
+%if 0%{?fedora}
+
+%ifarch aarch64 ppc64le s390x x86_64
+%bcond_without vfs_glusterfs
+%else
+%bcond_with vfs_glusterfs
+#endifarch
 %endif
-#endif rhel
+
+%else
+%bcond_with vfs_glusterfs
+#endif fedora
 %endif
 
 %global libwbc_alternatives_version 0.15
@@ -71,20 +84,18 @@
 %global libwbc_alternatives_suffix -64
 %endif
 
-%global with_dc 1
+%bcond_without dc
 
 # Use Samba supported internal Heimdal, not experimental system krb5
+%bcond_with system_mit_krb5
 %global with_system_mit_krb5 0
 
 # Rolled back for EL
 #%%global required_mit_krb5 1.18
 %global required_mit_krb5 1.15.1
 
-%global with_clustering_support 0
-
-%if %{with clustering}
-%global with_clustering_support 1
-%endif
+# ctdb is enabled by default, you can disable it with: --without clustering
+%bcond_without clustering
 
 %global with_winexe 1
 # EL 7 had mingw deleted
@@ -92,13 +103,19 @@
 %global with_winexe 0
 %endif
 
-%global with_vfs_io_uring 0
-# We need liburing >= 0.4 which is not available in RHEL yet
-%if 0%{?fedora} >= 33
-%ifarch aarch64 ppc64le s390x x86_64 i686
-%global with_vfs_io_uring 1
+# Build vfs_io_uring module by default on 64bit Fedora
+%if 0%{?fedora}
+
+%ifarch aarch64 ppc64le s390x x86_64
+%bcond_without vfs_io_uring
+%else
+%bcond_with vfs_io_uring
+#endifarch
 %endif
-# /fedora >= 33
+
+%else
+%bcond_with vfs_io_uring
+#endif fedora
 %endif
 
 %global _systemd_extra "Environment=KRB5CCNAME=FILE:/run/samba/krb5cc_samba"
@@ -147,7 +164,7 @@ Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-common-tools = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
-%if %{with_libwbclient}
+%if %{with libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -228,12 +245,12 @@ BuildRequires: zlib-devel >= 1.2.3
 
 BuildRequires: pkgconfig(libsystemd)
 
-%if %{with_vfs_glusterfs}
+%if %{with vfs_glusterfs}
 BuildRequires: glusterfs-api-devel >= 3.4.0.16
 BuildRequires: glusterfs-devel >= 3.4.0.16
 %endif
 
-%if %{with_vfs_cephfs}
+%if %{with vfs_cephfs}
 BuildRequires: libcephfs-devel
 %endif
 
@@ -270,7 +287,7 @@ BuildRequires: python3-tdb >= %{tdb_version}
 BuildRequires: libldb-devel >= %{ldb_version}
 BuildRequires: python3-ldb-devel >= %{ldb_version}
 
-%if %{with testsuite} || %{with_dc}
+%if %{with testsuite} || %{with dc}
 BuildRequires: ldb-tools
 BuildRequires: tdb-tools
 # RHEL 7 pulls from EPEL
@@ -280,9 +297,9 @@ BuildRequires: python3-gpg
 %endif
 # with_gpgme
 %endif
-# with testsuite || with_dc
+# with testsuite || with dc
 
-%if %{with_dc}
+%if %{with dc}
 BuildRequires: krb5-server >= %{required_mit_krb5}
 BuildRequires: bind
 %endif
@@ -303,10 +320,10 @@ Requires(pre): %{name}-common = %{samba_depver}
 Requires: %{name}-common = %{samba_depver}
 Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
-%if %{with_libsmbclient}
+%if %{with libsmbclient}
 Requires: libsmbclient = %{samba_depver}
 %endif
-%if %{with_libwbclient}
+%if %{with libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -327,7 +344,7 @@ Summary: Samba client libraries
 Requires(pre): %{name}-common = %{samba_depver}
 Requires: %{name}-common = %{samba_depver}
 Requires: %{name}-common-libs = %{samba_depver}
-%if %{with_libwbclient}
+%if %{with libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 Requires: krb5-libs >= %{required_mit_krb5}
@@ -349,7 +366,7 @@ Recommends:     logrotate
 Provides: samba4-common = %{samba_depver}
 Obsoletes: samba4-common < %{samba_depver}
 
-%if ! %{with_dc}
+%if %{without dc}
 Obsoletes: samba-dc < %{samba_depver}
 Obsoletes: samba-dc-libs < %{samba_depver}
 Obsoletes: samba-dc-bind-dlz < %{samba_depver}
@@ -365,7 +382,7 @@ Summary: Libraries used by both Samba servers and clients
 Requires(pre): samba-common = %{samba_depver}
 Requires: samba-common = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
-%if %{with_libwbclient}
+%if %{with libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -379,7 +396,7 @@ Summary: Tools for Samba servers and clients
 Requires: samba-common-libs = %{samba_depver}
 Requires: samba-client-libs = %{samba_depver}
 Requires: samba-libs = %{samba_depver}
-%if %{with_libwbclient}
+%if %{with libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -388,7 +405,7 @@ The samba-common-tools package contains tools for Samba servers and
 SMB/CIFS clients.
 
 ### DC
-%if %{with_dc}
+%if %{with dc}
 %package dc
 Summary: Samba AD Domain Controller
 Requires: %{name} = %{samba_depver}
@@ -448,7 +465,7 @@ Requires: bind
 %description dc-bind-dlz
 The %{name}-dc-bind-dlz package contains the libraries for bind to manage all
 name server related details of Samba AD.
-#endif with_dc
+#endif with dc
 %endif
 
 ### DEVEL
@@ -466,7 +483,7 @@ needed to develop programs that link against the SMB, RPC and other
 libraries in the Samba suite.
 
 ### CEPH
-%if %{with_vfs_cephfs}
+%if %{with vfs_cephfs}
 %package vfs-cephfs
 Summary: Samba VFS module for Ceph distributed storage system
 Requires: %{name} = %{samba_depver}
@@ -474,11 +491,11 @@ Requires: %{name}-libs = %{samba_depver}
 
 %description vfs-cephfs
 Samba VFS module for Ceph distributed storage system integration.
-#endif with_vfs_cephfs
+#endif with vfs_cephfs
 %endif
 
 ### GLUSTER
-%if %{with_vfs_glusterfs}
+%if %{with vfs_glusterfs}
 %package vfs-glusterfs
 Summary: Samba VFS module for GlusterFS
 Requires: glusterfs-api >= 3.4.0.16
@@ -487,7 +504,7 @@ Requires: %{name} = %{samba_depver}
 Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
-%if %{with_libwbclient}
+%if %{with libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -518,7 +535,7 @@ the Kerberos credentials cache of the user issuing the print job.
 Summary: Samba libraries
 Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
-%if %{with_libwbclient}
+%if %{with libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -530,14 +547,14 @@ The %{name}-libs package contains the libraries needed by programs that link
 against the SMB, RPC and other protocols provided by the Samba suite.
 
 ### LIBSMBCLIENT
-%if %{with_libsmbclient}
+%if %{with libsmbclient}
 %package -n libsmbclient
 Summary: The SMB client library
 Requires(pre): %{name}-common = %{samba_depver}
 Requires: %{name}-common = %{samba_depver}
 Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
-%if %{with_libwbclient}
+%if %{with libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -552,11 +569,11 @@ Requires: libsmbclient = %{samba_depver}
 The libsmbclient-devel package contains the header files and libraries needed
 to develop programs that link against the SMB client library in the Samba
 suite.
-#endif with_libsmbclient
+#endif with libsmbclient
 %endif
 
 ### LIBWBCLIENT
-%if %{with_libwbclient}
+%if %{with libwbclient}
 %package -n libwbclient
 Summary: The winbind client library
 Requires: %{name}-client-libs = %{samba_depver}
@@ -575,7 +592,7 @@ Obsoletes: samba-winbind-devel < %{samba_depver}
 %description -n libwbclient-devel
 The libwbclient-devel package provides developer tools for the wbclient
 library.
-#endif with_libwbclient
+#endif with libwbclient
 %endif
 
 ### PYTHON3
@@ -590,10 +607,10 @@ Requires: python3-tevent
 Requires: python3-tdb
 Requires: python3-ldb
 Requires: python3-dns
-%if %{with_libsmbclient}
+%if %{with libsmbclient}
 Requires: libsmbclient = %{samba_depver}
 %endif
-%if %{with_libwbclient}
+%if %{with libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -611,7 +628,7 @@ Requires: %{name}-libs = %{samba_depver}
 The python3-%{name}-test package contains the Python libraries used by the test suite of Samba.
 If you want to run full set of Samba tests, you need to install this package.
 
-%if %{with_dc}
+%if %{with dc}
 %package -n python3-samba-dc
 Summary: Samba Python libraries for Samba AD
 Requires: python3-%{name} = %{samba_depver}
@@ -648,14 +665,14 @@ Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
 Requires: %{name}-test-libs = %{samba_depver}
-%if %{with_dc}
+%if %{with dc}
 Requires: %{name}-dc-libs = %{samba_depver}
 %endif
 Requires: %{name}-libs = %{samba_depver}
-%if %{with_libsmbclient}
+%if %{with libsmbclient}
 Requires: libsmbclient = %{samba_depver}
 %endif
-%if %{with_libwbclient}
+%if %{with libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 Requires: python3-%{name} = %{samba_depver}
@@ -674,7 +691,7 @@ Summary: Libraries need by the testing tools for Samba servers and clients
 Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
-%if %{with_libwbclient}
+%if %{with libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -715,7 +732,7 @@ Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
 Requires: %{name}-winbind = %{samba_depver}
-%if %{with_libwbclient}
+%if %{with libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 
@@ -729,7 +746,7 @@ tool.
 ### WINBIND-KRB5-LOCATOR
 %package winbind-krb5-locator
 Summary: Samba winbind krb5 locator
-%if %{with_libwbclient}
+%if %{with libwbclient}
 Requires: libwbclient = %{samba_depver}
 Requires: %{name}-winbind = %{samba_depver}
 %else
@@ -758,7 +775,7 @@ the local kerberos library to use the same KDC as samba and winbind use
 Summary: Samba winbind modules
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
-%if %{with_libwbclient}
+%if %{with libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
 Requires: pam
@@ -778,7 +795,7 @@ Winexe is a Remote Windows®-command executor
 %endif
 
 ### CTDB
-%if %{with_clustering_support}
+%if %{with clustering}
 %package -n ctdb
 Summary: A Clustered Database based on Samba Trivial Database (TDB)
 
@@ -833,7 +850,7 @@ CTDB is a cluster implementation of the TDB database used by Samba and other
 projects to store temporary data. If an application is already using TDB for
 temporary data it is very easy to convert that application to be cluster aware
 and use CTDB instead.
-#endif with_clustering_support
+#endif with clustering
 %endif
 
 
@@ -865,11 +882,11 @@ and use CTDB instead.
 %global _libsmbclient %{nil}
 %global _libwbclient %{nil}
 
-%if ! %{with_libsmbclient}
+%if %{without libsmbclient}
 %global _libsmbclient smbclient,
 %endif
 
-%if ! %{with_libwbclient}
+%if %{without libwbclient}
 %global _libwbclient wbclient,
 %endif
 
@@ -907,13 +924,13 @@ export PYTHON=%{__python3}
         --with-pie \
         --with-relro \
         --without-fam \
-%if (! %{with_libsmbclient}) || (! %{with_libwbclient})
+%if (%{without libsmbclient}) || (%{without libwbclient})
         --private-libraries=%{_samba_private_libraries} \
 %endif
-%if ! %{with_dc}
+%if %{without dc}
         --without-ad-dc \
 %else
-%if %{with_system_mit_krb5}
+%if %{with system_mit_krb5}
         --with-system-mitkrb5 \
         --with-experimental-mit-ad-dc \
 %endif
@@ -923,10 +940,10 @@ export PYTHON=%{__python3}
 %else
         --without-gpgme \
 %endif
-%if ! %{with_vfs_glusterfs}
+%if %{without vfs_glusterfs}
         --disable-glusterfs \
 %endif
-%if %{with_clustering_support}
+%if %{with clustering}
         --with-cluster-support \
 %endif
 %if %{with_profiling}
@@ -1010,13 +1027,13 @@ install -m 0744 packaging/printing/smbprint %{buildroot}%{_bindir}/smbprint
 install -d -m 0755 %{buildroot}%{_tmpfilesdir}
 # Create /run/samba.
 echo "d /run/samba  755 root root" > %{buildroot}%{_tmpfilesdir}/samba.conf
-%if %{with_clustering_support}
+%if %{with clustering}
 echo "d /run/ctdb 755 root root" > %{buildroot}%{_tmpfilesdir}/ctdb.conf
 %endif
 
 install -d -m 0755 %{buildroot}%{_sysconfdir}/sysconfig
 install -m 0644 packaging/systemd/samba.sysconfig %{buildroot}%{_sysconfdir}/sysconfig/samba
-%if %{with_clustering_support}
+%if %{with clustering}
 cat > %{buildroot}%{_sysconfdir}/sysconfig/ctdb <<EOF
 # CTDB configuration is now in %%{_sysconfdir}/ctdb/ctdb.conf
 EOF
@@ -1027,7 +1044,7 @@ install -m 0644 ctdb/config/ctdb.conf %{buildroot}%{_sysconfdir}/ctdb/ctdb.conf
 
 install -m 0644 %{SOURCE201} packaging/README.downgrade
 
-%if %{with_clustering_support}
+%if %{with clustering}
 install -m 0644 ctdb/config/ctdb.service %{buildroot}%{_unitdir}
 %endif
 
@@ -1040,7 +1057,7 @@ install -m 0755 packaging/NetworkManager/30-winbind-systemd \
 install -d -m 0755 %{buildroot}%{_libdir}/krb5/plugins/libkrb5
 touch %{buildroot}%{_libdir}/krb5/plugins/libkrb5/winbind_krb5_locator.so
 
-%if ! %{with_dc}
+%if %{without dc}
 for i in \
     %{_libdir}/samba/libdfs-server-ad-samba4.so \
     %{_libdir}/samba/libdnsserver-common-samba4.so \
@@ -1110,14 +1127,14 @@ done
 # the ldconfig-created links be recorded in the RPM.
 /sbin/ldconfig -N -n %{buildroot}%{_libdir}
 
-%if ! %{with_dc}
+%if %{without dc}
 for f in samba/libsamba-net-samba4.so \
          samba/libsamba-python-samba4.so \
          libsamba-policy.so* \
          pkgconfig/samba-policy.pc ; do
     rm -f %{buildroot}%{_libdir}/$f
 done
-#endif ! with_dc
+#endif ! with dc
 %endif
 
 pushd pidl
@@ -1175,7 +1192,7 @@ fi
 
 %ldconfig_scriptlets common-libs
 
-%if %{with_dc}
+%if %{with dc}
 %ldconfig_scriptlets dc-libs
 
 %post dc
@@ -1186,7 +1203,7 @@ fi
 
 %postun dc
 %systemd_postun_with_restart samba.service
-#endif with_dc
+#endif with dc
 %endif
 
 %post krb5-printing
@@ -1201,11 +1218,11 @@ fi
 
 %ldconfig_scriptlets libs
 
-%if %{with_libsmbclient}
+%if %{with libsmbclient}
 %ldconfig_scriptlets -n libsmbclient
 %endif
 
-%if %{with_libwbclient}
+%if %{with libwbclient}
 %posttrans -n libwbclient
 # It has to be posttrans here to make sure all files of a previous version
 # without alternatives support are removed
@@ -1251,7 +1268,7 @@ if [ $1 -eq 0 ]; then
             %{_libdir}/samba/wbclient/libwbclient.so
     fi
 fi
-#endif with_libwbclient
+#endif with libwbclient
 %endif
 
 %ldconfig_scriptlets test
@@ -1286,7 +1303,7 @@ fi
 
 %ldconfig_scriptlets winbind-modules
 
-%if %{with_clustering_support}
+%if %{with clustering}
 %post -n ctdb
 /usr/bin/systemd-tmpfiles --create %{_tmpfilesdir}/ctdb.conf
 %systemd_post ctdb.service
@@ -1310,7 +1327,7 @@ fi
 %{_sbindir}/eventlogadm
 %{_sbindir}/nmbd
 %{_sbindir}/smbd
-%if %{with_dc}
+%if %{with dc}
 # This is only used by vfs_dfs_samba4
 %{_libdir}/samba/libdfs-server-ad-samba4.so
 %endif
@@ -1328,7 +1345,7 @@ fi
 %{_libdir}/samba/vfs/commit.so
 %{_libdir}/samba/vfs/crossrename.so
 %{_libdir}/samba/vfs/default_quota.so
-%if %{with_dc}
+%if %{with dc}
 %{_libdir}/samba/vfs/dfs_samba4.so
 %endif
 %{_libdir}/samba/vfs/dirsort.so
@@ -1417,11 +1434,11 @@ fi
 %{_mandir}/man8/vfs_worm.8*
 %{_mandir}/man8/vfs_xattr_tdb.8*
 
-%if ! %{with_vfs_glusterfs}
+%if %{without vfs_glusterfs}
 %exclude %{_mandir}/man8/vfs_glusterfs.8*
 %endif
 
-%if ! %{with_vfs_cephfs}
+%if %{without vfs_cephfs}
 %exclude %{_mandir}/man8/vfs_ceph.8*
 %exclude %{_mandir}/man8/vfs_ceph_snapshots.8*
 %endif
@@ -1585,16 +1602,16 @@ fi
 %{_libdir}/samba/libutil-setid-samba4.so
 %{_libdir}/samba/libutil-tdb-samba4.so
 
-%if ! %{with_libwbclient}
+%if %{without libwbclient}
 %{_libdir}/samba/libwbclient.so.*
 %{_libdir}/samba/libwinbind-client-samba4.so
-#endif ! with_libwbclient
+#endif ! with libwbclient
 %endif
 
-%if ! %{with_libsmbclient}
+%if %{without libsmbclient}
 %{_libdir}/samba/libsmbclient.so.*
 %{_mandir}/man7/libsmbclient.7*
-#endif ! with_libsmbclient
+#endif ! with libsmbclient
 %endif
 
 ### COMMON
@@ -1649,7 +1666,7 @@ fi
 %{_mandir}/man8/samba_downgrade_db.8*
 
 ### DC
-%if %{with_dc}
+%if %{with dc}
 %files dc
 %{_unitdir}/samba.service
 %{_bindir}/samba-tool
@@ -1661,7 +1678,7 @@ fi
 %{_sbindir}/samba_spnupdate
 %{_sbindir}/samba_upgradedns
 
-%if %{with_system_mit_krb5}
+%if %{with system_mit_krb5}
 %{_libdir}/krb5/plugins/kdb/samba.so
 %endif
 
@@ -1767,7 +1784,7 @@ fi
 %{_libdir}/samba/bind9/dlz_bind9_10.so
 %{_libdir}/samba/bind9/dlz_bind9_11.so
 %{_libdir}/samba/bind9/dlz_bind9_12.so
-#endif with_dc
+#endif with dc
 %endif
 
 ### DEVEL
@@ -1883,25 +1900,23 @@ fi
 %{_libdir}/libsamba-passdb.so
 %{_libdir}/libsmbldap.so
 
-%if %{with_dc}
+%if %{with dc}
 %{_includedir}/samba-4.0/dcerpc_server.h
 %{_libdir}/libdcerpc-server.so
 %{_libdir}/libdcerpc-server-core.so
 %{_libdir}/pkgconfig/dcerpc_server.pc
 %endif
 
-%if ! %{with_libsmbclient}
+%if %{without libsmbclient}
 %{_includedir}/samba-4.0/libsmbclient.h
-#endif ! with_libsmbclient
 %endif
 
-%if ! %{with_libwbclient}
+%if %{without libwbclient}
 %{_includedir}/samba-4.0/wbclient.h
-#endif ! with_libwbclient
 %endif
 
 ### VFS-CEPHFS
-%if %{with_vfs_cephfs}
+%if %{with vfs_cephfs}
 %files vfs-cephfs
 %{_libdir}/samba/vfs/ceph.so
 %{_libdir}/samba/vfs/ceph_snapshots.so
@@ -1910,7 +1925,7 @@ fi
 %endif
 
 ### VFS-GLUSTERFS
-%if %{with_vfs_glusterfs}
+%if %{with vfs_glusterfs}
 %files vfs-glusterfs
 %{_libdir}/samba/vfs/glusterfs.so
 %{_mandir}/man8/vfs_glusterfs.8*
@@ -1934,8 +1949,8 @@ fi
 %{_libdir}/samba/libsmbpasswdparser-samba4.so
 %{_libdir}/samba/libxattr-tdb-samba4.so
 
-# with_dc means very different layout, continue work to split among packages
-%if ! %{with_dc} || ! %{with_system_mit_krb5}
+# with dc means very different layout, continue work to split among packages
+%if %{without dc} || %{without system_mit_krb5}
 %{_libdir}/samba/libasn1-samba4.so.*
 %{_libdir}/samba/libcom_err-samba4.so.*
 %{_libdir}/samba/libgssapi-samba4.so.*
@@ -1949,13 +1964,13 @@ fi
 %{_libdir}/samba/libroken-samba4.so.*
 %{_libdir}/samba/libwind-samba4.so.*
 %endif
-%if %{with_dc} && ! %{with_system_mit_krb5}
+%if %{with dc} && %{without system_mit_krb5}
 %{_libdir}/samba/libHDB-SAMBA4-samba4.so
 %endif
 
 
 ### LIBSMBCLIENT
-%if %{with_libsmbclient}
+%if %{with libsmbclient}
 %files -n libsmbclient
 %{_libdir}/libsmbclient.so.*
 
@@ -1965,11 +1980,11 @@ fi
 %{_libdir}/libsmbclient.so
 %{_libdir}/pkgconfig/smbclient.pc
 %{_mandir}/man7/libsmbclient.7*
-#endif with_libsmbclient
+#endif with libsmbclient
 %endif
 
 ### LIBWBCLIENT
-%if %{with_libwbclient}
+%if %{with libwbclient}
 %files -n libwbclient
 %{_libdir}/samba/wbclient/libwbclient.so.*
 %{_libdir}/samba/libwinbind-client-samba4.so
@@ -1979,7 +1994,7 @@ fi
 %{_includedir}/samba-4.0/wbclient.h
 %{_libdir}/samba/wbclient/libwbclient.so
 %{_libdir}/pkgconfig/wbclient.pc
-#endif with_libwbclient
+#endif with libwbclient
 %endif
 
 ### PIDL
@@ -2269,7 +2284,7 @@ fi
 %{_libdir}/samba/libsamba-net.*-samba4.so
 %{_libdir}/samba/libsamba-python.*-samba4.so
 
-%if %{with_dc}
+%if %{with dc}
 %files -n python3-%{name}-dc
 %{python3_sitearch}/samba/samdb.py
 %{python3_sitearch}/samba/schema.py
@@ -2328,7 +2343,7 @@ fi
 
 %{python3_sitearch}/samba/remove_dc.py
 %{python3_sitearch}/samba/uptodateness.py
-#endif with_dc
+#endif with dc
 %endif
 
 %files -n python3-%{name}-test
@@ -2737,7 +2752,7 @@ fi
 
 ### TEST-LIBS
 %files test-libs
-%if %{with_dc}
+%if %{with dc}
 %{_libdir}/samba/libdlz-bind9-for-torture-samba4.so
 %else
 %{_libdir}/samba/libdsdb-module-samba4.so
@@ -2762,13 +2777,13 @@ fi
 %{_bindir}/wbinfo
 %{_mandir}/man1/ntlm_auth.1.gz
 %{_mandir}/man1/wbinfo.1*
-%if %{with_dc}
-%if %{with_system_mit_krb5}
+%if %{with dc}
+%if %{with system_mit_krb5}
 %{_libdir}/samba/krb5/winbind_krb5_localauth.so
 %{_mandir}/man8/winbind_krb5_localauth.8*
-#endif with_system_mit_krb5
+#endif with system_mit_krb5
 %endif
-#endif with_dc
+#endif with dc
 %endif
 
 ### WINBIND-KRB5-LOCATOR
@@ -2787,7 +2802,7 @@ fi
 %{_mandir}/man5/pam_winbind.conf.5*
 %{_mandir}/man8/pam_winbind.8*
 
-%if %{with_clustering_support}
+%if %{with clustering}
 %files -n ctdb
 %doc ctdb/README
 %doc ctdb/doc/examples
@@ -3673,7 +3688,7 @@ fi
 %dir %{_datadir}/ctdb/tests/UNIT/tool/scripts
 %{_datadir}/ctdb/tests/UNIT/tool/scripts/local.sh
 
-#endif with_clustering_support
+#endif with clustering
 %endif
 
 %if %{with_winexe}
@@ -3688,7 +3703,7 @@ fi
 - Update to 4.13.1
 - Update gnutls requirement to 3.6.8
 - Discard gpg check of tarball
-- Enable with_dc for all operating systems
+- Enable with dc for all operating systems
 - Flag experimental system_mit_krb5
 - Flush trailing whitespace and unnecessary contractions
 - Roll back %%required_mit_krb5 for EL 7
