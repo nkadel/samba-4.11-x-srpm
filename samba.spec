@@ -40,12 +40,15 @@
 # Build a libwbclient package by default
 %bcond_without libwbclient
 
-%global with_profiling 1
+%bcond_without profiling
 
 # Not available for EL 7
-%global with_gpgme 1
+%bcond_without profiling
+
 %if 0%{?rhel} && 0%{?rhel} < 8
-%global with_gpgme 0
+%bcond_with gpgme
+%else
+%bcond_without gpgme
 %endif
 
 # Build vfs_ceph module by default on 64bit Fedora
@@ -88,7 +91,6 @@
 
 # Use Samba supported internal Heimdal, not experimental system krb5
 %bcond_with system_mit_krb5
-%global with_system_mit_krb5 0
 
 # Rolled back for EL
 #%%global required_mit_krb5 1.18
@@ -97,10 +99,11 @@
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
 
-%global with_winexe 1
 # EL 7 had mingw deleted
 %if 0%{?el7}
-%global with_winexe 0
+%bcond_with winexe
+%else
+%bcond_without winexe
 %endif
 
 # Build vfs_io_uring module by default on 64bit Fedora
@@ -219,7 +222,7 @@ BuildRequires: libtirpc-devel
 BuildRequires: libuuid-devel
 BuildRequires: libxslt
 BuildRequires: lmdb
-%if %{with_winexe}
+%if %{with winexe}
 BuildRequires: mingw32-gcc
 BuildRequires: mingw64-gcc
 %endif
@@ -254,7 +257,7 @@ BuildRequires: glusterfs-devel >= 3.4.0.16
 BuildRequires: libcephfs-devel
 %endif
 
-%if %{with_vfs_io_uring}
+%if %{with vfs_io_uring}
 BuildRequires: liburing-devel >= 0.4
 %endif
 
@@ -292,10 +295,10 @@ BuildRequires: ldb-tools
 BuildRequires: tdb-tools
 # RHEL 7 pulls from EPEL
 BuildRequires: python%{python3_pkgversion}-markdown
-%if %{with_gpgme}
+%if %{with gpgme}
 BuildRequires: python3-gpg
 %endif
-# with_gpgme
+# with gpgme
 %endif
 # with testsuite || with dc
 
@@ -785,7 +788,7 @@ The samba-winbind-modules package provides the NSS library and a PAM module
 necessary to communicate to the Winbind Daemon
 
 ### WINEXE
-%if %{with_winexe}
+%if %{with winexe}
 %package winexe
 Summary: Samba Winexe Windows Binary
 License: GPLv3
@@ -935,7 +938,7 @@ export PYTHON=%{__python3}
         --with-experimental-mit-ad-dc \
 %endif
 %endif
-%if %{with_gpgme}
+%if %{with gpgme}
         --with-gpgme \
 %else
         --without-gpgme \
@@ -946,7 +949,7 @@ export PYTHON=%{__python3}
 %if %{with clustering}
         --with-cluster-support \
 %endif
-%if %{with_profiling}
+%if %{with profiliing}
         --with-profiling-data \
 %endif
 %if %{with testsuite}
@@ -1357,7 +1360,7 @@ fi
 %{_libdir}/samba/vfs/full_audit.so
 %{_libdir}/samba/vfs/gpfs.so
 %{_libdir}/samba/vfs/glusterfs_fuse.so
-%if %{with_vfs_io_uring}
+%if %{with vfs_io_uring}
 %{_libdir}/samba/vfs/io_uring.so
 %endif
 %{_libdir}/samba/vfs/linux_xfs_sgid.so
@@ -1410,7 +1413,7 @@ fi
 %{_mandir}/man8/vfs_full_audit.8*
 %{_mandir}/man8/vfs_gpfs.8*
 %{_mandir}/man8/vfs_glusterfs_fuse.8*
-%if %{with_vfs_io_uring}
+%if %{with vfs_io_uring}
 %{_mandir}/man8/vfs_io_uring.8*
 %endif
 %{_mandir}/man8/vfs_linux_xfs_sgid.8*
@@ -3691,7 +3694,7 @@ fi
 #endif with clustering
 %endif
 
-%if %{with_winexe}
+%if %{with winexe}
 ### WINEXE
 %files winexe
 %{_bindir}/winexe
