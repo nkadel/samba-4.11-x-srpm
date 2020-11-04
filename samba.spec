@@ -1,38 +1,17 @@
-# rpmbuild --rebuild --with testsuite --without clustering samba.src.rpm
+
+# The testsuite is disabled by default.
 #
-# The testsuite is disabled by default. Set --with testsuite or bcond_without
-# to run the Samba torture testsuite.
+# To build and run the tests use:
+#
+# rpmbuild --rebuild --with testsuite samba.src.rpm
+#
 %bcond_with testsuite
+
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
 
-%define samba_requires_eq()  %(LC_ALL="C" echo '%*' | xargs -r rpm -q --qf 'Requires: %%{name} = %%{epoch}:%%{version}\\n' | sed -e 's/ (none):/ /' -e 's/ 0:/ /' | grep -v "is not")
-
-%global main_release 0
-
-%global samba_version 4.13.0
-%global talloc_version 2.3.1
-%global tdb_version 1.4.3
-%global tevent_version 0.10.2
-%global ldb_version 2.2.0
-# This should be rc1 or nil
-%global pre_release %{nil}
-
-%if "x%{?pre_release}" != "x"
-%global samba_release 0.%{main_release}.%{pre_release}%{?dist}
-%else
-%global samba_release %{main_release}%{?dist}
-%endif
-
-# This is a network daemon, do a hardened build
-# Enables PIE and full RELRO protection
-%global _hardened_build 1
-# Samba cannot be linked with -Wl,-z,defs (from hardened build config)
-# For exmple the samba-cluster-support library is marked to allow undefined
-# symbols in the samba build.
-#
-# https://src.fedoraproject.org/rpms/redhat-rpm-config/blob/master/f/buildflags.md
-%undefine _strict_symbol_defs_build
+# Build with Active Directory Domain Controller support by default on Fedora
+%bcond_without dc
 
 # Build a libsmbclient package by default
 %bcond_without libsmbclient
@@ -40,15 +19,11 @@
 # Build a libwbclient package by default
 %bcond_without libwbclient
 
-%bcond_without profiling
-
-# Not available for EL 7
-%bcond_without profiling
-
-%if 0%{?rhel} && 0%{?rhel} < 8
-%bcond_with gpgme
+# Build with winexe by default
+%if 0%{?el7}
+%bcond_with winexe
 %else
-%bcond_without gpgme
+%bcond_without winexe
 %endif
 
 # Build vfs_ceph module by default on 64bit Fedora
@@ -81,31 +56,6 @@
 #endif fedora
 %endif
 
-%global libwbc_alternatives_version 0.15
-%global libwbc_alternatives_suffix %{nil}
-%if 0%{?__isa_bits} == 64
-%global libwbc_alternatives_suffix -64
-%endif
-
-%bcond_without dc
-
-# Use Samba supported internal Heimdal, not experimental system krb5
-%bcond_with system_mit_krb5
-
-# Rolled back for EL
-#%%global required_mit_krb5 1.18
-%global required_mit_krb5 1.15.1
-
-# ctdb is enabled by default, you can disable it with: --without clustering
-%bcond_without clustering
-
-# EL 7 had mingw deleted
-%if 0%{?el7}
-%bcond_with winexe
-%else
-%bcond_without winexe
-%endif
-
 # Build vfs_io_uring module by default on 64bit Fedora
 %if 0%{?fedora}
 
@@ -120,6 +70,52 @@
 %bcond_with vfs_io_uring
 #endif fedora
 %endif
+
+%define samba_requires_eq()  %(LC_ALL="C" echo '%*' | xargs -r rpm -q --qf 'Requires: %%{name} = %%{epoch}:%%{version}\\n' | sed -e 's/ (none):/ /' -e 's/ 0:/ /' | grep -v "is not")
+
+%global main_release 0
+
+%global samba_version 4.13.2
+%global talloc_version 2.3.1
+%global tdb_version 1.4.3
+%global tevent_version 0.10.2
+%global ldb_version 2.2.0
+# This should be rc1 or nil
+%global pre_release %{nil}
+
+%global samba_release %{main_release}%{?dist}
+%if "x%{?pre_release}" != "x"
+%global samba_release 0.%{main_release}.%{pre_release}%{?dist}
+%endif
+
+# This is a network daemon, do a hardened build
+# Enables PIE and full RELRO protection
+%global _hardened_build 1
+# Samba cannot be linked with -Wl,-z,defs (from hardened build config)
+# For exmple the samba-cluster-support library is marked to allow undefined
+# symbols in the samba build.
+#
+# https://src.fedoraproject.org/rpms/redhat-rpm-config/blob/master/f/buildflags.md
+%undefine _strict_symbol_defs_build
+
+%if 0%{?rhel} && 0%{?rhel} < 8
+%bcond_with gpgme
+%else
+%bcond_without gpgme
+%endif
+
+%global libwbc_alternatives_version 0.15
+%global libwbc_alternatives_suffix %{nil}
+%if 0%{?__isa_bits} == 64
+%global libwbc_alternatives_suffix -64
+%endif
+
+# Use Samba supported internal Heimdal, not experimental system krb5
+%bcond_with system_mit_krb5
+
+# Rolled back for EL
+#%%global required_mit_krb5 1.18
+%global required_mit_krb5 1.15.1
 
 %global _systemd_extra "Environment=KRB5CCNAME=FILE:/run/samba/krb5cc_samba"
 
@@ -210,13 +206,15 @@ BuildRequires: libarchive-devel
 BuildRequires: libattr-devel
 BuildRequires: libcap-devel
 BuildRequires: libcmocka-devel
+%if 0%{?fedora}
+BuildRequires: libicu-devel
+%endif
 %if (0%{?fedora} || 0%{?rhel} >= 8)
 BuildRequires: libnsl2-devel
 BuildRequires: rpcgen
 BuildRequires: rpcsvc-proto-devel
 %else
 BuildRequires: rpcbind
-#endif fedora || rhel >= 8
 %endif
 BuildRequires: libtirpc-devel
 BuildRequires: libuuid-devel
@@ -949,9 +947,6 @@ export PYTHON=%{__python3}
 %if %{with clustering}
         --with-cluster-support \
 %endif
-%if %{with profiliing}
-        --with-profiling-data \
-%endif
 %if %{with testsuite}
         --enable-selftest \
 %endif
@@ -1075,6 +1070,7 @@ for i in \
     %{_unitdir}/samba.service \
     %{python3_sitearch}/samba/dcerpc/dnsserver.*.so \
     %{python3_sitearch}/samba/dnsserver.py \
+    %{python3_sitearch}/samba/dnsresolver.py
     %{python3_sitearch}/samba/domain_update.py \
     %{python3_sitearch}/samba/forest_update.py \
     %{python3_sitearch}/samba/kcc/__init__.py \
@@ -1787,6 +1783,8 @@ fi
 %{_libdir}/samba/bind9/dlz_bind9_10.so
 %{_libdir}/samba/bind9/dlz_bind9_11.so
 %{_libdir}/samba/bind9/dlz_bind9_12.so
+%{_libdir}/samba/bind9/dlz_bind9_14.so
+%{_libdir}/samba/bind9/dlz_bind9_16.so
 #endif with dc
 %endif
 
@@ -2179,6 +2177,10 @@ fi
 %{python3_sitearch}/samba/ms_display_specifiers.py
 %{python3_sitearch}/samba/ms_schema.py
 %{python3_sitearch}/samba/netbios.*.so
+%dir %{python3_sitearch}/samba/mdssvc/
+%dir %{python3_sitearch}/samba/mockbuild/
+%{python3_sitearch}/samba/mockbuild/trace_decorator.py
+%{python3_sitearch}/samba/mockbuild/util.py
 %dir %{python3_sitearch}/samba/netcmd
 %{python3_sitearch}/samba/netcmd/__init__.py
 %dir %{python3_sitearch}/samba/netcmd/__pycache__
@@ -2189,6 +2191,7 @@ fi
 %{python3_sitearch}/samba/netcmd/__pycache__/dbcheck.*.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/delegation.*.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/dns.*.pyc
+%{python3_sitearch}/samba/netcmd/__pycache__/dnsresolver.*.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/domain.*.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/domain_backup.*.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/drs.*.pyc
@@ -2304,9 +2307,11 @@ fi
 
 %{python3_sitearch}/samba/dcerpc/dnsserver.*.so
 %{python3_sitearch}/samba/dckeytab.*.so
+%{python3_sitearch}/samba/dnsresolver.py
+%{python3_sitearch}/samba/dnsserver.py
+%{python3_sitearch}/samba/domain_update.py
 %{python3_sitearch}/samba/dsdb.*.so
 %{python3_sitearch}/samba/dsdb_dns.*.so
-%{python3_sitearch}/samba/domain_update.py
 %{python3_sitearch}/samba/forest_update.py
 %{python3_sitearch}/samba/ms_forest_updates_markdown.py
 %{python3_sitearch}/samba/ms_schema_markdown.py
@@ -2318,7 +2323,6 @@ fi
 %{python3_sitearch}/samba/kcc/graph_utils.py
 %{python3_sitearch}/samba/kcc/kcc_utils.py
 %{python3_sitearch}/samba/kcc/ldif_import_export.py
-%{python3_sitearch}/samba/dnsserver.py
 
 %dir %{python3_sitearch}/samba/kcc/__pycache__
 %{python3_sitearch}/samba/kcc/__pycache__/__init__.*.pyc
@@ -3690,7 +3694,6 @@ fi
 %{_datadir}/ctdb/tests/UNIT/tool/README
 %dir %{_datadir}/ctdb/tests/UNIT/tool/scripts
 %{_datadir}/ctdb/tests/UNIT/tool/scripts/local.sh
-
 #endif with clustering
 %endif
 
@@ -3702,8 +3705,8 @@ fi
 %endif
 
 %changelog
-* Tue Nov  3 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.1
-- Update to 4.13.1
+* Tue Nov  3 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.2
+- Update to 4.13.2
 - Update gnutls requirement to 3.6.8
 - Discard gpg check of tarball
 - Enable with dc for all operating systems
