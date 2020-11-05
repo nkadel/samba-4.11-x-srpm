@@ -33,7 +33,7 @@
 %bcond_without vfs_cephfs
 %else
 %bcond_with vfs_cephfs
-#endifarch
+#endif arch
 %endif
 
 %else
@@ -48,7 +48,7 @@
 %bcond_without vfs_glusterfs
 %else
 %bcond_with vfs_glusterfs
-#endifarch
+#endif arch
 %endif
 
 %else
@@ -63,7 +63,7 @@
 %bcond_without vfs_io_uring
 %else
 %bcond_with vfs_io_uring
-#endifarch
+#endif arch
 %endif
 
 %else
@@ -1498,6 +1498,9 @@ fi
 %{_mandir}/man8/samba-regedit.8*
 %{_mandir}/man8/smbspool.8*
 %dir %{_datadir}/samba
+# Uncertain of best locaiton for this
+%dir %{_datadir}/samba/mdssvc
+%{_datadir}/samba/mdssvc/elasticsearch_mappings.json
 
 ### CLIENT-LIBS
 %files client-libs
@@ -2177,10 +2180,6 @@ fi
 %{python3_sitearch}/samba/ms_display_specifiers.py
 %{python3_sitearch}/samba/ms_schema.py
 %{python3_sitearch}/samba/netbios.*.so
-%dir %{python3_sitearch}/samba/mdssvc/
-%dir %{python3_sitearch}/samba/mockbuild/
-%{python3_sitearch}/samba/mockbuild/trace_decorator.py
-%{python3_sitearch}/samba/mockbuild/util.py
 %dir %{python3_sitearch}/samba/netcmd
 %{python3_sitearch}/samba/netcmd/__init__.py
 %dir %{python3_sitearch}/samba/netcmd/__pycache__
@@ -2191,7 +2190,6 @@ fi
 %{python3_sitearch}/samba/netcmd/__pycache__/dbcheck.*.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/delegation.*.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/dns.*.pyc
-%{python3_sitearch}/samba/netcmd/__pycache__/dnsresolver.*.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/domain.*.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/domain_backup.*.pyc
 %{python3_sitearch}/samba/netcmd/__pycache__/drs.*.pyc
@@ -2297,6 +2295,7 @@ fi
 
 %{python3_sitearch}/samba/__pycache__/domain_update.*.pyc
 %{python3_sitearch}/samba/__pycache__/dnsserver.*.pyc
+%{python3_sitearch}/samba/__pycache__/dnsresolver.*.pyc
 %{python3_sitearch}/samba/__pycache__/forest_update.*.pyc
 %{python3_sitearch}/samba/__pycache__/ms_forest_updates_markdown.*.pyc
 %{python3_sitearch}/samba/__pycache__/ms_schema_markdown.*.pyc
