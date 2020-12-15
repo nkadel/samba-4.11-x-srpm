@@ -75,7 +75,7 @@
 
 %global main_release 0
 
-%global samba_version 4.13.2
+%global samba_version 4.13.3
 %global talloc_version 2.3.1
 %global tdb_version 1.4.3
 %global tevent_version 0.10.2
@@ -3704,6 +3704,9 @@ fi
 %endif
 
 %changelog
+* Tue Dev 15 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.3
+- Update to 4.13.3
+
 * Tue Nov  3 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.2
 - Update to 4.13.2
 - Update gnutls requirement to 3.6.8
