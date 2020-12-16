@@ -3704,7 +3704,7 @@ fi
 %endif
 
 %changelog
-* Tue Dev 15 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.3
+* Tue Dec 15 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.3
 - Update to 4.13.3
 
 * Tue Nov  3 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.2
