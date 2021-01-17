@@ -3723,11 +3723,7 @@ fi
 %endif
 
 %changelog
-* Tue Dec 15 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.3
-- Update to 4.13.3
-
-* Tue Nov  3 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.2
-- Update to 4.13.2
+* Tue Dec 15 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.3-2.1
 - Update gnutls requirement to 3.6.8
 - Discard gpg check of tarball
 - Enable with dc for all operating systems
@@ -3735,6 +3731,25 @@ fi
 - Flush trailing whitespace and unnecessary contractions
 - Roll back %%required_mit_krb5 for EL 7
 - Use python3_pkgversion as needed for EL
+
+* Wed Dec 16 2020 Guenther Deschner <gdeschner@redhat.com> - 4.13.3-1
+- Rebuild against krb5-1.19
+- Resolves: rhbz#1915928
+
+* Tue Dec 15 2020 Guenther Deschner <gdeschner@redhat.com> - 4.13.3-0
+- Update to Samba 4.13.3
+
+* Wed Nov 25 2020 Alexander Bokovoy <abokovoy@redhat.com> - 4.13.2-2
+- rhbz#1892745, rhbz#1900232: smbclient mget crashes (upstream bug 14517)
+- Merge RHEL 8.4 patches:
+  - FIPS-related enhancements
+  - FreeIPA Global Catalog patches
+
+* Tue Nov 03 2020 Andreas Schneider <asn@redhat.com> - 4.13.2-1
+- Create a python3-samba-devel package to avoid unnessary dependencies
+
+* Tue Nov 03 2020 Guenther Deschner <gdeschner@redhat.com> - 4.13.2-0
+- Update to Samba 4.13.2
 
 * Thu Oct 29 2020 Guenther Deschner <gdeschner@redhat.com> - 4.13.1-0
 - Update to Samba 4.13.1
@@ -4715,7 +4730,7 @@ fi
 
 * Fri Mar 22 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.4-3
 - resolves: #919405 - Fix and improve large_readx handling for broken clients.
-- resolves: #924525 - do not use waf caching.
+- resolves: #924525 - Do not use waf caching.
 
 * Wed Mar 20 2013 Andreas Schneider <asn@redhat.com> - 2:4.0.4-2
 - resolves: #923765 - Improve packaging of README files.
@@ -5795,7 +5810,7 @@ fi
 - Make it build
 
 * Wed Apr 10 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.3a-6
-- do not use /etc/samba.d in smbadduser, it should be /etc/samba
+- Do not use /etc/samba.d in smbadduser, it should be /etc/samba
 
 * Thu Apr  4 2002 Trond Eivind Glomsrød <teg@redhat.com> 2.2.3a-5
 - Add libsmbclient.a w/headerfile for KDE (#62202)
@@ -5854,7 +5869,7 @@ fi
 - Add patch from Jeremy Allison to fix IA64 alignment problems (#51497)
 
 * Mon Aug 13 2001 Trond Eivind Glomsrød <teg@redhat.com>
-- do not include smbpasswd in samba, it is in samba-common (#51598)
+- Do not include smbpasswd in samba, it is in samba-common (#51598)
 - Add a disabled "obey pam restrictions" statement - it is not
   active, as we use encrypted passwords, but if the admin turns
   encrypted passwords off the choice is available. (#31351)
@@ -5887,7 +5902,7 @@ fi
 
 * Tue Jun 19 2001 Trond Eivind Glomsrød <teg@redhat.com>
 - (these changes are from the non-head version)
-- do not include /usr/sbin/samba, it is the same as the initscript
+- Do not include /usr/sbin/samba, it is the same as the initscript
 - unset TMPDIR, as samba cannot write into a TMPDIR owned
   by root (#41193)
 - Add pidfile: lines for smbd and nmbd and a config: line
@@ -6249,3 +6264,4 @@ fi
 - Added a number of options to smb.conf file
 - Added smbadduser command (missed from all previous RPMs) - Doooh!
 - Added smbuser file and smb.conf file updates for username map
+
