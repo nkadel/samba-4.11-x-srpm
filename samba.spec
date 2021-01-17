@@ -156,6 +156,12 @@ Source13:       pam_winbind.conf
 Source14:       samba.pamd
 
 Source201:      README.downgrade
+Patch1:         samba-s4u.patch
+# Backport bug fixes to https://gitlab.com/samba-redhat/samba/-/tree/v4-13-redhat
+# This will give us CI and makes it easy to generate patchsets.
+#
+# Generate the patchset using: git format-patch -l1 --stdout -N > samba-4.13-redhat.patch
+Patch2:         samba-4.13-redhat.patch
 
 Requires(pre): /usr/sbin/groupadd
 Requires(post): systemd
@@ -3728,7 +3734,7 @@ fi
 %endif
 
 %changelog
-* Tue Dec 15 2020 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.3-2.1
+* Sun Jan 17 2021 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.3-2.1
 - Update gnutls requirement to 3.6.8
 - Discard gpg check of tarball
 - Enable with dc for all operating systems
