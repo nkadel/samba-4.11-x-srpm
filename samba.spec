@@ -1,4 +1,3 @@
-
 # The testsuite is disabled by default.
 #
 # To build and run the tests use:
@@ -6,6 +5,12 @@
 # rpmbuild --rebuild --with testsuite samba.src.rpm
 #
 %bcond_with testsuite
+
+# Build with internal talloc, tevent, tdb and ldb.
+#
+# rpmbuild --rebuild --with=testsuite --with=includelibs samba.src.rpm
+#
+%bcond_with includelibs
 
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
@@ -276,6 +281,7 @@ BuildRequires: perl(ExtUtils::MakeMaker)
 BuildRequires: perl(FindBin)
 BuildRequires: perl(Parse::Yapp)
 
+%if %{without includelibs}
 BuildRequires: libtalloc-devel >= %{talloc_version}
 # Use local version because RHEL decided to port to RHEL 8,
 # but "mark their turf" by overriding the packaging from Fedora
@@ -291,8 +297,13 @@ BuildRequires: libldb-devel >= %{ldb_version}
 # Use local version because RHEL decided to port to RHEL 8,
 # but "mark their turf" by overriding the packaging from Fedora
 BuildRequires: python3-ldb-devel >= %{ldb_version}
+%else
+BuildRequires: lmdb-devel
+#endif without testsuite
+%endif
 
-%if %{with testsuite} || %{with dc}
+%if %{with dc} || %{with testsuite}
+
 BuildRequires: ldb-tools
 BuildRequires: tdb-tools
 # RHEL 7 pulls from EPEL
@@ -371,7 +382,7 @@ Recommends:     logrotate
 Provides: samba4-common = %{samba_depver}
 Obsoletes: samba4-common < %{samba_depver}
 
-%if %{without dc}
+%if %{without dc} && %{without testsuite}
 Obsoletes: samba-dc < %{samba_depver}
 Obsoletes: samba-dc-libs < %{samba_depver}
 Obsoletes: samba-dc-bind-dlz < %{samba_depver}
@@ -633,7 +644,7 @@ Requires: %{name}-libs = %{samba_depver}
 The python3-%{name}-test package contains the Python libraries used by the test suite of Samba.
 If you want to run full set of Samba tests, you need to install this package.
 
-%if %{with dc}
+%if %{with dc} || %{with testsuite}
 %package -n python3-samba-dc
 Summary: Samba Python libraries for Samba AD
 Requires: python3-%{name} = %{samba_depver}
@@ -861,19 +872,23 @@ and use CTDB instead.
 
 
 %prep
+# Do *NOT* burn cycles at build time on tarball checksum!!
 #zcat %%{SOURCE0} | gpgv2 --quiet --keyring %%{SOURCE2} %%{SOURCE1} -
 %autosetup -n samba-%{version}%{pre_release} -p1
 
 %build
+%if %{with includelibs}
 %global _talloc_lib ,talloc,pytalloc,pytalloc-util
 %global _tevent_lib ,tevent,pytevent
 %global _tdb_lib ,tdb,pytdb
 %global _ldb_lib ,ldb,pyldb,pyldb-util
-
+%else
 %global _talloc_lib ,!talloc,!pytalloc,!pytalloc-util
 %global _tevent_lib ,!tevent,!pytevent
 %global _tdb_lib ,!tdb,!pytdb
 %global _ldb_lib ,!ldb,!pyldb,!pyldb-util
+#endif with includelibs
+%endif
 
 %global _samba_libraries !zlib,!popt%{_talloc_lib}%{_tevent_lib}%{_tdb_lib}%{_ldb_lib}
 
@@ -932,7 +947,7 @@ export PYTHON=%{__python3}
 %if (%{without libsmbclient}) || (%{without libwbclient})
         --private-libraries=%{_samba_private_libraries} \
 %endif
-%if %{without dc}
+%if %{without dc} && %{without testsuite}
         --without-ad-dc \
 %else
 %if %{with system_mit_krb5}
@@ -1059,7 +1074,7 @@ install -m 0755 packaging/NetworkManager/30-winbind-systemd \
 install -d -m 0755 %{buildroot}%{_libdir}/krb5/plugins/libkrb5
 touch %{buildroot}%{_libdir}/krb5/plugins/libkrb5/winbind_krb5_locator.so
 
-%if %{without dc}
+%if %{without dc} && %{without testsuite}
 for i in \
     %{_libdir}/samba/libdfs-server-ad-samba4.so \
     %{_libdir}/samba/libdnsserver-common-samba4.so \
@@ -1124,6 +1139,15 @@ for i in \
     ; do
     rm -f %{buildroot}$i
 done
+%endif
+
+%if %{without vfs_glusterfs}
+rm -f %{buildroot}%{_mandir}/man8/vfs_glusterfs.8*
+%endif
+
+%if %{without vfs_cephfs}
+rm -f %{buildroot}%{_mandir}/man8/vfs_ceph.8*
+rm -f %{buildroot}%{_mandir}/man8/vfs_ceph_snapshots.8*
 %endif
 
 # This makes the right links, as rpmlint requires that
@@ -1436,15 +1460,6 @@ fi
 %{_mandir}/man8/vfs_widelinks.8*
 %{_mandir}/man8/vfs_worm.8*
 %{_mandir}/man8/vfs_xattr_tdb.8*
-
-%if %{without vfs_glusterfs}
-%exclude %{_mandir}/man8/vfs_glusterfs.8*
-%endif
-
-%if %{without vfs_cephfs}
-%exclude %{_mandir}/man8/vfs_ceph.8*
-%exclude %{_mandir}/man8/vfs_ceph_snapshots.8*
-%endif
 
 %attr(775,root,printadmin) %dir /var/lib/samba/drivers
 
