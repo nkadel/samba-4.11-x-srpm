@@ -277,6 +277,8 @@ BuildRequires: perl(FindBin)
 BuildRequires: perl(Parse::Yapp)
 
 BuildRequires: libtalloc-devel >= %{talloc_version}
+# Use local version because RHEL decided to port to RHEL 8,
+# but "mark their turf" by overriding the packaging from Fedora
 BuildRequires: python3-talloc-devel >= %{talloc_version}
 
 BuildRequires: libtevent-devel >= %{tevent_version}
@@ -286,6 +288,8 @@ BuildRequires: libtdb-devel >= %{tdb_version}
 BuildRequires: python3-tdb >= %{tdb_version}
 
 BuildRequires: libldb-devel >= %{ldb_version}
+# Use local version because RHEL decided to port to RHEL 8,
+# but "mark their turf" by overriding the packaging from Fedora
 BuildRequires: python3-ldb-devel >= %{ldb_version}
 
 %if %{with testsuite} || %{with dc}
