@@ -192,6 +192,7 @@ Obsoletes: samba-swat < %{samba_depver}
 Provides: samba4-swat = %{samba_depver}
 Obsoletes: samba4-swat < %{samba_depver}
 
+BuildRequires: make
 BuildRequires: gcc
 BuildRequires: avahi-devel
 BuildRequires: bison
@@ -1408,6 +1409,14 @@ fi
 %{_libdir}/samba/vfs/worm.so
 %{_libdir}/samba/vfs/xattr_tdb.so
 
+%if %{with testsuite}
+%{_libdir}/samba/vfs/nfs4acl_xattr.so
+%endif
+
+%dir %{_datadir}/samba
+%dir %{_datadir}/samba/mdssvc
+%{_datadir}/samba/mdssvc/elasticsearch_mappings.json
+
 %{_unitdir}/nmb.service
 %{_unitdir}/smb.service
 %attr(1777,root,root) %dir /var/spool/samba
@@ -1516,10 +1525,6 @@ fi
 %{_mandir}/man8/cifsdd.8.*
 %{_mandir}/man8/samba-regedit.8*
 %{_mandir}/man8/smbspool.8*
-%dir %{_datadir}/samba
-# Uncertain of best locaiton for this
-%dir %{_datadir}/samba/mdssvc
-%{_datadir}/samba/mdssvc/elasticsearch_mappings.json
 
 ### CLIENT-LIBS
 %files client-libs
