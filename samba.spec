@@ -1444,12 +1444,10 @@ fi
 %{_libdir}/samba/vfs/nfs4acl_xattr.so
 %endif
 
-# Unsure which option enables or disables these
-%if (0%{?fedora} || 0%{?rhel} >= 8)
+# Unsure which option enables or disables these components
 %dir %{_datadir}/samba
 %dir %{_datadir}/samba/mdssvc
 %{_datadir}/samba/mdssvc/elasticsearch_mappings.json
-%endif
 
 %{_unitdir}/nmb.service
 %{_unitdir}/smb.service
