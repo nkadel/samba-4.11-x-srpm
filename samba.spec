@@ -97,7 +97,7 @@
 
 %define samba_requires_eq()  %(LC_ALL="C" echo '%*' | xargs -r rpm -q --qf 'Requires: %%{name} = %%{epoch}:%%{version}\\n' | sed -e 's/ (none):/ /' -e 's/ 0:/ /' | grep -v "is not")
 
-%global main_release 0
+%global main_release 0.2
 
 %global samba_version 4.13.3
 %global talloc_version 2.3.1
@@ -336,9 +336,11 @@ BuildRequires: python3-gpg
 %endif
 
 %if %{with dc} || %{with testsuite}
- # Add python3-iso8601 to avoid that the
- # version in Samba is being packaged
-BuildRequires: python3-iso8601
+# Add python3-iso8601 to avoid that the
+# version in Samba is being packaged
+#BuildRequires: python3-iso8601
+# Use python3_pkgverson for EPEL version on EL 7
+BuildRequires: python%{python3_pkgversoin}-iso8601
 
 BuildRequires: bind
 BuildRequires: krb5-server >= %{required_mit_krb5}
@@ -3779,7 +3781,7 @@ fi
 %endif
 
 %changelog
-* Sun Jan 17 2021 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.3-2.1
+* Sun Jan 17 2021 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.3-0.2
 - Update gnutls requirement to 3.6.8
 - Discard gpg check of tarball
 - Enable with dc for all operating systems
