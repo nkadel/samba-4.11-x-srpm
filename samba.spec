@@ -97,9 +97,9 @@
 
 %define samba_requires_eq()  %(LC_ALL="C" echo '%*' | xargs -r rpm -q --qf 'Requires: %%{name} = %%{epoch}:%%{version}\\n' | sed -e 's/ (none):/ /' -e 's/ 0:/ /' | grep -v "is not")
 
-%global main_release 0.2
+%global main_release 0.1
 
-%global samba_version 4.13.3
+%global samba_version 4.13.4
 %global talloc_version 2.3.1
 %global tdb_version 1.4.3
 %global tevent_version 0.10.2
@@ -176,11 +176,6 @@ Source14:       samba.pamd
 
 Source201:      README.downgrade
 Patch1:         samba-s4u.patch
-# Backport bug fixes to https://gitlab.com/samba-redhat/samba/-/tree/v4-13-redhat
-# This will give us CI and makes it easy to generate patchsets.
-#
-# Generate the patchset using: git format-patch -l1 --stdout -N > samba-4.13-redhat.patch
-Patch2:         samba-4.13-redhat.patch
 
 Requires(pre): /usr/sbin/groupadd
 Requires(post): systemd
@@ -340,7 +335,7 @@ BuildRequires: python3-gpg
 # version in Samba is being packaged
 #BuildRequires: python3-iso8601
 # Use python3_pkgverson for EPEL version on EL 7
-BuildRequires: python%{python3_pkgversoin}-iso8601
+BuildRequires: python%{python3_pkgversion}-iso8601
 
 BuildRequires: bind
 BuildRequires: krb5-server >= %{required_mit_krb5}
