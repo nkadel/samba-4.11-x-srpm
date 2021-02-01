@@ -1641,7 +1641,6 @@ fi
 %{_libdir}/samba/libsmb-transport-samba4.so
 %{_libdir}/samba/libsmbclient-raw-samba4.so
 %{_libdir}/samba/libsmbd-base-samba4.so
-%{_libdir}/samba/libsmbd-conn-samba4.so
 %{_libdir}/samba/libsmbd-shim-samba4.so
 %{_libdir}/samba/libsmbldaphelper-samba4.so
 %{_libdir}/samba/libsys-rw-samba4.so
@@ -2132,7 +2131,6 @@ fi
 %{python3_sitearch}/samba/__pycache__/sites.*.pyc
 %{python3_sitearch}/samba/__pycache__/subnets.*.pyc
 %{python3_sitearch}/samba/__pycache__/tdb_util.*.pyc
-%{python3_sitearch}/samba/__pycache__/trust_utils.*.pyc
 %{python3_sitearch}/samba/__pycache__/upgrade.*.pyc
 %{python3_sitearch}/samba/__pycache__/upgradehelpers.*.pyc
 %{python3_sitearch}/samba/__pycache__/xattr.*.pyc
@@ -2322,7 +2320,6 @@ fi
 %{python3_sitearch}/samba/third_party/__init__.py
 %dir %{python3_sitearch}/samba/third_party/__pycache__
 %{python3_sitearch}/samba/third_party/__pycache__/__init__.*.pyc
-%{python3_sitearch}/samba/trust_utils.py
 %{python3_sitearch}/samba/upgrade.py
 %{python3_sitearch}/samba/upgradehelpers.py
 %{python3_sitearch}/samba/werror.*.so
@@ -2576,8 +2573,6 @@ fi
 %{python3_sitearch}/samba/tests/dcerpc/__pycache__/__init__.*.pyc
 %{python3_sitearch}/samba/tests/dcerpc/__pycache__/array.*.pyc
 %{python3_sitearch}/samba/tests/dcerpc/__pycache__/bare.*.pyc
-%{python3_sitearch}/samba/tests/dcerpc/__pycache__/binding.*.pyc
-%{python3_sitearch}/samba/tests/dcerpc/__pycache__/createtrustrelax.*.pyc
 %{python3_sitearch}/samba/tests/dcerpc/__pycache__/dnsserver.*.pyc
 %{python3_sitearch}/samba/tests/dcerpc/__pycache__/integer.*.pyc
 %{python3_sitearch}/samba/tests/dcerpc/__pycache__/mdssvc.*.pyc
@@ -2588,15 +2583,12 @@ fi
 %{python3_sitearch}/samba/tests/dcerpc/__pycache__/rpc_talloc.*.pyc
 %{python3_sitearch}/samba/tests/dcerpc/__pycache__/rpcecho.*.pyc
 %{python3_sitearch}/samba/tests/dcerpc/__pycache__/sam.*.pyc
-%{python3_sitearch}/samba/tests/dcerpc/__pycache__/samr_change_password.*.pyc
 %{python3_sitearch}/samba/tests/dcerpc/__pycache__/srvsvc.*.pyc
 %{python3_sitearch}/samba/tests/dcerpc/__pycache__/string_tests.*.pyc
 %{python3_sitearch}/samba/tests/dcerpc/__pycache__/testrpc.*.pyc
 %{python3_sitearch}/samba/tests/dcerpc/__pycache__/unix.*.pyc
 %{python3_sitearch}/samba/tests/dcerpc/array.py
 %{python3_sitearch}/samba/tests/dcerpc/bare.py
-%{python3_sitearch}/samba/tests/dcerpc/binding.py
-%{python3_sitearch}/samba/tests/dcerpc/createtrustrelax.py
 %{python3_sitearch}/samba/tests/dcerpc/dnsserver.py
 %{python3_sitearch}/samba/tests/dcerpc/integer.py
 %{python3_sitearch}/samba/tests/dcerpc/mdssvc.py
@@ -2607,7 +2599,6 @@ fi
 %{python3_sitearch}/samba/tests/dcerpc/rpc_talloc.py
 %{python3_sitearch}/samba/tests/dcerpc/rpcecho.py
 %{python3_sitearch}/samba/tests/dcerpc/sam.py
-%{python3_sitearch}/samba/tests/dcerpc/samr_change_password.py
 %{python3_sitearch}/samba/tests/dcerpc/srvsvc.py
 %{python3_sitearch}/samba/tests/dcerpc/string_tests.py
 %{python3_sitearch}/samba/tests/dcerpc/testrpc.py
@@ -3776,6 +3767,9 @@ fi
 %endif
 
 %changelog
+* Sun Jan 31 2021 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.4-0.1
+- Delete dcerpc and other files not found in 4.13.4
+
 * Sun Jan 17 2021 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.3-0.2
 - Update gnutls requirement to 3.6.8
 - Discard gpg check of tarball
@@ -3784,6 +3778,7 @@ fi
 - Flush trailing whitespace and unnecessary contractions
 - Roll back %%required_mit_krb5 for EL 7
 - Use python3_pkgversion as needed for EL
+
 
 * Wed Dec 16 2020 Guenther Deschner <gdeschner@redhat.com> - 4.13.3-1
 - Rebuild against krb5-1.19
