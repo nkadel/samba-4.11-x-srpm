@@ -99,7 +99,7 @@
 
 %global main_release 0.1
 
-%global samba_version 4.13.4
+%global samba_version 4.13.5
 %global talloc_version 2.3.1
 %global tdb_version 1.4.3
 %global tevent_version 0.10.2
@@ -3767,6 +3767,9 @@ fi
 %endif
 
 %changelog
+* Tue Mar 9 2021 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.5-0.1
+- Update to 4.13.5
+
 * Sun Jan 31 2021 Nico Kadel-Garcia <nkadel@gmail.com> - 4.13.4-0.1
 - Delete dcerpc and other files not found in 4.13.4
 
