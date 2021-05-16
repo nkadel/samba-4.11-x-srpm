@@ -1,19 +1,19 @@
-samba-4.13.x-srpm
+samba-4.14.x-srpm
 ================
 
-SRPM building tools for Samba 4.12 on Fedora and RHEL. Samba 4.12.x
+SRPM building tools for Samba 4.14 on Fedora and RHEL. Samba 4.14.x
 with domain controller is enabled with the experimental MIT kerberos.
-dc is only enabled on Fedora.
+dc is enabled by vender only on Fedora, these enable it for EHEL.
 
 These are built from Fedora rawhide releases, and need to be built and
 installed in the following order.
 
 	libtalloc-2.3.x-srpm
 	libtdb-1.4.x-srpm
-	libldb-2.2.x-srpm
+	libldb-2.3.x-srpm
 	libtevent-0.10.x-srpm
 
-	samba-4.13.x-srpm
+	samba-4.14.x-srpm
 
 The "make" command will do these steps.
 
