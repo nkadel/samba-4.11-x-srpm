@@ -3914,6 +3914,85 @@ fi
 %endif
 
 %changelog
+* Mon Sep 20 2021 Guenther Deschner <gdeschner@redhat.com> - 4.15.0-13
+- Update to Samba 4.15.0
+- resolves: #2005817
+
+* Mon Sep 13 2021 Guenther Deschner <gdeschner@redhat.com> - 4.15.0-0.12.rc7
+- Update to Samba 4.15.0rc7
+- resolves: #2003740
+
+* Thu Sep 09 2021 Guenther Deschner <gdeschner@redhat.com> - 4.15.0-0.11.rc6
+- Update to Samba 4.15.0rc6
+- resolves: #2002546
+
+* Tue Sep 07 2021 Guenther Deschner <gdeschner@redhat.com> - 4.15.0-0.10.rc5
+- Update to Samba 4.15.0rc5
+- resolves: #2001827
+
+* Wed Sep 01 2021 Guenther Deschner <gdeschner@redhat.com> - 4.15.0-0.9.rc4
+- Update to Samba 4.15.0rc4
+- resolves: #2000079
+
+* Thu Aug 26 2021 Guenther Deschner <gdeschner@redhat.com> - 4.15.0-0.8.rc3
+- Update to Samba 4.15.0rc3
+- resolves: #1998024
+
+* Wed Aug 25 2021 Guenther Deschner <gdeschner@redhat.com> - 4.15.0-0.7.rc2
+- Add ceph and etcd mutex helpers for CTDB
+
+* Mon Aug 16 2021 Anoop C S <anoopcs@samba.org> - 4.15.0-0.6.rc2
+- Avoid removing PyDSDB library files from buildroot for non AD DC build
+
+* Fri Aug 13 2021 Adam Williamson <awilliam@redhat.com> - 4.15.0-0.5.rc2
+- Fix samba-common-tools dependency
+
+* Thu Aug 12 2021 Andreas Schneider <asn@redhat.com> - 4.15.0-0.4.rc2
+- Package samba-tool correctly
+
+* Mon Aug 09 2021 Guenther Deschner <gdeschner@redhat.com> - 4.15.0-0.3.rc2
+- Update to Samba 4.15.0rc2
+- resolves: #1991634
+
+* Fri Jul 23 2021 Fedora Release Engineering <releng@fedoraproject.org> - 2:4.15.0-0.2.rc1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
+
+* Mon Jul 19 2021 Guenther Deschner <gdeschner@redhat.com> - 4.15.0rc1-1
+- Fix ctdb-pcp-pmda install
+- resolves: #1983369
+
+* Thu Jul 15 2021 Guenther Deschner <gdeschner@redhat.com> - 4.15.0rc1-0
+- Update to Samba 4.15.0rc1
+- resolves: #1982623
+
+* Wed Jul 14 2021 Guenther Deschner <gdeschner@redhat.com> - 4.14.6-1
+- Build with pcp-pmda support by default on Fedora
+- resolves: #1552276
+
+* Tue Jul 13 2021 Guenther Deschner <gdeschner@redhat.com> - 4.14.6-0
+- Update to Samba 4.14.6
+- resolves: #1981764
+
+* Thu Jun 24 2021 Andreas Schneider <asn@redhat.com> - 4.14.5-3
+- Create a subpackage for vfs-io-uring
+
+* Fri Jun 04 2021 Python Maint <python-maint@redhat.com> - 2:4.14.5-1
+- Rebuilt for Python 3.10
+
+* Tue Jun 01 2021 Guenther Deschner <gdeschner@redhat.com> - 4.14.5-0
+- Update to Samba 4.14.5
+- resolves: #1966456
+
+* Fri May 21 2021 Jitka Plesnikova <jplesnik@redhat.com> - 2:4.14.4-3
+- Perl 5.34 rebuild
+
+* Wed May 19 2021 Pete Walter <pwalter@fedoraproject.org> - 2:4.14.4-2
+- Rebuild for ICU 69
+
+* Tue May 18 2021 Andreas Schneider <asn@redhat.com> - 4.14.4-1
+- Fixed building with gcc 11.x
+- Fixed quota support
+
 * Thu Apr 29 2021 Guenther Deschner <gdeschner@redhat.com> - 4.14.4-0
 - Update to Samba 4.14.4
 - resolves: #1949442, #1955027 - Security fixes for CVE-2021-20254
