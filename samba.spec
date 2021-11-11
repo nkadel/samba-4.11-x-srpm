@@ -28,20 +28,8 @@
 # Build a libwbclient package by default
 %bcond_without libwbclient
 
-# Use system_mit_krb5 rather than locally compiled Heimdal
-%bcond_with system_mit_krb5
-
 # Build with winexe by default
-#$%if 0%{?rhel} >= 8
-
-#%%ifarch x86_64
-#%%bcond_without winexe
-#%%else
-#%%bcond_with winexe
-##endifarch
-#%%endif
-
-%if 0%{?fedora}
+%if (0%{?fedora} || 0%{?rhel} >= 8)
 %bcond_without winexe
 %else
 %bcond_with winexe
@@ -100,7 +88,7 @@
 %endif
 
 # Build vfs_io_uring module by default on 64bit Fedora
-%if 0%{?fedora} || 0%{?rhel} >= 8
+%if (0%{?fedora} || 0%{?rhel} >= 8)
 
 %ifarch aarch64 ppc64le s390x x86_64
 %bcond_without vfs_io_uring
@@ -130,13 +118,13 @@
 
 %define samba_requires_eq()  %(LC_ALL="C" echo '%*' | xargs -r rpm -q --qf 'Requires: %%{name} = %%{epoch}:%%{version}\\n' | sed -e 's/ (none):/ /' -e 's/ 0:/ /' | grep -v "is not")
 
-%global baserelease 13
+%global baserelease 1
 
-%global samba_version 4.15.0
+%global samba_version 4.15.1
 %global talloc_version 2.3.3
 %global tdb_version 1.4.5
 %global tevent_version 0.11.0
-%global ldb_version 2.4.0
+%global ldb_version 2.4.1
 # This should be rc1 or nil
 %global pre_release %nil
 
@@ -161,11 +149,13 @@
 %global libwbc_alternatives_suffix -64
 %endif
 
+%bcond_with system_mit_krb5
 %if %{with system_mit_krb5}
 %global required_mit_krb5 1.19
-%else
-%global required_mit_krb5 1.15.1
 %endif
+
+# Added for explicit version and RHEL 7 compatibility
+%global gnutls_version 3.4.7
 
 %global _systemd_extra "Environment=KRB5CCNAME=FILE:/run/samba/krb5cc_samba"
 
@@ -189,15 +179,9 @@ Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+
 URL:            https://www.samba.org
 
-%if "x%{?pre_release}" != "x"
-Source0:        https://ftp.samba.org/pub/samba/rc/samba-%{version}%{pre_release}.tar.gz#/samba-%{version}%{pre_release}.tar.gz
-Source1:        https://ftp.samba.org/pub/samba/rc/samba-%{version}%{pre_release}.tar.asc
-%else
-Source0:        https://ftp.samba.org/pub/samba/stable/samba-%{version}.tar.gz#/samba-%{version}.tar.gz
-Source1:        https://ftp.samba.org/pub/samba/stable/samba-%{version}.tar.asc
-%endif
-# STOP USING THIS!!
-#Source2:        samba-pubkey_AA99442FB680B620.gpg
+Source0:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.gz#/samba-%{version}%{pre_release}.tar.gz
+Source1:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.asc
+Source2:        samba-pubkey_AA99442FB680B620.gpg
 
 # Red Hat specific replacement-files
 Source10:       samba.logrotate
@@ -210,6 +194,7 @@ Source201:      README.downgrade
 
 Patch0:         samba-s4u.patch
 Patch1:         samba-ctdb-etcd-reclock.patch
+Patch2:         samba-4.15.1-winexe.patch
 
 Requires(pre): /usr/sbin/groupadd
 Requires(post): systemd
@@ -260,10 +245,11 @@ BuildRequires: e2fsprogs-devel
 BuildRequires: flex
 BuildRequires: gawk
 BuildRequires: gnupg2
-%if 0%{?rhel} == 7
-BuildRequires: compat-gnutls36-devel >= 3.4.7
+%if (0%{?fedora} || 0%{?rhel} >= 8)
+BuildRequires: gnutls-devel >= %{gnutls_version}
 %else
-BuildRequires: gnutls-devel >= 3.4.7
+BuildRequires: compat-gnutls36-devel >= %{gnutls_version}
+BuildRequires: libidn2-devel
 %endif
 BuildRequires: gpgme-devel
 BuildRequires: jansson-devel
@@ -383,12 +369,12 @@ BuildRequires: bind
 BuildRequires: krb5-server >= %{required_mit_krb5}
 %endif
 BuildRequires: ldb-tools >= %{ldb_version}
-# STOP DOING THIS: it's for gpg checking the setup tarball
+# Stop requiring this for RHEL compatibility
 #BuildRequires: python%{python3_pkgversion}-gpg
 BuildRequires: python%{python3_pkgversion}-markdown
 BuildRequires: python%{python3_pkgversion}-setproctitle
 BuildRequires: python%{python3_pkgversion}-cryptography
-BuildRequires: tdb-tools
+BuildRequires: tdb-tools >= %{tdb_version}
 %endif
 
 # filter out perl requirements pulled in from examples in the docdir.
@@ -450,7 +436,7 @@ Summary: Files used by both Samba servers and clients
 BuildArch: noarch
 
 Requires(post): systemd
-%if 0%{?fedora} || 0%{?rhel} >= 8
+%if (0%{?fedora} || 0%{?rhel} >= 8)
 Recommends:     logrotate
 %endif
 
@@ -513,7 +499,7 @@ Requires: libwbclient = %{samba_depver}
 # samba-tool needs python%%{python3_pkgversion}-samba
 Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
 # samba-tool needs tdbbackup
-Requires: tdb-tools
+Requires: tdb-tools >= %{tdb_version}
 # samba-tool needs mdb_copy
 Requires: lmdb
 
@@ -987,7 +973,7 @@ Requires: coreutils
 # for ps and killall
 Requires: psmisc
 Requires: sed
-Requires: tdb-tools
+Requires: tdb-tools >= %{tdb_version}
 Requires: gawk
 # for pkill and pidof:
 Requires: procps-ng
@@ -1080,16 +1066,11 @@ Support for using an existing CEPH cluster as a mutex helper for CTDB
 
 
 %prep
-# STOP DOIN G THIS!!!! A locally stored checksum of a third party tarball
-# Is security theatre, and with GPG depends a signature chain of awkward provenance
+# STOP DOING THIS!!! It relies on a GPG key embedded in the SRPM
 #xzcat %{SOURCE0} | gpgv2 --quiet --keyring %{SOURCE2} %{SOURCE1} -
 %autosetup -n samba-%{version}%{pre_release} -p1
 
-# Use UTF8 compatible LANG
-LANG=C.UTF0
-
 %build
-echo LANG: ${LANG}
 %if %{with includelibs}
 %global _talloc_lib ,talloc,pytalloc,pytalloc-util
 %global _tevent_lib ,tevent,pytevent
@@ -1136,6 +1117,18 @@ export python_LDFLAGS="$(echo %{__global_ldflags} | sed -e 's/-Wl,-z,defs//g')"
 
 # Use the gold linker
 export LDFLAGS="%{__global_ldflags} -fuse-ld=gold"
+
+# Enable compat-gnutls36 and compat-nettle34 packages
+%if (0%{?fedora} || 0%{?rhel} >= 8)
+%else
+export PKG_CONFIG_PATH=%{_libdir}/compat-gnutls36/pkgconfig:%{_libdir}/compat-nettle34/pkgconfig
+# Avoid LANG failures
+export LANG=en_US.UTF-8
+# Avoid ./configure: line 16: python: command not found
+export PYTHON=%{__python3}
+%endif
+
+/usr/bin/pkg-config "gnutls >= %{gnutls_version}" --cflags --libs gnutls
 
 %configure \
         --enable-fhs \
@@ -1191,7 +1184,6 @@ export LDFLAGS="%{__global_ldflags} -fuse-ld=gold"
         --systemd-samba-extra=%{_systemd_extra}
 
 # Do not use %%make_build, make is just a wrapper around waf in Samba!
-# _make_verbose may not be defined
 %{__make} %{?_smp_mflags} %{?_make_verbose}
 
 pushd pidl
@@ -1880,23 +1872,6 @@ fi
 %{_libdir}/samba/libutil-setid-samba4.so
 %{_libdir}/samba/libutil-tdb-samba4.so
 
-%if %{without system_mit_krb5}
-%{_libdir}/samba/libHDB-SAMBA4-samba4.so
-%{_libdir}/samba/libasn1-samba4.so.*
-%{_libdir}/samba/libcom_err-samba4.so.*
-%{_libdir}/samba/libgssapi-samba4.so.*
-%{_libdir}/samba/libhcrypto-samba4.so.*
-%{_libdir}/samba/libhdb-samba4.so.*
-%{_libdir}/samba/libheimbase-samba4.so.*
-%{_libdir}/samba/libheimntlm-samba4.so.*
-%{_libdir}/samba/libhx509-samba4.so.*
-%{_libdir}/samba/libkdc-samba4.so.*
-%{_libdir}/samba/libkrb5-samba4.so.*
-%{_libdir}/samba/libroken-samba4.so.*
-%{_libdir}/samba/libwind-samba4.so.*
-%endif
-
-
 %if %{without libwbclient}
 %{_libdir}/samba/libwbclient.so.*
 %{_libdir}/samba/libwinbind-client-samba4.so
@@ -1995,6 +1970,22 @@ fi
 
 %if %{with system_mit_krb5}
 %{_libdir}/krb5/plugins/kdb/samba.so
+%else
+
+# Manually added for Heimdal compilaiton
+%{_libdir}/samba/libHDB-SAMBA4-samba4.so
+%{_libdir}/samba/libasn1-samba4.so.*
+%{_libdir}/samba/libcom_err-samba4.so.*
+%{_libdir}/samba/libgssapi-samba4.so.*
+%{_libdir}/samba/libhcrypto-samba4.so.*
+%{_libdir}/samba/libhdb-samba4.so.*
+%{_libdir}/samba/libheimbase-samba4.so.*
+%{_libdir}/samba/libheimntlm-samba4.so.*
+%{_libdir}/samba/libhx509-samba4.so.*
+%{_libdir}/samba/libkdc-samba4.so.*
+%{_libdir}/samba/libkrb5-samba4.so.*
+%{_libdir}/samba/libroken-samba4.so.*
+%{_libdir}/samba/libwind-samba4.so.*
 %endif
 
 %{_libdir}/samba/auth/samba4.so
@@ -2971,6 +2962,8 @@ fi
 %{python3_sitearch}/samba/tests/krb5/__pycache__/raw_testcase.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/rfc4120_constants.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/rfc4120_pyasn1.*.pyc
+%{python3_sitearch}/samba/tests/krb5/__pycache__/rodc_tests*.pyc
+%{python3_sitearch}/samba/tests/krb5/__pycache__/salt_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/simple_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/s4u_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/test_ccache.*.pyc
@@ -2990,6 +2983,8 @@ fi
 %{python3_sitearch}/samba/tests/krb5/raw_testcase.py
 %{python3_sitearch}/samba/tests/krb5/rfc4120_constants.py
 %{python3_sitearch}/samba/tests/krb5/rfc4120_pyasn1.py
+%{python3_sitearch}/samba/tests/krb5/rodc_tests.py
+%{python3_sitearch}/samba/tests/krb5/salt_tests.py
 %{python3_sitearch}/samba/tests/krb5/simple_tests.py
 %{python3_sitearch}/samba/tests/krb5/test_ccache.py
 %{python3_sitearch}/samba/tests/krb5/test_ldap.py
@@ -4136,6 +4131,21 @@ fi
 %endif
 
 %changelog
+* Wed Nov 10 2021 Nico Kadel-Garcia <nkadel@gmail.com>
+- Use Heimdal Kerberos rather than unstable MIT kerberos compatibility
+- Disable winexe for RHEL 7
+- Enable compat-gnutls36-devel for RHEL 7
+- Enable libidn2-devel for RHEL 7
+- Discard dangling whitespace and contractions in .spec file
+
+* Fri Nov 05 2021 Guenther Deschner <gdeschner@redhat.com> - 4.15.1-1
+- Fix winexe core dump
+- resolves: #2020376
+
+* Wed Oct 27 2021 Guenther Deschner <gdeschner@redhat.com> - 4.15.1-0
+- Update to Samba 4.15.1
+- resolves: #2017847
+
 * Mon Sep 20 2021 Guenther Deschner <gdeschner@redhat.com> - 4.15.0-13
 - Update to Samba 4.15.0
 - resolves: #2005817
@@ -6807,3 +6817,4 @@ fi
 - Added a number of options to smb.conf file
 - Added smbadduser command (missed from all previous RPMs) - Doooh!
 - Added smbuser file and smb.conf file updates for username map
+
