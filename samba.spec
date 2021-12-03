@@ -289,7 +289,6 @@ BuildRequires: popt-devel
 BuildRequires: python%{python3_pkgversion}-devel
 BuildRequires: python%{python3_pkgversion}-dns
 BuildRequires: python%{python3_pkgversion}-setuptools
-BuildRequires: python%{python3_pkgversion}-gpg
 BuildRequires: quota-devel
 BuildRequires: readline-devel
 %if (0%{?fedora} || 0%{?rhel} >= 8)
