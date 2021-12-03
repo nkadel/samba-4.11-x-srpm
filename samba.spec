@@ -19,6 +19,9 @@
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
 
+# Define _make_verbose if it doesn't exist (RHEL8)
+%{!?_make_verbose:%define _make_verbose V=1 VERBOSE=1}
+
 # Build with Active Directory Domain Controller support by default
 %bcond_without dc
 
@@ -120,7 +123,7 @@
 
 %global baserelease 1
 
-%global samba_version 4.15.1
+%global samba_version 4.15.2
 %global talloc_version 2.3.3
 %global tdb_version 1.4.5
 %global tevent_version 0.11.0
@@ -179,7 +182,7 @@ Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+
 URL:            https://www.samba.org
 
-Source0:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.gz#/samba-%{version}%{pre_release}.tar.gz
+Source0:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.gz
 Source1:        https://ftp.samba.org/pub/samba/samba-%{version}%{pre_release}.tar.asc
 Source2:        samba-pubkey_AA99442FB680B620.gpg
 
@@ -195,6 +198,10 @@ Source201:      README.downgrade
 Patch0:         samba-s4u.patch
 Patch1:         samba-ctdb-etcd-reclock.patch
 Patch2:         samba-4.15.1-winexe.patch
+Patch3:		      samba-4.15-fix-winbind-no-trusted-domain.patch
+Patch4:		      samba-4.15-logfile.patch
+Patch5:		      samba-4.15.2-smbclient_anonymous.patch
+Patch6:         samba-4.15-ipa-dc-schannel.patch
 
 Requires(pre): /usr/sbin/groupadd
 Requires(post): systemd
@@ -282,6 +289,7 @@ BuildRequires: popt-devel
 BuildRequires: python%{python3_pkgversion}-devel
 BuildRequires: python%{python3_pkgversion}-dns
 BuildRequires: python%{python3_pkgversion}-setuptools
+BuildRequires: python%{python3_pkgversion}-gpg
 BuildRequires: quota-devel
 BuildRequires: readline-devel
 %if (0%{?fedora} || 0%{?rhel} >= 8)
@@ -1176,6 +1184,7 @@ export PYTHON=%{__python3}
 %endif
         --with-profiling-data \
         --with-systemd \
+	--with-quotas \
         --systemd-install-services \
         --with-systemddir=/usr/lib/systemd/system \
         --systemd-smb-extra=%{_systemd_extra} \
@@ -2718,6 +2727,7 @@ fi
 %{python3_sitearch}/samba/tests/__pycache__/dns_tkey.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/dns_wildcard.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/dsdb.*.pyc
+%{python3_sitearch}/samba/tests/__pycache__/dsdb_api.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/dsdb_dns.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/dsdb_lock.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/dsdb_schema_attributes.*.pyc
@@ -2739,6 +2749,8 @@ fi
 %{python3_sitearch}/samba/tests/__pycache__/krb5_credentials.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/ldap_raw.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/ldap_referrals.*.pyc
+%{python3_sitearch}/samba/tests/__pycache__/ldap_spn.*.pyc
+%{python3_sitearch}/samba/tests/__pycache__/ldap_upn_sam_account.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/loadparm.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/libsmb.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/lsa_string.*.pyc
@@ -2910,6 +2922,7 @@ fi
 %{python3_sitearch}/samba/tests/dns_tkey.py
 %{python3_sitearch}/samba/tests/dns_wildcard.py
 %{python3_sitearch}/samba/tests/dsdb.py
+%{python3_sitearch}/samba/tests/dsdb_api.py
 %{python3_sitearch}/samba/tests/dsdb_dns.py
 %{python3_sitearch}/samba/tests/dsdb_lock.py
 %{python3_sitearch}/samba/tests/dsdb_schema_attributes.py
@@ -2950,6 +2963,7 @@ fi
 %{python3_sitearch}/samba/tests/kcc/ldif_import_export.py
 %dir %{python3_sitearch}/samba/tests/krb5
 %dir %{python3_sitearch}/samba/tests/krb5/__pycache__
+%{python3_sitearch}/samba/tests/krb5/__pycache__/alias_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/as_canonicalization_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/as_req_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/compatability_tests.*.pyc
@@ -2965,12 +2979,15 @@ fi
 %{python3_sitearch}/samba/tests/krb5/__pycache__/rodc_tests*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/salt_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/simple_tests.*.pyc
+%{python3_sitearch}/samba/tests/krb5/__pycache__/spn_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/s4u_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/test_ccache.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/test_ldap.*.pyc
+%{python3_sitearch}/samba/tests/krb5/__pycache__/test_min_domain_uid.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/test_rpc.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/test_smb.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/xrealm_tests.*.pyc
+%{python3_sitearch}/samba/tests/krb5/alias_tests.py
 %{python3_sitearch}/samba/tests/krb5/as_canonicalization_tests.py
 %{python3_sitearch}/samba/tests/krb5/as_req_tests.py
 %{python3_sitearch}/samba/tests/krb5/compatability_tests.py
@@ -2986,8 +3003,10 @@ fi
 %{python3_sitearch}/samba/tests/krb5/rodc_tests.py
 %{python3_sitearch}/samba/tests/krb5/salt_tests.py
 %{python3_sitearch}/samba/tests/krb5/simple_tests.py
+%{python3_sitearch}/samba/tests/krb5/spn_tests.py
 %{python3_sitearch}/samba/tests/krb5/test_ccache.py
 %{python3_sitearch}/samba/tests/krb5/test_ldap.py
+%{python3_sitearch}/samba/tests/krb5/test_min_domain_uid.py
 %{python3_sitearch}/samba/tests/krb5/test_rpc.py
 %{python3_sitearch}/samba/tests/krb5/test_smb.py
 %{python3_sitearch}/samba/tests/krb5/s4u_tests.py
@@ -2995,6 +3014,8 @@ fi
 %{python3_sitearch}/samba/tests/krb5_credentials.py
 %{python3_sitearch}/samba/tests/ldap_raw.py
 %{python3_sitearch}/samba/tests/ldap_referrals.py
+%{python3_sitearch}/samba/tests/ldap_spn.py
+%{python3_sitearch}/samba/tests/ldap_upn_sam_account.py 
 %{python3_sitearch}/samba/tests/libsmb.py
 %{python3_sitearch}/samba/tests/loadparm.py
 %{python3_sitearch}/samba/tests/lsa_string.py
@@ -4131,12 +4152,33 @@ fi
 %endif
 
 %changelog
+* Sat Nov 13 2021 Guenther Deschner <gdeschner@redhat.com> - 4.15.2-3
+- Fix IPA DC schannel support
+ 
+* Thu Nov 11 2021 Guenther Deschner <gdeschner@redhat.com> - 4.15.2-2
+- Fix winbind trusted domain regression
+- related: #2021716
+- Fix logfile handling
+- Fix smbclient -N failures in container setups
+ 
 * Wed Nov 10 2021 Nico Kadel-Garcia <nkadel@gmail.com>
 - Use Heimdal Kerberos rather than unstable MIT kerberos compatibility
 - Disable winexe for RHEL 7
 - Enable compat-gnutls36-devel for RHEL 7
 - Enable libidn2-devel for RHEL 7
 - Discard dangling whitespace and contractions in .spec file
+
+* Tue Nov 09 2021 Guenther Deschner <gdeschner@redhat.com> - 4.15.2-0
+- Update to Samba 4.15.2
+- resolves: #2019660, #2021711 - Security fixes for CVE-2016-2124
+- resolves: #2019672, #2021716 - Security fixes for CVE-2020-25717
+- resolves: #2019726, #2021718 - Security fixes for CVE-2020-25718
+- resolves: #2019732, #2021719 - Security fixes for CVE-2020-25719
+- resolves: #2021728, #2021729 - Security fixes for CVE-2020-25721
+- resolves: #2019764, #2021721 - Security fixes for CVE-2020-25722
+- resolves: #2021726, #2021727 - Security fixes for CVE-2021-3738
+- resolves: #2019666, #2021715 - Security fixes for CVE-2021-23192
+- resolves: #2021625
 
 * Fri Nov 05 2021 Guenther Deschner <gdeschner@redhat.com> - 4.15.1-1
 - Fix winexe core dump
