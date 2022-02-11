@@ -1,21 +1,21 @@
-From 7c4125deb1e03917f0a2353740f2c0e9e6cf87c5 Mon Sep 17 00:00:00 2001
+From 17eb98d3f8ebd0fe48e218bb03a3c0165b9b6e95 Mon Sep 17 00:00:00 2001
 From: Isaac Boukris <iboukris@gmail.com>
 Date: Fri, 27 Sep 2019 18:25:03 +0300
-Subject: [PATCH 1/3] mit-kdc: add basic loacl realm S4U support
+Subject: [PATCH 1/4] mit-kdc: add basic loacl realm S4U support
 
 Signed-off-by: Isaac Boukris <iboukris@gmail.com>
 Pair-Programmed-With: Andreas Schneider <asn@samba.org>
 ---
- source4/kdc/mit-kdb/kdb_samba_policies.c | 148 +++++++++++------------
- source4/kdc/mit_samba.c                  |  47 ++-----
+ source4/kdc/mit-kdb/kdb_samba_policies.c | 124 +++++++++++------------
+ source4/kdc/mit_samba.c                  |  47 ++-------
  source4/kdc/mit_samba.h                  |   6 +-
- 3 files changed, 86 insertions(+), 115 deletions(-)
+ 3 files changed, 71 insertions(+), 106 deletions(-)
 
 diff --git a/source4/kdc/mit-kdb/kdb_samba_policies.c b/source4/kdc/mit-kdb/kdb_samba_policies.c
-index ac9865aac60..17d4c4028b9 100644
+index 793fe366c35..22534c09974 100644
 --- a/source4/kdc/mit-kdb/kdb_samba_policies.c
 +++ b/source4/kdc/mit-kdb/kdb_samba_policies.c
-@@ -195,13 +195,17 @@ static krb5_error_code ks_verify_pac(krb5_context context,
+@@ -200,13 +200,17 @@ static krb5_error_code ks_verify_pac(krb5_context context,
  				     krb5_keyblock *krbtgt_key,
  				     krb5_timestamp authtime,
  				     krb5_authdata **tgt_auth_data,
@@ -36,7 +36,7 @@ index ac9865aac60..17d4c4028b9 100644
  
  	mit_ctx = ks_get_context(context);
  	if (mit_ctx == NULL) {
-@@ -233,41 +237,43 @@ static krb5_error_code ks_verify_pac(krb5_context context,
+@@ -238,41 +242,43 @@ static krb5_error_code ks_verify_pac(krb5_context context,
  	code = krb5_pac_parse(context,
  			      authdata[0]->contents,
  			      authdata[0]->length,
@@ -106,7 +106,7 @@ index ac9865aac60..17d4c4028b9 100644
  	if (code != 0) {
  		goto done;
  	}
-@@ -275,17 +281,22 @@ static krb5_error_code ks_verify_pac(krb5_context context,
+@@ -280,17 +286,22 @@ static krb5_error_code ks_verify_pac(krb5_context context,
  	code = mit_samba_reget_pac(mit_ctx,
  				   context,
  				   flags,
@@ -133,16 +133,15 @@ index ac9865aac60..17d4c4028b9 100644
  
  	return code;
  }
-@@ -310,7 +321,7 @@ krb5_error_code kdb_samba_db_sign_auth_data(krb5_context context,
- 					    krb5_authdata ***signed_auth_data)
- {
+@@ -319,6 +330,7 @@ krb5_error_code kdb_samba_db_sign_auth_data(krb5_context context,
+ 	krb5_authdata **pac_auth_data = NULL;
  	krb5_authdata **authdata = NULL;
--	krb5_boolean is_as_req;
+ 	krb5_boolean is_as_req;
 +	krb5_const_principal pac_client;
  	krb5_error_code code;
  	krb5_pac pac = NULL;
  	krb5_data pac_data;
-@@ -318,24 +329,21 @@ krb5_error_code kdb_samba_db_sign_auth_data(krb5_context context,
+@@ -330,11 +342,6 @@ krb5_error_code kdb_samba_db_sign_auth_data(krb5_context context,
  	krbtgt = krbtgt == NULL ? local_krbtgt : krbtgt;
  	krbtgt_key = krbtgt_key == NULL ? local_krbtgt_key : krbtgt_key;
  
@@ -151,13 +150,13 @@ index ac9865aac60..17d4c4028b9 100644
 -		return KRB5_KDB_DBTYPE_NOSUP;
 -	}
 -
--	is_as_req = ((flags & KRB5_KDB_FLAG_CLIENT_REFERRALS_ONLY) != 0);
--
--	if (is_as_req && (flags & KRB5_KDB_FLAG_INCLUDE_PAC)) {
--		code = ks_get_pac(context, client, client_key, &pac);
--		if (code != 0) {
--			goto done;
--		}
+ 	is_as_req = ((flags & KRB5_KDB_FLAG_CLIENT_REFERRALS_ONLY) != 0);
+ 
+ 	/*
+@@ -395,6 +402,16 @@ krb5_error_code kdb_samba_db_sign_auth_data(krb5_context context,
+ 		ks_client_princ = client->princ;
+ 	}
+ 
 +	/* In protocol transition, we are currently not provided with the tgt
 +	 * client name to verify the PAC, we could probably skip the name
 +	 * verification and just verify the signatures, but since we don't
@@ -165,59 +164,31 @@ index ac9865aac60..17d4c4028b9 100644
 +	if (flags & KRB5_KDB_FLAG_PROTOCOL_TRANSITION) {
 +		pac_client = server->princ;
 +	} else {
-+		pac_client = client_princ;
- 	}
- 
--	if (!is_as_req) {
-+	/* TGS request */
-+	if (!(flags & KRB5_KDB_FLAG_CLIENT_REFERRALS_ONLY)) {
- 		code = ks_verify_pac(context,
- 				     flags,
--				     client_princ,
-+				     pac_client,
- 				     client,
- 				     server,
- 				     krbtgt,
-@@ -347,14 +355,28 @@ krb5_error_code kdb_samba_db_sign_auth_data(krb5_context context,
- 		if (code != 0) {
- 			goto done;
- 		}
-+
-+		/* We require PAC as we don't support LSA_TRUST_TYPE_MIT */
-+		if (pac == NULL) {
-+			code = KRB5_KDB_DBTYPE_NOSUP;
-+			goto done;
-+		}
- 	}
- 
--	if (pac == NULL && client != NULL) {
-+	if (flags & KRB5_KDB_FLAG_PROTOCOL_TRANSITION) {
-+		krb5_pac_free(context, pac);
-+		pac = NULL;
++		pac_client = ks_client_princ;
 +	}
- 
-+	/* AS request or local realm protocol transition */
-+	if ((flags & KRB5_KDB_FLAG_CLIENT_REFERRALS_ONLY) ||
-+	    (client != NULL && (flags & KRB5_KDB_FLAG_PROTOCOL_TRANSITION))) {
- 		code = ks_get_pac(context, client, client_key, &pac);
- 		if (code != 0) {
- 			goto done;
- 		}
-+		/* We require a pac! */
-+		SMB_ASSERT(pac != NULL);
++
+ 	if (client_entry == NULL) {
+ 		client_entry = client;
  	}
+@@ -469,7 +486,7 @@ krb5_error_code kdb_samba_db_sign_auth_data(krb5_context context,
  
- 	if (pac == NULL) {
-@@ -363,7 +385,7 @@ krb5_error_code kdb_samba_db_sign_auth_data(krb5_context context,
- 	}
- 
- 	code = krb5_pac_sign(context, pac, authtime, client_princ,
+ 			code = ks_verify_pac(context,
+ 					     flags,
+-					     ks_client_princ,
++					     pac_client,
+ 					     client_entry,
+ 					     server,
+ 					     krbtgt,
+@@ -515,7 +532,7 @@ krb5_error_code kdb_samba_db_sign_auth_data(krb5_context context,
+ 		  is_as_req ? "AS-REQ" : "TGS-REQ",
+ 		  client_name);
+ 	code = krb5_pac_sign(context, pac, authtime, ks_client_princ,
 -			server_key, krbtgt_key, &pac_data);
 +			     server_key, krbtgt_key, &pac_data);
  	if (code != 0) {
  		DBG_ERR("krb5_pac_sign failed: %d\n", code);
  		goto done;
-@@ -389,11 +411,6 @@ krb5_error_code kdb_samba_db_sign_auth_data(krb5_context context,
+@@ -541,12 +558,6 @@ krb5_error_code kdb_samba_db_sign_auth_data(krb5_context context,
  					      KRB5_AUTHDATA_IF_RELEVANT,
  					      authdata,
  					      signed_auth_data);
@@ -226,10 +197,11 @@ index ac9865aac60..17d4c4028b9 100644
 -	}
 -
 -	code = 0;
- 
+-
  done:
- 	krb5_pac_free(context, pac);
-@@ -416,32 +433,13 @@ krb5_error_code kdb_samba_db_check_allowed_to_delegate(krb5_context context,
+ 	if (client_entry != NULL && client_entry != client) {
+ 		ks_free_principal(context, client_entry);
+@@ -572,32 +583,13 @@ krb5_error_code kdb_samba_db_check_allowed_to_delegate(krb5_context context,
  	 * server; -> delegating service
  	 * proxy; -> target principal
  	 */
@@ -264,10 +236,10 @@ index ac9865aac60..17d4c4028b9 100644
  
  
 diff --git a/source4/kdc/mit_samba.c b/source4/kdc/mit_samba.c
-index 0a0d3a98315..5f35c6025bf 100644
+index 27b15828468..994dfed312b 100644
 --- a/source4/kdc/mit_samba.c
 +++ b/source4/kdc/mit_samba.c
-@@ -493,7 +493,6 @@ int mit_samba_get_pac(struct mit_samba_context *smb_ctx,
+@@ -517,7 +517,6 @@ int mit_samba_get_pac(struct mit_samba_context *smb_ctx,
  krb5_error_code mit_samba_reget_pac(struct mit_samba_context *ctx,
  				    krb5_context context,
  				    int flags,
@@ -275,7 +247,7 @@ index 0a0d3a98315..5f35c6025bf 100644
  				    krb5_db_entry *client,
  				    krb5_db_entry *server,
  				    krb5_db_entry *krbtgt,
-@@ -641,7 +640,7 @@ krb5_error_code mit_samba_reget_pac(struct mit_samba_context *ctx,
+@@ -682,7 +681,7 @@ krb5_error_code mit_samba_reget_pac(struct mit_samba_context *ctx,
  								  context,
  								  *pac,
  								  server->princ,
@@ -284,7 +256,7 @@ index 0a0d3a98315..5f35c6025bf 100644
  								  deleg_blob);
  		if (!NT_STATUS_IS_OK(nt_status)) {
  			DEBUG(0, ("Update delegation info failed: %s\n",
-@@ -963,41 +962,17 @@ int mit_samba_check_client_access(struct mit_samba_context *ctx,
+@@ -1004,41 +1003,17 @@ int mit_samba_check_client_access(struct mit_samba_context *ctx,
  }
  
  int mit_samba_check_s4u2proxy(struct mit_samba_context *ctx,
@@ -337,10 +309,10 @@ index 0a0d3a98315..5f35c6025bf 100644
  
  static krb5_error_code mit_samba_change_pwd_error(krb5_context context,
 diff --git a/source4/kdc/mit_samba.h b/source4/kdc/mit_samba.h
-index ba824557bd5..5aadf206443 100644
+index 4431e82a1b2..9370ab533af 100644
 --- a/source4/kdc/mit_samba.h
 +++ b/source4/kdc/mit_samba.h
-@@ -56,7 +56,6 @@ int mit_samba_get_pac(struct mit_samba_context *smb_ctx,
+@@ -57,7 +57,6 @@ int mit_samba_get_pac(struct mit_samba_context *smb_ctx,
  krb5_error_code mit_samba_reget_pac(struct mit_samba_context *ctx,
  				    krb5_context context,
  				    int flags,
@@ -348,7 +320,7 @@ index ba824557bd5..5aadf206443 100644
  				    krb5_db_entry *client,
  				    krb5_db_entry *server,
  				    krb5_db_entry *krbtgt,
-@@ -73,9 +72,8 @@ int mit_samba_check_client_access(struct mit_samba_context *ctx,
+@@ -74,9 +73,8 @@ int mit_samba_check_client_access(struct mit_samba_context *ctx,
  				  DATA_BLOB *e_data);
  
  int mit_samba_check_s4u2proxy(struct mit_samba_context *ctx,
@@ -361,13 +333,13 @@ index ba824557bd5..5aadf206443 100644
  int mit_samba_kpasswd_change_password(struct mit_samba_context *ctx,
  				      char *pwd,
 -- 
-2.31.1
+2.33.1
 
 
-From b2ada81ed9f89f6b38fb0a9e54811408676671d0 Mon Sep 17 00:00:00 2001
+From f4fc23103f47b712baf3b4b0ebcb42d0f3f3fd42 Mon Sep 17 00:00:00 2001
 From: Isaac Boukris <iboukris@gmail.com>
 Date: Fri, 27 Sep 2019 18:35:30 +0300
-Subject: [PATCH 2/3] krb5-mit: enable S4U client support for MIT build
+Subject: [PATCH 2/4] krb5-mit: enable S4U client support for MIT build
 
 Signed-off-by: Isaac Boukris <iboukris@gmail.com>
 Pair-Programmed-With: Andreas Schneider <asn@samba.org>
@@ -378,10 +350,10 @@ Pair-Programmed-With: Andreas Schneider <asn@samba.org>
  3 files changed, 185 insertions(+), 13 deletions(-)
 
 diff --git a/lib/krb5_wrap/krb5_samba.c b/lib/krb5_wrap/krb5_samba.c
-index 20ce86c708d..e72ab3c30f7 100644
+index 61d651b4d5f..462acec90b6 100644
 --- a/lib/krb5_wrap/krb5_samba.c
 +++ b/lib/krb5_wrap/krb5_samba.c
-@@ -2568,6 +2568,191 @@ krb5_error_code smb_krb5_kinit_s4u2_ccache(krb5_context ctx,
+@@ -2699,6 +2699,191 @@ krb5_error_code smb_krb5_kinit_s4u2_ccache(krb5_context ctx,
  
  	return 0;
  }
@@ -574,7 +546,7 @@ index 20ce86c708d..e72ab3c30f7 100644
  
  #if !defined(HAVE_KRB5_MAKE_PRINCIPAL) && defined(HAVE_KRB5_BUILD_PRINCIPAL_ALLOC_VA)
 diff --git a/lib/krb5_wrap/krb5_samba.h b/lib/krb5_wrap/krb5_samba.h
-index 9550447b2c5..ee3931c7544 100644
+index a66b7465530..c8573f52bd9 100644
 --- a/lib/krb5_wrap/krb5_samba.h
 +++ b/lib/krb5_wrap/krb5_samba.h
 @@ -252,7 +252,6 @@ krb5_error_code smb_krb5_kinit_password_ccache(krb5_context ctx,
@@ -639,66 +611,23 @@ index 544d9d853cc..c14d8c72d8c 100644
  				ret = smb_krb5_kinit_password_ccache(smb_krb5_context->krb5_context,
  								     ccache,
 -- 
-2.31.1
+2.33.1
 
 
-From bc5e97074739d29320a3e890575353fbfd452047 Mon Sep 17 00:00:00 2001
+From 48d73d552f2fbbdb07bd9aff4d0294883b70417f Mon Sep 17 00:00:00 2001
 From: Isaac Boukris <iboukris@gmail.com>
 Date: Sat, 19 Sep 2020 14:16:20 +0200
-Subject: [PATCH 3/3] wip: for canonicalization with new MIT kdc code
+Subject: [PATCH 3/4] wip: for canonicalization with new MIT kdc code
 
 ---
- source4/heimdal/lib/hdb/hdb.h | 1 +
- source4/kdc/db-glue.c         | 8 ++++++--
- source4/kdc/mit_samba.c       | 3 +++
- source4/kdc/sdb.h             | 1 +
- 4 files changed, 11 insertions(+), 2 deletions(-)
+ source4/kdc/mit_samba.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/source4/heimdal/lib/hdb/hdb.h b/source4/heimdal/lib/hdb/hdb.h
-index 6a09ecb6fe1..bc5211fef35 100644
---- a/source4/heimdal/lib/hdb/hdb.h
-+++ b/source4/heimdal/lib/hdb/hdb.h
-@@ -63,6 +63,7 @@ enum hdb_lockop{ HDB_RLOCK, HDB_WLOCK };
- #define HDB_F_ALL_KVNOS		2048	/* we want all the keys, live or not */
- #define HDB_F_FOR_AS_REQ	4096	/* fetch is for a AS REQ */
- #define HDB_F_FOR_TGS_REQ	8192	/* fetch is for a TGS REQ */
-+#define HDB_F_FORCE_CANON	16384	/* force canonicalition */
- 
- /* hdb_capability_flags */
- #define HDB_CAP_F_HANDLE_ENTERPRISE_PRINCIPAL 1
-diff --git a/source4/kdc/db-glue.c b/source4/kdc/db-glue.c
-index a560a1cd84b..c27b6a8ef4c 100644
---- a/source4/kdc/db-glue.c
-+++ b/source4/kdc/db-glue.c
-@@ -916,17 +916,21 @@ static krb5_error_code samba_kdc_message2entry(krb5_context context,
- 			}
- 		}
- 
--	} else if (ent_type == SAMBA_KDC_ENT_TYPE_ANY && principal == NULL) {
-+	} else if (ent_type == SAMBA_KDC_ENT_TYPE_ANY && principal == NULL) { // was this supposed to be || ?
- 		ret = smb_krb5_make_principal(context, &entry_ex->entry.principal, lpcfg_realm(lp_ctx), samAccountName, NULL);
- 		if (ret) {
- 			krb5_clear_error_message(context);
- 			goto out;
- 		}
--	} else if ((flags & SDB_F_CANON) && (flags & SDB_F_FOR_AS_REQ)) {
-+	} else if (((flags & SDB_F_CANON) && (flags & SDB_F_FOR_AS_REQ)) || (flags & SDB_F_FORCE_CANON)){
- 		/*
- 		 * SDB_F_CANON maps from the canonicalize flag in the
- 		 * packet, and has a different meaning between AS-REQ
- 		 * and TGS-REQ.  We only change the principal in the AS-REQ case
-+		 *
-+		 * The SDB_F_FORCE_CANON if for the new MIT kdc code that wants
-+		 * the canonical name in all lookups, and takes care to canonicalize
-+		 * only when appropriate.
- 		 */
- 		ret = smb_krb5_make_principal(context, &entry_ex->entry.principal, lpcfg_realm(lp_ctx), samAccountName, NULL);
- 		if (ret) {
 diff --git a/source4/kdc/mit_samba.c b/source4/kdc/mit_samba.c
-index 5f35c6025bf..20ee2c2b89e 100644
+index 994dfed312b..9d039e5601b 100644
 --- a/source4/kdc/mit_samba.c
 +++ b/source4/kdc/mit_samba.c
-@@ -224,6 +224,9 @@ int mit_samba_get_principal(struct mit_samba_context *ctx,
+@@ -232,6 +232,9 @@ int mit_samba_get_principal(struct mit_samba_context *ctx,
  	if (kflags & KRB5_KDB_FLAG_CANONICALIZE) {
  		sflags |= SDB_F_CANON;
  	}
@@ -708,18 +637,34 @@ index 5f35c6025bf..20ee2c2b89e 100644
  	if (kflags & (KRB5_KDB_FLAG_CLIENT_REFERRALS_ONLY |
  		      KRB5_KDB_FLAG_INCLUDE_PAC)) {
  		/*
-diff --git a/source4/kdc/sdb.h b/source4/kdc/sdb.h
-index c929acccce6..a9115ec23d7 100644
---- a/source4/kdc/sdb.h
-+++ b/source4/kdc/sdb.h
-@@ -116,6 +116,7 @@ struct sdb_entry_ex {
- #define SDB_F_KVNO_SPECIFIED	128	/* we want a particular KVNO */
- #define SDB_F_FOR_AS_REQ	4096	/* fetch is for a AS REQ */
- #define SDB_F_FOR_TGS_REQ	8192	/* fetch is for a TGS REQ */
-+#define SDB_F_FORCE_CANON	16384	/* force canonicalition */
- 
- void sdb_free_entry(struct sdb_entry_ex *e);
- void free_sdb_entry(struct sdb_entry *s);
 -- 
-2.31.1
+2.33.1
+
+
+From f5f54026d151f6d899e8ff52d8829a2f9cf57f25 Mon Sep 17 00:00:00 2001
+From: Andreas Schneider <asn@samba.org>
+Date: Tue, 21 Dec 2021 12:17:11 +0100
+Subject: [PATCH 4/4] s4:kdc: Also cannoicalize krbtgt principals when
+ enforcing canonicalization
+
+Signed-off-by: Andreas Schneider <asn@samba.org>
+---
+ source4/kdc/db-glue.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/source4/kdc/db-glue.c b/source4/kdc/db-glue.c
+index 8d17038cfe6..77c0c0e4746 100644
+--- a/source4/kdc/db-glue.c
++++ b/source4/kdc/db-glue.c
+@@ -946,7 +946,7 @@ static krb5_error_code samba_kdc_message2entry(krb5_context context,
+ 	if (ent_type == SAMBA_KDC_ENT_TYPE_KRBTGT) {
+ 		p->is_krbtgt = true;
+ 
+-		if (flags & (SDB_F_CANON)) {
++		if (flags & (SDB_F_CANON|SDB_F_FORCE_CANON)) {
+ 			/*
+ 			 * When requested to do so, ensure that the
+ 			 * both realm values in the principal are set
+-- 
+2.33.1
 
