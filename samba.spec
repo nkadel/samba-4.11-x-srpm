@@ -137,7 +137,6 @@
 %global tdb_version 1.4.6
 %global tevent_version 0.11.0
 %global ldb_version 2.5.0
-# This should be rc1 or nil
 %global pre_release rc3
 
 %global samba_release %{baserelease}
@@ -4167,10 +4166,17 @@ fi
 %endif
 
 %changelog
+<<<<<<< HEAD
 * Wed Feb 16 2022 Nico Kadel-Garcia <nkadel@gmaill.ccccom>
 - Update to 4.16.0rc3
 
 * Sun Feb 6 2022 Nico Kadel-Garcia <nkadel@gmaill.ccccom>
+=======
+* Sun Mar 13 2022 Nico Kadel-Garcia <nkadel@gmaill.com>
+- Update to 4.16.0rc5
+
+* Sun Feb 6 2022 Nico Kadel-Garcia <nkadel@gmaill.com>
+>>>>>>> nkadel-4.16.0-rc5
 - Add BuildRequires perl(JSON)
 - Add system-mit-krb5 option to use Heimdal kkerberos
 
