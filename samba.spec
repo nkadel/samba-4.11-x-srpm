@@ -137,7 +137,7 @@
 %global tdb_version 1.4.6
 %global tevent_version 0.11.0
 %global ldb_version 2.5.0
-%global pre_release rc3
+%global pre_release %{nil}
 
 %global samba_release %{baserelease}
 %if "x%{?pre_release}" != "x"
@@ -187,8 +187,8 @@ Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+
 URL:            https://www.samba.org
 
-Source0:        https://ftp.samba.org/pub/samba/%{?pre_release:rc/}samba-%{version}%{pre_release}.tar.gz#/samba-%{version}%{pre_release}.tar.gz
-Source1:        https://ftp.samba.org/pub/samba/%{?pre_release:rc/}samba-%{version}%{pre_release}.tar.asc
+Source0:        https://ftp.samba.org/pub/samba/%{?pre_release:/}samba-%{version}%{pre_release}.tar.gz#/samba-%{version}%{pre_release}.tar.gz
+Source1:        https://ftp.samba.org/pub/samba/%{?pre_release:/}samba-%{version}%{pre_release}.tar.asc
 Source2:        samba-pubkey_AA99442FB680B620.gpg
 
 # Red Hat specific replacement-files
@@ -4166,17 +4166,13 @@ fi
 %endif
 
 %changelog
-<<<<<<< HEAD
-* Wed Feb 16 2022 Nico Kadel-Garcia <nkadel@gmaill.ccccom>
-- Update to 4.16.0rc3
+* Wed Mar 23 2022 Nico Kadel-Garcia <nkadel@gmail.com>
+- Update to 4.16.0
 
-* Sun Feb 6 2022 Nico Kadel-Garcia <nkadel@gmaill.ccccom>
-=======
-* Sun Mar 13 2022 Nico Kadel-Garcia <nkadel@gmaill.com>
+* Sun Mar 13 2022 Nico Kadel-Garcia <nkadel@gmail.com>
 - Update to 4.16.0rc5
 
-* Sun Feb 6 2022 Nico Kadel-Garcia <nkadel@gmaill.com>
->>>>>>> nkadel-4.16.0-rc5
+* Sun Feb 6 2022 Nico Kadel-Garcia <nkadel@gmail.com>
 - Add BuildRequires perl(JSON)
 - Add system-mit-krb5 option to use Heimdal kkerberos
 
