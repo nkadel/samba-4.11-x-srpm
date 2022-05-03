@@ -132,7 +132,7 @@
 
 %global baserelease 1
 
-%global samba_version 4.16.0
+%global samba_version 4.16.1
 %global talloc_version 2.3.3
 %global tdb_version 1.4.6
 %global tevent_version 0.11.0
@@ -4166,6 +4166,9 @@ fi
 %endif
 
 %changelog
+* Mon May 2 2022 Nico Kadel-Garcia <nkadel@gmail.com>
+- Update to 4.16.1
+
 * Wed Mar 23 2022 Nico Kadel-Garcia <nkadel@gmail.com>
 - Update to 4.16.0
 
