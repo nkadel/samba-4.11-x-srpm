@@ -130,12 +130,14 @@
 
 %define samba_requires_eq()  %(LC_ALL="C" echo '%*' | xargs -r rpm -q --qf 'Requires: %%{name} = %%{epoch}:%%{version}\\n' | sed -e 's/ (none):/ /' -e 's/ 0:/ /' | grep -v "is not")
 
-%global baserelease 1
+# Update to 102 to exceed RHEL and Fedora published releases
+#%%global baserelease 2
+%global baserelease 102
 
 %global samba_version 4.16.1
 %global talloc_version 2.3.3
 %global tdb_version 1.4.6
-%global tevent_version 0.11.0
+%global tevent_version 0.12.0
 %global ldb_version 2.5.0
 %global pre_release %{nil}
 
@@ -4167,7 +4169,7 @@ fi
 
 %changelog
 * Mon May 2 2022 Nico Kadel-Garcia <nkadel@gmail.com>
-- Update to 4.16.1
+- Update to 4.16.1-102
 
 * Wed Mar 23 2022 Nico Kadel-Garcia <nkadel@gmail.com>
 - Update to 4.16.0
