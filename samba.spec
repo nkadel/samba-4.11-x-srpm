@@ -135,10 +135,10 @@
 %global baserelease 102
 
 %global samba_version 4.16.2
-%global talloc_version 2.3.3
-%global tdb_version 1.4.6
-%global tevent_version 0.12.0
-%global ldb_version 2.5.0
+%global talloc_version 2.3.4
+%global tdb_version 1.4.7
+%global tevent_version 0.12.1
+%global ldb_version 2.5.1
 %global pre_release %{nil}
 
 %global samba_release %{baserelease}
@@ -283,9 +283,9 @@ BuildRequires: perl(Archive::Tar)
 BuildRequires: perl(JSON)
 BuildRequires: perl(Test::More)
 BuildRequires: popt-devel
-BuildRequires: python3-devel
-BuildRequires: python3-dns
-BuildRequires: python3-setuptools
+BuildRequires: python%{python3_pkgversion}-devel
+BuildRequires: python%{python3_pkgversion}-dns
+BuildRequires: python%{python3_pkgversion}-setuptools
 BuildRequires: quota-devel
 BuildRequires: readline-devel
 BuildRequires: rpcgen
@@ -320,14 +320,14 @@ BuildRequires: pcp-libs-devel
 BuildRequires: librados-devel
 %endif
 %if %{with etcd_mutex}
-BuildRequires: python3-etcd
+BuildRequires: python%{python3_pkgversion}-etcd
 %endif
 
 %if %{with dc} || %{with testsuite}
-# Add python3-iso8601 to avoid that the
+# Add python%{python3_pkgversion}-iso8601 to avoid that the
 # version in Samba is being packaged
-BuildRequires: python3-iso8601
-BuildRequires: python3-pyasn1 >= 0.4.8
+BuildRequires: python%{python3_pkgversion}-iso8601
+BuildRequires: python%{python3_pkgversion}-pyasn1 >= 0.4.8
 
 BuildRequires: bind
 %if %{with system_mit_krb5}
@@ -344,17 +344,17 @@ BuildRequires: perl(Parse::Yapp)
 
 %if %{without includelibs}
 BuildRequires: libtalloc-devel >= %{talloc_version}
-BuildRequires: python3-talloc-devel >= %{talloc_version}
+BuildRequires: python%{python3_pkgversion}-talloc-devel >= %{talloc_version}
 
 BuildRequires: libtevent-devel >= %{tevent_version}
-BuildRequires: python3-tevent >= %{tevent_version}
+BuildRequires: python%{python3_pkgversion}-tevent >= %{tevent_version}
 
 BuildRequires: libtdb-devel >= %{tdb_version}
-BuildRequires: python3-tdb >= %{tdb_version}
+BuildRequires: python%{python3_pkgversion}-tdb >= %{tdb_version}
 
 BuildRequires: libldb-devel >= %{ldb_version}
-BuildRequires: python3-ldb >= %{ldb_version}
-BuildRequires: python3-ldb-devel >= %{ldb_version}
+BuildRequires: python%{python3_pkgversion}-ldb >= %{ldb_version}
+BuildRequires: python%{python3_pkgversion}-ldb-devel >= %{ldb_version}
 %endif
 
 %if %{with includelibs} || %{with testsuite}
@@ -370,10 +370,10 @@ BuildRequires: bind
 BuildRequires: krb5-server >= %{required_mit_krb5}
 %endif
 BuildRequires: ldb-tools
-BuildRequires: python3-gpg
-BuildRequires: python3-markdown
-BuildRequires: python3-setproctitle
-BuildRequires: python3-cryptography
+BuildRequires: python%{python3_pkgversion}-gpg
+BuildRequires: python%{python3_pkgversion}-markdown
+BuildRequires: python%{python3_pkgversion}-setproctitle
+BuildRequires: python%{python3_pkgversion}-cryptography
 BuildRequires: tdb-tools
 %endif
 
@@ -496,8 +496,8 @@ Requires: samba-libs = %{samba_depver}
 Requires: libwbclient = %{samba_depver}
 %endif
 
-# samba-tool needs python3-samba
-Requires: python3-%{name} = %{samba_depver}
+# samba-tool needs python%{python3_pkgversion}-samba
+Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
 # samba-tool needs tdbbackup
 Requires: tdb-tools
 %if %{with dc}
@@ -527,14 +527,14 @@ Requires: libwbclient = %{samba_depver}
 %endif
 
 Requires: ldb-tools
-Requires: python3-setproctitle
+Requires: python%{python3_pkgversion}-setproctitle
 # Force using libldb version to be the same as build version
 # Otherwise LDB modules will not be loaded and samba-tool will fail
 # See bug 1507420
 %samba_requires_eq libldb
 
-Requires: python3-%{name} = %{samba_depver}
-Requires: python3-%{name}-dc = %{samba_depver}
+Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
+Requires: python%{python3_pkgversion}-%{name}-dc = %{samba_depver}
 %if %{with system_mit_krb5}
 Requires: krb5-server >= %{required_mit_krb5}
 %endif
@@ -735,17 +735,17 @@ library.
 %endif
 
 ### PYTHON3
-%package -n python3-%{name}
+%package -n python%{python3_pkgversion}-%{name}
 Summary: Samba Python3 libraries
 Requires: %{name} = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
-Requires: python3-talloc
-Requires: python3-tevent
-Requires: python3-tdb
-Requires: python3-ldb
-Requires: python3-dns
+Requires: python%{python3_pkgversion}-talloc
+Requires: python%{python3_pkgversion}-tevent
+Requires: python%{python3_pkgversion}-tdb
+Requires: python%{python3_pkgversion}-ldb
+Requires: python%{python3_pkgversion}-dns
 %if %{with libsmbclient}
 Requires: libsmbclient = %{samba_depver}
 %endif
@@ -755,34 +755,34 @@ Requires: libwbclient = %{samba_depver}
 
 Provides: bundled(libreplace)
 
-%description -n python3-%{name}
-The python3-%{name} package contains the Python 3 libraries needed by programs
+%description -n python%{python3_pkgversion}-%{name}
+The python%{python3_pkgversion}-%{name} package contains the Python 3 libraries needed by programs
 that use SMB, RPC and other Samba provided protocols in Python 3 programs.
 
-%package -n python3-%{name}-devel
+%package -n python%{python3_pkgversion}-%{name}-devel
 Summary: Samba python devel files
-Requires: python3-%{name} = %{samba_depver}
+Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
 
-%description -n python3-%{name}-devel
-The python3-%{name}-devel package contains the Python 3 devel files.
+%description -n python%{python3_pkgversion}-%{name}-devel
+The python%{python3_pkgversion}-%{name}-devel package contains the Python 3 devel files.
 
-%package -n python3-samba-test
+%package -n python%{python3_pkgversion}-samba-test
 Summary: Samba Python libraries
-Requires: python3-%{name} = %{samba_depver}
+Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
 
-%description -n python3-samba-test
-The python3-%{name}-test package contains the Python libraries used by the test suite of Samba.
+%description -n python%{python3_pkgversion}-samba-test
+The python%{python3_pkgversion}-%{name}-test package contains the Python libraries used by the test suite of Samba.
 If you want to run full set of Samba tests, you need to install this package.
 
 %if %{with dc} || %{with testsuite}
-%package -n python3-samba-dc
+%package -n python%{python3_pkgversion}-samba-dc
 Summary: Samba Python libraries for Samba AD
-Requires: python3-%{name} = %{samba_depver}
+Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
 
-%description -n python3-samba-dc
-The python3-%{name}-dc package contains the Python libraries needed by programs
+%description -n python%{python3_pkgversion}-samba-dc
+The python%{python3_pkgversion}-%{name}-dc package contains the Python libraries needed by programs
 to manage Samba AD.
 %endif
 
@@ -823,7 +823,7 @@ Requires: libsmbclient = %{samba_depver}
 %if %{with libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
-Requires: python3-%{name} = %{samba_depver}
+Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
 Requires: perl(Archive::Tar)
 
 Provides: samba4-test = %{samba_depver}
@@ -1044,7 +1044,7 @@ Performance Co-Pilot (PCP) support for CTDB
 %package -n ctdb-etcd-mutex
 Summary: CTDB ETCD mutex helper
 Requires: ctdb = %{samba_depver}
-Requires: python3-etcd
+Requires: python%{python3_pkgversion}-etcd
 
 %description -n ctdb-etcd-mutex
 Support for using an existing ETCD cluster as a mutex helper for CTDB
@@ -2358,7 +2358,7 @@ fi
 %attr(644,root,root) %{_mandir}/man3/Parse::Pidl::Wireshark::NDR.3pm*
 
 ### PYTHON3
-%files -n python3-%{name}
+%files -n python%{python3_pkgversion}-%{name}
 %dir %{python3_sitearch}/samba/
 %{python3_sitearch}/samba/__init__.py
 %dir %{python3_sitearch}/samba/__pycache__
@@ -2641,12 +2641,12 @@ fi
 #endif with includelibs
 %endif
 
-%files -n python3-%{name}-devel
+%files -n python%{python3_pkgversion}-%{name}-devel
 %{_libdir}/libsamba-policy.*.so
 %{_libdir}/pkgconfig/samba-policy.*.pc
 
 %if %{with dc} || %{with testsuite}
-%files -n python3-%{name}-dc
+%files -n python%{python3_pkgversion}-%{name}-dc
 %{python3_sitearch}/samba/samdb.py
 %{python3_sitearch}/samba/schema.py
 
@@ -2704,7 +2704,7 @@ fi
 %{python3_sitearch}/samba/uptodateness.py
 %endif
 
-%files -n python3-%{name}-test
+%files -n python%{python3_pkgversion}-%{name}-test
 %dir %{python3_sitearch}/samba/tests
 %{python3_sitearch}/samba/tests/__init__.py
 %dir %{python3_sitearch}/samba/tests/__pycache__
@@ -4168,18 +4168,57 @@ fi
 %endif
 
 %changelog
-* Mon May 2 2022 Nico Kadel-Garcia <nkadel@gmail.com>
-- Update to 4.16.1-102
-
-* Wed Mar 23 2022 Nico Kadel-Garcia <nkadel@gmail.com>
-- Update to 4.16.0
-
-* Sun Mar 13 2022 Nico Kadel-Garcia <nkadel@gmail.com>
-- Update to 4.16.0rc5
-
-* Sun Feb 6 2022 Nico Kadel-Garcia <nkadel@gmail.com>
+* Fri Jun 17 2022 Nico Kadel-Garcia <nkadel@gmail.com>
 - Add BuildRequires perl(JSON)
 - Add system-mit-krb5 option to use Heimdal kkerberos
+
+* Wed Jun 15 2022 Python Maint <python-maint@redhat.com> - 2:4.16.2-1
+- Rebuilt for Python 3.11
+
+* Mon Jun 13 2022 Guenther Deschner <gdeschner@redhat.com> - 4.16.2-0
+- Update to Samba 4.16.2
+- resolves: #2096167
+
+* Wed Jun 08 2022 Andreas Schneider <asn@redhat.com> - 4.16.1-7
+- resolves: rhbz#2093833 - Remove weak dependency for logrotate for CentOS/RHEL
+
+* Tue May 31 2022 Jitka Plesnikova <jplesnik@redhat.com> - 2:4.16.1-6
+- Perl 5.36 rebuild
+
+* Fri May 13 2022 Pavel Filipenský <pfilipen@redhat.com> - 4.16.1-5
+- Fix rpminspect abidiff
+
+* Fri May 06 2022 Pavel Filipenský <pfilipen@redhat.com> - 4.16.1-2
+- Update requires for packages
+
+* Thu May 05 2022 Tomas Popela <tpopela@redhat.com> - 4.16.1-1
+- Do not require full systemd for tmp files handling in samba-common
+
+* Mon May 02 2022 Pavel Filipenský <pfilipen@redhat.com> - 4.16.1-0
+- Update to Samba 4.16.1
+- resolves: #2080915
+
+* Fri Mar 25 2022 Sandro Mani <manisandro@gmail.com> - 2:4.16.0-7
+- Rebuild with mingw-gcc-12
+
+* Tue Mar 22 2022 Guenther Deschner <gdeschner@redhat.com> - 4.16.0-6
+- Update to Samba 4.16.0
+- resolves: #2066290
+
+* Wed Mar 09 2022 Guenther Deschner <gdeschner@redhat.com> - 4.16.0-0.5.rc5
+- Update to Samba 4.16.0rc5
+- resolves: #2042518
+
+* Tue Mar 01 2022 Pavel Filipenský <pfilipen@redhat.com> - 4.16.0-0.4.rc4
+- Update to Samba 4.16.0rc4
+- resolves: #2042518
+
+* Wed Feb 23 2022 Andreas Schneider <asn@redhat.com> - 4.16.0-0.3.rc3
+- resolves: rhbz#2036443 - Fix samba-tool on builds with samba-dc
+
+* Tue Feb 15 2022 Pavel Filipenský <pfilipen@redhat.com> - 4.16.0rc3
+- Update to Samba 4.16.0rc3
+- resolves: #2042518
 
 * Tue Feb 01 2022 Pavel Filipenský <pfilipen@redhat.com> - 4.16.0rc2
 - Update to Samba 4.16.0rc2
@@ -6908,4 +6947,3 @@ fi
 - Added a number of options to smb.conf file
 - Added smbadduser command (missed from all previous RPMs) - Doooh!
 - Added smbuser file and smb.conf file updates for username map
-
