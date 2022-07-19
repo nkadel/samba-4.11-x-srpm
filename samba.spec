@@ -4170,6 +4170,10 @@ fi
 %endif
 
 %changelog
+* Tue Jul 19 2022 Nico Kadel-Garcia <nkadel@gmail.com>- 4.16.3
+- Update to 4.16.3
+- add dlz_bind9_18.so file
+
 * Fri Jun 17 2022 Nico Kadel-Garcia <nkadel@gmail.com>
 - Add BuildRequires perl(JSON)
 - Add system-mit-krb5 option to use Heimdal kkerberos
