@@ -1,7 +1,7 @@
 # The testsuite is disabled by default.
 #
 # To build and run the tests use:
-#
+
 # fedpkg local --with testsuite
 # or
 # rpmbuild --rebuild --with testsuite samba.src.rpm
@@ -134,7 +134,7 @@
 #%%global baserelease 2
 %global baserelease 102
 
-%global samba_version 4.16.2
+%global samba_version 4.16.3
 %global talloc_version 2.3.4
 %global tdb_version 1.4.7
 %global tevent_version 0.12.1
@@ -283,6 +283,7 @@ BuildRequires: perl(Archive::Tar)
 BuildRequires: perl(JSON)
 BuildRequires: perl(Test::More)
 BuildRequires: popt-devel
+BuildRequires: python%{python3_pkgversion}
 BuildRequires: python%{python3_pkgversion}-devel
 BuildRequires: python%{python3_pkgversion}-dns
 BuildRequires: python%{python3_pkgversion}-setuptools
@@ -2107,6 +2108,7 @@ fi
 %{_libdir}/samba/bind9/dlz_bind9_12.so
 %{_libdir}/samba/bind9/dlz_bind9_14.so
 %{_libdir}/samba/bind9/dlz_bind9_16.so
+%{_libdir}/samba/bind9/dlz_bind9_18.so
 #endif with dc
 %endif
 
