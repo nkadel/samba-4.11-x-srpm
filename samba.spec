@@ -132,12 +132,12 @@
 
 # Update to 102 to exceed RHEL and Fedora published releases
 #%%global baserelease 2
-%global baserelease 102
+%global baserelease 103
 
 %global samba_version 4.16.3
 %global talloc_version 2.3.4
 %global tdb_version 1.4.7
-%global tevent_version 0.12.1
+%global tevent_version 0.13.0
 %global ldb_version 2.5.1
 %global pre_release %{nil}
 
@@ -325,7 +325,7 @@ BuildRequires: python%{python3_pkgversion}-etcd
 %endif
 
 %if %{with dc} || %{with testsuite}
-# Add python%{python3_pkgversion}-iso8601 to avoid that the
+# Add python%%{python3_pkgversion}-iso8601 to avoid that the
 # version in Samba is being packaged
 BuildRequires: python%{python3_pkgversion}-iso8601
 BuildRequires: python%{python3_pkgversion}-pyasn1 >= 0.4.8
@@ -497,7 +497,7 @@ Requires: samba-libs = %{samba_depver}
 Requires: libwbclient = %{samba_depver}
 %endif
 
-# samba-tool needs python%{python3_pkgversion}-samba
+# samba-tool needs python%%{python3_pkgversion}-samba
 Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
 # samba-tool needs tdbbackup
 Requires: tdb-tools
