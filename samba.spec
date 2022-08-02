@@ -132,13 +132,13 @@
 
 # Update to 102 to exceed RHEL and Fedora published releases
 #%%global baserelease 2
-%global baserelease 103
+%global baserelease 104
 
-%global samba_version 4.16.3
+%global samba_version 4.16.4
 %global talloc_version 2.3.4
 %global tdb_version 1.4.7
 %global tevent_version 0.13.0
-%global ldb_version 2.5.1
+%global ldb_version 2.5.2
 %global pre_release %{nil}
 
 %global samba_release %{baserelease}
@@ -202,7 +202,7 @@ Source14:       samba.pamd
 
 Source201:      README.downgrade
 
-Patch0:         samba-s4u.patch
+#Patch0:         samba-s4u.patch
 
 Requires(pre): /usr/sbin/groupadd
 Requires(post): systemd
