@@ -132,7 +132,7 @@
 
 # Update to 102 to exceed RHEL and Fedora published releases
 #%%global baserelease 2
-%global baserelease 104
+%global baserelease 105
 
 %global samba_version 4.16.4
 %global talloc_version 2.3.4
@@ -2984,6 +2984,7 @@ fi
 %{python3_sitearch}/samba/tests/krb5/__pycache__/kdc_base_test.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/kdc_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/kdc_tgs_tests.*.pyc
+%{python3_sitearch}/samba/tests/krb5/__pycache__/kpasswd_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/ms_kile_client_principal_lookup_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/pac_align_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/raw_testcase.*.pyc
@@ -3010,6 +3011,7 @@ fi
 %{python3_sitearch}/samba/tests/krb5/kdc_base_test.py
 %{python3_sitearch}/samba/tests/krb5/kdc_tests.py
 %{python3_sitearch}/samba/tests/krb5/kdc_tgs_tests.py
+%{python3_sitearch}/samba/tests/krb5/kpasswd_tests.py
 %{python3_sitearch}/samba/tests/krb5/ms_kile_client_principal_lookup_tests.py
 %{python3_sitearch}/samba/tests/krb5/pac_align_tests.py
 %{python3_sitearch}/samba/tests/krb5/raw_testcase.py
@@ -4170,6 +4172,10 @@ fi
 %endif
 
 %changelog
+* Sat Aug 6 2022 Nico Kadel-Garcia <nkadel@gmail.com>- 4.16.4
+- Update to 4.16.4
+- Add kpasswd_test files
+
 * Tue Jul 19 2022 Nico Kadel-Garcia <nkadel@gmail.com>- 4.16.3
 - Update to 4.16.3
 - add dlz_bind9_18.so file
