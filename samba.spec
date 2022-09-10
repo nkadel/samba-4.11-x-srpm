@@ -1,7 +1,7 @@
 # The testsuite is disabled by default.
 #
 # To build and run the tests use:
-
+#
 # fedpkg local --with testsuite
 # or
 # rpmbuild --rebuild --with testsuite samba.src.rpm
@@ -67,7 +67,7 @@
 
 # Build vfs_gluster module by default on 64bit Fedora
 %global is_rhgs 0
-%if "%{dist}" == ".el8rhgs" || "%{dist}" == ".el9rhgs"
+%if "%{dist}" == ".el7rhgs" || "%{dist}" == ".el8rhgs"
 %global is_rhgs 1
 %endif
 
@@ -130,20 +130,50 @@
 
 %define samba_requires_eq()  %(LC_ALL="C" echo '%*' | xargs -r rpm -q --qf 'Requires: %%{name} = %%{epoch}:%%{version}\\n' | sed -e 's/ (none):/ /' -e 's/ 0:/ /' | grep -v "is not")
 
-# Update to 102 to exceed RHEL and Fedora published releases
-#%%global baserelease 2
+%global samba_version 4.17.0
+# Update to 105 to exceed RHEL and Fedora published releases
+#%%global baserelease 8
 %global baserelease 105
-
-%global samba_version 4.16.4
-%global talloc_version 2.3.4
-%global tdb_version 1.4.7
-%global tevent_version 0.13.0
-%global ldb_version 2.5.2
-%global pre_release %{nil}
+# This should be rc1 or %%nil
+#%%global pre_release %%{nil}
+%global pre_release rc5
 
 %global samba_release %{baserelease}
 %if "x%{?pre_release}" != "x"
 %global samba_release 0.%{baserelease}.%{pre_release}
+%endif
+
+# If one of those versions change, we need to make sure we rebuilt or adapt
+# projects comsuming those. This is e.g. sssd, openchange, evolution-mapi, ...
+%global libdcerpc_binding_so_version 0
+%global libdcerpc_server_core_so_version 0
+%global libdcerpc_so_version 0
+%global libndr_krb5pac_so_version 0
+%global libndr_nbt_so_version 0
+%global libndr_so_version 3
+%global libndr_standard_so_version 0
+%global libnetapi_so_version 1
+%global libsamba_credentials_so_version 1
+%global libsamba_errors_so_version 1
+%global libsamba_hostconfig_so_version 0
+%global libsamba_passdb_so_version 0
+%global libsamba_util_so_version 0
+%global libsamdb_so_version 0
+%global libsmbconf_so_version 0
+%global libsmbldap_so_version 2
+%global libtevent_util_so_version 0
+
+%global libsmbclient_so_version 0
+%global libwbclient_so_version 0
+
+%global talloc_version 2.3.4
+%global tdb_version 1.4.7
+%global tevent_version 0.13.0
+%global ldb_version 2.6.1
+
+%bcond_with system_mit_krb5
+%if %{with system_mit_krb5}
+%global required_mit_krb5 1.19
 %endif
 
 # This is a network daemon, do a hardened build
@@ -160,11 +190,6 @@
 %global libwbc_alternatives_suffix %nil
 %if 0%{?__isa_bits} == 64
 %global libwbc_alternatives_suffix -64
-%endif
-
-%bcond_with system_mit_krb5
-%if %{with system_mit_krb5}
-%global required_mit_krb5 1.19
 %endif
 
 %global _systemd_extra "Environment=KRB5CCNAME=FILE:/run/samba/krb5cc_samba"
@@ -189,9 +214,9 @@ Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+
 URL:            https://www.samba.org
 
-Source0:        https://download.samba.org/pub/samba/%{?pre_release:/}samba-%{version}%{pre_release}.tar.gz#/samba-%{version}%{pre_release}.tar.gz
-Source1:        https://download.samba.org/pub/samba/%{?pre_release:/}samba-%{version}%{pre_release}.tar.asc
-Source2:        samba-pubkey_AA99442FB680B620.gpg
+Source0:        https://download.samba.org/pub/samba/%{?pre_release:rc/}samba-%{version}%{pre_release}.tar.gz#/samba-%{version}%{pre_release}.tar.gz
+Source1:        https://download.samba.org/pub/samba/%{?pre_release:rc/}samba-%{version}%{pre_release}.tar.asc
+Source2:        https://download.samba.org/pub/samba/samba-pubkey.asc
 
 # Red Hat specific replacement-files
 Source10:       samba.logrotate
@@ -199,15 +224,11 @@ Source11:       smb.conf.vendor
 Source12:       smb.conf.example
 Source13:       pam_winbind.conf
 Source14:       samba.pamd
+Source15:       samba.abignore
 
 Source201:      README.downgrade
 
-#Patch0:         samba-s4u.patch
-
 Requires(pre): /usr/sbin/groupadd
-Requires(post): systemd
-Requires(preun): systemd
-Requires(postun): systemd
 
 Requires(pre): %{name}-common = %{samba_depver}
 Requires: %{name}-common = %{samba_depver}
@@ -370,12 +391,18 @@ BuildRequires: bind
 %if %{with system_mit_krb5}
 BuildRequires: krb5-server >= %{required_mit_krb5}
 %endif
-BuildRequires: ldb-tools
 BuildRequires: python%{python3_pkgversion}-gpg
 BuildRequires: python%{python3_pkgversion}-markdown
 BuildRequires: python%{python3_pkgversion}-setproctitle
 BuildRequires: python%{python3_pkgversion}-cryptography
+
+%if %{without includelibs}
 BuildRequires: tdb-tools
+BuildRequires: ldb-tools
+#endif without includelibs
+%endif
+
+#endif with dc || with testsuite
 %endif
 
 # filter out perl requirements pulled in from examples in the docdir.
@@ -436,7 +463,7 @@ SMB/CIFS clients.
 Summary: Files used by both Samba servers and clients
 BuildArch: noarch
 
-Requires(post): systemd
+Requires(post): (systemd-standalone-tmpfiles or systemd)
 %if 0%{?fedora}
 Recommends:     logrotate
 %endif
@@ -493,6 +520,7 @@ Summary: Tools for Samba servers and clients
 Requires: samba-common-libs = %{samba_depver}
 Requires: samba-client-libs = %{samba_depver}
 Requires: samba-libs = %{samba_depver}
+Requires: samba-ldb-ldap-modules = %{samba_depver}
 %if %{with libwbclient}
 Requires: libwbclient = %{samba_depver}
 %endif
@@ -502,6 +530,8 @@ Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
 # samba-tool needs tdbbackup
 Requires: tdb-tools
 %if %{with dc}
+# samba-tool needs python%%{python3_pkgversion}-samba-dc on a full build
+Requires: python%{python3_pkgversion}-%{name}-dc = %{samba_depver}
 # samba-tool needs mdb_copy for domain backup or upgrade provision
 Requires: lmdb
 %endif
@@ -517,6 +547,9 @@ SMB/CIFS clients.
 %package dc
 Summary: Samba AD Domain Controller
 Requires: %{name} = %{samba_depver}
+Requires: %{name}-client-libs = %{samba_depver}
+Requires: %{name}-common-libs = %{samba_depver}
+Requires: %{name}-common-tools = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
 Requires: %{name}-dc-provision = %{samba_depver}
 Requires: %{name}-dc-libs = %{samba_depver}
@@ -559,6 +592,7 @@ The samba-dc-provision package provides files to setup a domain controller
 ### DC-LIBS
 %package dc-libs
 Summary: Samba AD Domain Controller Libraries
+Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
 
@@ -574,9 +608,11 @@ link against the SMB, RPC and other protocols.
 ### DC-BIND
 %package dc-bind-dlz
 Summary: Bind DLZ module for Samba AD
+Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-common = %{samba_depver}
 Requires: %{name}-dc-libs = %{samba_depver}
 Requires: %{name}-dc = %{samba_depver}
+Requires: %{name}-libs = %{samba_depver}
 Requires: bind
 
 Provides: bundled(libreplace)
@@ -592,6 +628,9 @@ name server related details of Samba AD.
 Summary: Developer tools for Samba libraries
 Requires: %{name}-libs = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
+%if %{with dc}
+Requires: %{name}-dc-libs = %{samba_depver}
+%endif
 
 Provides: samba4-devel = %{samba_depver}
 Obsoletes: samba4-devel < %{samba_depver}
@@ -606,6 +645,7 @@ libraries in the Samba suite.
 %package vfs-cephfs
 Summary: Samba VFS module for Ceph distributed storage system
 Requires: %{name} = %{samba_depver}
+Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
 
 Provides: bundled(libreplace)
@@ -653,6 +693,22 @@ Provides: bundled(libreplace)
 Samba VFS module for GlusterFS integration.
 %endif
 
+### GPUPDATE
+%if %{with dc}
+%package gpupdate
+Summary: Samba GPO support for clients
+Requires: cepces
+Requires: certmonger
+Requires: %{name}-ldb-ldap-modules = %{samba_depver}
+Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
+
+%description gpupdate
+This package provides the samba-gpupdate tool to apply Group Policy Objects
+(GPO) on Samba clients.
+
+# /with dc
+%endif
+
 ### KRB5-PRINTING
 %package krb5-printing
 Summary: Samba CUPS backend for printing with Kerberos
@@ -667,6 +723,15 @@ Requires(postun): %{_sbindir}/update-alternatives
 If you need Kerberos for print jobs to a printer connection to cups via the SMB
 backend, then you need to install that package. It will allow cups to access
 the Kerberos credentials cache of the user issuing the print job.
+
+### LDB-LDAP-MODULES
+%package ldb-ldap-modules
+Summary: Samba ldap modules for ldb
+Requires: %{name}-client-libs = %{samba_depver}
+
+%description ldb-ldap-modules
+This package contains the ldb ldap modules required by samba-tool and
+samba-gpupdate.
 
 ### LIBS
 %package libs
@@ -738,10 +803,12 @@ library.
 ### PYTHON3
 %package -n python%{python3_pkgversion}-%{name}
 Summary: Samba Python3 libraries
-Requires: %{name} = %{samba_depver}
 Requires: %{name}-client-libs = %{samba_depver}
 Requires: %{name}-common-libs = %{samba_depver}
 Requires: %{name}-libs = %{samba_depver}
+%if %{with dc}
+Requires: %{name}-dc-libs = %{samba_depver}
+%endif
 Requires: python%{python3_pkgversion}-talloc
 Requires: python%{python3_pkgversion}-tevent
 Requires: python%{python3_pkgversion}-tdb
@@ -780,6 +847,8 @@ If you want to run full set of Samba tests, you need to install this package.
 %if %{with dc} || %{with testsuite}
 %package -n python%{python3_pkgversion}-samba-dc
 Summary: Samba Python libraries for Samba AD
+Requires: %{name}-client-libs = %{samba_depver}
+Requires: %{name}-dc-libs = %{samba_depver}
 Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
 
 %description -n python%{python3_pkgversion}-samba-dc
@@ -1033,6 +1102,7 @@ and use CTDB instead.
 Summary: CTDB PCP pmda support
 Requires: ctdb = %{samba_depver}
 Requires: pcp-libs
+Requires: %{name}-client-libs = %{samba_depver}
 
 %description -n ctdb-pcp-pmda
 Performance Co-Pilot (PCP) support for CTDB
@@ -1068,12 +1138,17 @@ Support for using an existing CEPH cluster as a mutex helper for CTDB
 #endif with clustering
 %endif
 
-
-
 %prep
 # STOP DOING THIS!!! It relies on a GPG key embedded in the SRPM
-#zcat %{SOURCE0} | gpgv2 --quiet --keyring %{SOURCE2} %{SOURCE1} -
+#zcat %%{SOURCE0} | gpgv2 --quiet --keyring %%{SOURCE2} %%{SOURCE1} -
 %autosetup -n samba-%{version}%{pre_release} -p1
+
+# Ensure we rely on GnuTLS and do not build any other crypto code shipping with
+# the sources.
+%if %{with system_mit_krb5}
+rm -rf third_party/{aesni-intel,heimdal}
+rm -f lib/crypto/{aes,rijndael}*.c
+%endif
 
 %build
 %if %{with includelibs}
@@ -1089,7 +1164,7 @@ Support for using an existing CEPH cluster as a mutex helper for CTDB
 #endif with includelibs
 %endif
 
-%global _samba_libraries !zlib,!popt%{_talloc_lib}%{_tevent_lib}%{_tdb_lib}%{_ldb_lib}
+%global _samba_libraries !popt%{_talloc_lib}%{_tevent_lib}%{_tdb_lib}%{_ldb_lib}
 
 %global _samba_idmap_modules idmap_ad,idmap_rid,idmap_ldap,idmap_hash,idmap_tdb2
 %global _samba_pdb_modules pdb_tdbsam,pdb_ldap,pdb_smbpasswd,pdb_wbc_sam,pdb_samba4
@@ -1176,6 +1251,9 @@ export python_LDFLAGS="$(echo %{__global_ldflags} | sed -e 's/-Wl,-z,defs//g')"
         --systemd-smb-extra=%{_systemd_extra} \
         --systemd-nmb-extra=%{_systemd_extra} \
         --systemd-winbind-extra=%{_systemd_extra} \
+%if %{with clustering}
+        --systemd-ctdb-extra=%{_systemd_extra} \
+%endif
         --systemd-samba-extra=%{_systemd_extra}
 
 # Do not use %%make_build, make is just a wrapper around waf in Samba!
@@ -1216,7 +1294,6 @@ then
     echo "Expected libwbclient version not found, please check if version has changed."
     exit -1
 fi
-
 
 touch %{buildroot}%{_libexecdir}/samba/cups_backend_smb
 
@@ -1260,10 +1337,6 @@ install -m 0644 ctdb/config/ctdb.conf %{buildroot}%{_sysconfdir}/ctdb/ctdb.conf
 %endif
 
 install -m 0644 %{SOURCE201} packaging/README.downgrade
-
-%if %{with clustering}
-install -m 0644 ctdb/config/ctdb.service %{buildroot}%{_unitdir}
-%endif
 
 # NetworkManager online/offline script
 install -d -m 0755 %{buildroot}%{_prefix}/lib/NetworkManager/dispatcher.d/
@@ -1564,7 +1637,6 @@ fi
 %systemd_postun_with_restart ctdb.service
 %endif
 
-
 ### SAMBA
 %files
 %license COPYING
@@ -1780,23 +1852,23 @@ fi
 
 ### CLIENT-LIBS
 %files client-libs
-%{_libdir}/libdcerpc-binding.so.*
-%{_libdir}/libdcerpc-server-core.so.*
-%{_libdir}/libdcerpc.so.*
-%{_libdir}/libndr-krb5pac.so.*
-%{_libdir}/libndr-nbt.so.*
-%{_libdir}/libndr-standard.so.*
-%{_libdir}/libndr.so.*
-%{_libdir}/libnetapi.so.*
-%{_libdir}/libsamba-credentials.so.*
-%{_libdir}/libsamba-errors.so.*
-%{_libdir}/libsamba-hostconfig.so.*
-%{_libdir}/libsamba-passdb.so.*
-%{_libdir}/libsamba-util.so.*
-%{_libdir}/libsamdb.so.*
-%{_libdir}/libsmbconf.so.*
-%{_libdir}/libsmbldap.so.*
-%{_libdir}/libtevent-util.so.*
+%{_libdir}/libdcerpc-binding.so.%{libdcerpc_binding_so_version}*
+%{_libdir}/libdcerpc-server-core.so.%{libdcerpc_server_core_so_version}*
+%{_libdir}/libdcerpc.so.%{libdcerpc_so_version}*
+%{_libdir}/libndr-krb5pac.so.%{libndr_krb5pac_so_version}*
+%{_libdir}/libndr-nbt.so.%{libndr_nbt_so_version}*
+%{_libdir}/libndr-standard.so.%{libndr_standard_so_version}*
+%{_libdir}/libndr.so.%{libndr_so_version}*
+%{_libdir}/libnetapi.so.%{libnetapi_so_version}*
+%{_libdir}/libsamba-credentials.so.%{libsamba_credentials_so_version}*
+%{_libdir}/libsamba-errors.so.%{libsamba_errors_so_version}*
+%{_libdir}/libsamba-hostconfig.so.%{libsamba_hostconfig_so_version}*
+%{_libdir}/libsamba-passdb.so.%{libsamba_passdb_so_version}*
+%{_libdir}/libsamba-util.so.%{libsamba_util_so_version}*
+%{_libdir}/libsamdb.so.%{libsamdb_so_version}*
+%{_libdir}/libsmbconf.so.%{libsmbconf_so_version}*
+%{_libdir}/libsmbldap.so.%{libsmbldap_so_version}*
+%{_libdir}/libtevent-util.so.%{libtevent_util_so_version}*
 
 %dir %{_libdir}/samba
 %{_libdir}/samba/libCHARSET3-samba4.so
@@ -1881,12 +1953,11 @@ fi
 
 %if %{without libwbclient}
 %{_libdir}/samba/libwbclient.so.*
-#%%{_libdir}/samba/libwinbind-client-samba4.so
 #endif without libwbclient
 %endif
 
 %if %{without libsmbclient}
-%{_libdir}/samba/libsmbclient.so.*
+%{_libdir}/samba/libsmbclient.so.%{libsmbclient_so_version}*
 %{_mandir}/man7/libsmbclient.7*
 #endif without libsmbclient
 %endif
@@ -1935,7 +2006,7 @@ fi
 %{_mandir}/man5/smbpasswd.5*
 %{_mandir}/man7/samba.7*
 
-### COMMON-libs
+### COMMON-LIBS
 %files common-libs
 # common libraries
 %{_libdir}/samba/libcmdline-samba4.so
@@ -1970,7 +2041,6 @@ fi
 %{_sbindir}/samba
 %{_sbindir}/samba_dnsupdate
 %{_sbindir}/samba_downgrade_db
-%{_sbindir}/samba-gpupdate
 %{_sbindir}/samba_kcc
 %{_sbindir}/samba_spnupdate
 %{_sbindir}/samba_upgradedns
@@ -2014,10 +2084,8 @@ fi
 %{_libdir}/samba/ldb/extended_dn_out.so
 %{_libdir}/samba/ldb/extended_dn_store.so
 %{_libdir}/samba/ldb/group_audit_log.so
-%{_libdir}/samba/ldb/ildap.so
 %{_libdir}/samba/ldb/instancetype.so
 %{_libdir}/samba/ldb/lazy_commit.so
-%{_libdir}/samba/ldb/ldbsamba_extensions.so
 %{_libdir}/samba/ldb/linked_attributes.so
 %{_libdir}/samba/ldb/new_partition.so
 %{_libdir}/samba/ldb/objectclass.so
@@ -2052,7 +2120,6 @@ fi
 %dir /var/lib/samba/sysvol
 %{_mandir}/man8/samba.8*
 %{_mandir}/man8/samba_downgrade_db.8*
-%{_mandir}/man8/samba-gpupdate.8*
 %dir %{_datadir}/samba/admx
 %{_datadir}/samba/admx/samba.admx
 %dir %{_datadir}/samba/admx/en-US
@@ -2264,10 +2331,22 @@ fi
 %{_mandir}/man8/vfs_glusterfs.8*
 %endif
 
+### GPUPDATE
+%if %{with dc}
+%files gpupdate
+%{_mandir}/man8/samba-gpupdate.8*
+%{_sbindir}/samba-gpupdate
+%endif
+
 ### KRB5-PRINTING
 %files krb5-printing
 %attr(0700,root,root) %{_libexecdir}/samba/smbspool_krb5_wrapper
 %{_mandir}/man8/smbspool_krb5_wrapper.8*
+
+### LDB-LDAP-MODULES
+%files ldb-ldap-modules
+%{_libdir}/samba/ldb/ldbsamba_extensions.so
+%{_libdir}/samba/ldb/ildap.so
 
 ### LIBS
 %files libs
@@ -2302,8 +2381,7 @@ fi
 ### LIBWBCLIENT
 %if %{with libwbclient}
 %files -n libwbclient
-%{_libdir}/samba/wbclient/libwbclient.so.*
-#%%{_libdir}/samba/libwinbind-client-samba4.so
+%{_libdir}/samba/wbclient/libwbclient.so.%{libwbclient_so_version}*
 
 ### LIBWBCLIENT-DEVEL
 %files -n libwbclient-devel
@@ -2373,18 +2451,6 @@ fi
 %{python3_sitearch}/samba/__pycache__/dnsresolver.*.pyc
 %{python3_sitearch}/samba/__pycache__/drs_utils.*.pyc
 %{python3_sitearch}/samba/__pycache__/getopt.*.pyc
-%{python3_sitearch}/samba/__pycache__/gpclass.*.pyc
-%{python3_sitearch}/samba/__pycache__/gp_cert_auto_enroll_ext.*.pyc
-%{python3_sitearch}/samba/__pycache__/gp_chromium_ext.*.pyc
-%{python3_sitearch}/samba/__pycache__/gp_ext_loader.*.pyc
-%{python3_sitearch}/samba/__pycache__/gp_firefox_ext.*.pyc
-%{python3_sitearch}/samba/__pycache__/gp_firewalld_ext.*.pyc
-%{python3_sitearch}/samba/__pycache__/gp_gnome_settings_ext.*.pyc
-%{python3_sitearch}/samba/__pycache__/gp_msgs_ext.*.pyc
-%{python3_sitearch}/samba/__pycache__/gp_scripts_ext.*.pyc
-%{python3_sitearch}/samba/__pycache__/gp_sec_ext.*.pyc
-%{python3_sitearch}/samba/__pycache__/gp_smb_conf_ext.*.pyc
-%{python3_sitearch}/samba/__pycache__/gp_sudoers_ext.*.pyc
 %{python3_sitearch}/samba/__pycache__/graph.*.pyc
 %{python3_sitearch}/samba/__pycache__/hostconfig.*.pyc
 %{python3_sitearch}/samba/__pycache__/idmap.*.pyc
@@ -2402,14 +2468,6 @@ fi
 %{python3_sitearch}/samba/__pycache__/trust_utils.*.pyc
 %{python3_sitearch}/samba/__pycache__/upgrade.*.pyc
 %{python3_sitearch}/samba/__pycache__/upgradehelpers.*.pyc
-%{python3_sitearch}/samba/__pycache__/vgp_access_ext.*.pyc
-%{python3_sitearch}/samba/__pycache__/vgp_files_ext.*.pyc
-%{python3_sitearch}/samba/__pycache__/vgp_issue_ext.*.pyc
-%{python3_sitearch}/samba/__pycache__/vgp_motd_ext.*.pyc
-%{python3_sitearch}/samba/__pycache__/vgp_openssh_ext.*.pyc
-%{python3_sitearch}/samba/__pycache__/vgp_startup_scripts_ext.*.pyc
-%{python3_sitearch}/samba/__pycache__/vgp_sudoers_ext.*.pyc
-%{python3_sitearch}/samba/__pycache__/vgp_symlink_ext.*.pyc
 %{python3_sitearch}/samba/__pycache__/xattr.*.pyc
 %{python3_sitearch}/samba/_glue.*.so
 %{python3_sitearch}/samba/_ldb.*.so
@@ -2471,11 +2529,6 @@ fi
 %{python3_sitearch}/samba/dsdb_dns.*.so
 %{python3_sitearch}/samba/gensec.*.so
 %{python3_sitearch}/samba/getopt.py
-%{python3_sitearch}/samba/gpclass.py
-%{python3_sitearch}/samba/gp_gnome_settings_ext.py
-%{python3_sitearch}/samba/gp_scripts_ext.py
-%{python3_sitearch}/samba/gp_sec_ext.py
-%{python3_sitearch}/samba/gpo.*.so
 %{python3_sitearch}/samba/graph.py
 %{python3_sitearch}/samba/hostconfig.py
 %{python3_sitearch}/samba/idmap.py
@@ -2494,14 +2547,57 @@ fi
 %{python3_sitearch}/samba/emulate/__init__.py
 %{python3_sitearch}/samba/emulate/traffic.py
 %{python3_sitearch}/samba/emulate/traffic_packets.py
-%{python3_sitearch}/samba/gp_cert_auto_enroll_ext.py
-%{python3_sitearch}/samba/gp_chromium_ext.py
-%{python3_sitearch}/samba/gp_ext_loader.py
-%{python3_sitearch}/samba/gp_firefox_ext.py
-%{python3_sitearch}/samba/gp_firewalld_ext.py
-%{python3_sitearch}/samba/gp_msgs_ext.py
-%{python3_sitearch}/samba/gp_smb_conf_ext.py
-%{python3_sitearch}/samba/gp_sudoers_ext.py
+%dir %{python3_sitearch}/samba/gp
+%dir %{python3_sitearch}/samba/gp/__pycache__
+%{python3_sitearch}/samba/gp/__pycache__/gpclass.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/gp_centrify_crontab_ext.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/gp_centrify_sudoers_ext.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/gp_cert_auto_enroll_ext.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/gp_chromium_ext.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/gp_ext_loader.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/gp_firefox_ext.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/gp_firewalld_ext.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/gp_gnome_settings_ext.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/gp_msgs_ext.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/gp_scripts_ext.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/gp_sec_ext.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/gp_smb_conf_ext.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/gp_sudoers_ext.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/vgp_access_ext.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/vgp_files_ext.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/vgp_issue_ext.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/vgp_motd_ext.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/vgp_openssh_ext.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/vgp_startup_scripts_ext.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/vgp_sudoers_ext.*.pyc
+%{python3_sitearch}/samba/gp/__pycache__/vgp_symlink_ext.*.pyc
+%{python3_sitearch}/samba/gp/gpclass.py
+%{python3_sitearch}/samba/gp/gp_gnome_settings_ext.py
+%{python3_sitearch}/samba/gp/gp_scripts_ext.py
+%{python3_sitearch}/samba/gp/gp_sec_ext.py
+%{python3_sitearch}/samba/gp/gp_centrify_crontab_ext.py
+%{python3_sitearch}/samba/gp/gp_centrify_sudoers_ext.py
+%{python3_sitearch}/samba/gp/gp_cert_auto_enroll_ext.py
+%{python3_sitearch}/samba/gp/gp_chromium_ext.py
+%{python3_sitearch}/samba/gp/gp_ext_loader.py
+%{python3_sitearch}/samba/gp/gp_firefox_ext.py
+%{python3_sitearch}/samba/gp/gp_firewalld_ext.py
+%{python3_sitearch}/samba/gp/gp_msgs_ext.py
+%{python3_sitearch}/samba/gp/gp_smb_conf_ext.py
+%{python3_sitearch}/samba/gp/gp_sudoers_ext.py
+%dir %{python3_sitearch}/samba/gp/util
+%dir %{python3_sitearch}/samba/gp/util/__pycache__
+%{python3_sitearch}/samba/gp/util/__pycache__/logging.*.pyc
+%{python3_sitearch}/samba/gp/util/logging.py
+%{python3_sitearch}/samba/gp/vgp_access_ext.py
+%{python3_sitearch}/samba/gp/vgp_files_ext.py
+%{python3_sitearch}/samba/gp/vgp_issue_ext.py
+%{python3_sitearch}/samba/gp/vgp_motd_ext.py
+%{python3_sitearch}/samba/gp/vgp_openssh_ext.py
+%{python3_sitearch}/samba/gp/vgp_startup_scripts_ext.py
+%{python3_sitearch}/samba/gp/vgp_sudoers_ext.py
+%{python3_sitearch}/samba/gp/vgp_symlink_ext.py
+%{python3_sitearch}/samba/gpo.*.so
 %dir %{python3_sitearch}/samba/gp_parse
 %{python3_sitearch}/samba/gp_parse/__init__.py
 %dir %{python3_sitearch}/samba/gp_parse/__pycache__
@@ -2596,9 +2692,11 @@ fi
 %{python3_sitearch}/samba/samba3/mdscli.*.so
 %{python3_sitearch}/samba/samba3/param.*.so
 %{python3_sitearch}/samba/samba3/passdb.*.so
+%{python3_sitearch}/samba/samba3/smbconf.*.so
 %{python3_sitearch}/samba/samba3/smbd.*.so
 %{python3_sitearch}/samba/sd_utils.py
 %{python3_sitearch}/samba/sites.py
+%{python3_sitearch}/samba/smbconf.*.so
 %{python3_sitearch}/samba/subnets.py
 %dir %{python3_sitearch}/samba/subunit
 %{python3_sitearch}/samba/subunit/__init__.py
@@ -2610,14 +2708,6 @@ fi
 %{python3_sitearch}/samba/trust_utils.py
 %{python3_sitearch}/samba/upgrade.py
 %{python3_sitearch}/samba/upgradehelpers.py
-%{python3_sitearch}/samba/vgp_access_ext.py
-%{python3_sitearch}/samba/vgp_files_ext.py
-%{python3_sitearch}/samba/vgp_issue_ext.py
-%{python3_sitearch}/samba/vgp_motd_ext.py
-%{python3_sitearch}/samba/vgp_openssh_ext.py
-%{python3_sitearch}/samba/vgp_startup_scripts_ext.py
-%{python3_sitearch}/samba/vgp_sudoers_ext.py
-%{python3_sitearch}/samba/vgp_symlink_ext.py
 %{python3_sitearch}/samba/werror.*.so
 %{python3_sitearch}/samba/xattr.py
 %{python3_sitearch}/samba/xattr_native.*.so
@@ -2763,6 +2853,7 @@ fi
 %{python3_sitearch}/samba/tests/__pycache__/ldap_spn.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/ldap_upn_sam_account.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/loadparm.*.pyc
+%{python3_sitearch}/samba/tests/__pycache__/logfiles.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/libsmb.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/lsa_string.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/messaging.*.pyc
@@ -2780,6 +2871,7 @@ fi
 %{python3_sitearch}/samba/tests/__pycache__/ntlm_auth_krb5.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/pam_winbind.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/pam_winbind_chauthtok.*.pyc
+%{python3_sitearch}/samba/tests/__pycache__/pam_winbind_setcred.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/pam_winbind_warn_pwd_expire.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/param.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/password_hash.*.pyc
@@ -2810,7 +2902,9 @@ fi
 %{python3_sitearch}/samba/tests/__pycache__/sddl.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/security.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/segfault.*.pyc
+%{python3_sitearch}/samba/tests/__pycache__/sid_strings.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/smb.*.pyc
+%{python3_sitearch}/samba/tests/__pycache__/smbconf.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/smb-notify.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/smbd_base.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/smbd_fuzztest.*.pyc
@@ -2845,6 +2939,7 @@ fi
 %{python3_sitearch}/samba/tests/blackbox/__pycache__/downgradedatabase.*.pyc
 %{python3_sitearch}/samba/tests/blackbox/__pycache__/mdsearch.*.pyc
 %{python3_sitearch}/samba/tests/blackbox/__pycache__/ndrdump.*.pyc
+%{python3_sitearch}/samba/tests/blackbox/__pycache__/netads_dns.*.pyc
 %{python3_sitearch}/samba/tests/blackbox/__pycache__/netads_json.*.pyc
 %{python3_sitearch}/samba/tests/blackbox/__pycache__/samba_dnsupdate.*.pyc
 %{python3_sitearch}/samba/tests/blackbox/__pycache__/smbcacls.*.pyc
@@ -2861,6 +2956,7 @@ fi
 %{python3_sitearch}/samba/tests/blackbox/downgradedatabase.py
 %{python3_sitearch}/samba/tests/blackbox/mdsearch.py
 %{python3_sitearch}/samba/tests/blackbox/ndrdump.py
+%{python3_sitearch}/samba/tests/blackbox/netads_dns.py
 %{python3_sitearch}/samba/tests/blackbox/netads_json.py
 %{python3_sitearch}/samba/tests/blackbox/samba_dnsupdate.py
 %{python3_sitearch}/samba/tests/blackbox/smbcacls.py
@@ -2986,7 +3082,9 @@ fi
 %{python3_sitearch}/samba/tests/krb5/__pycache__/kdc_tgs_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/kpasswd_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/ms_kile_client_principal_lookup_tests.*.pyc
+%{python3_sitearch}/samba/tests/krb5/__pycache__/nt_hash_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/pac_align_tests.*.pyc
+%{python3_sitearch}/samba/tests/krb5/__pycache__/protected_users_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/raw_testcase.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/rfc4120_constants.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/rfc4120_pyasn1.*.pyc
@@ -3013,7 +3111,9 @@ fi
 %{python3_sitearch}/samba/tests/krb5/kdc_tgs_tests.py
 %{python3_sitearch}/samba/tests/krb5/kpasswd_tests.py
 %{python3_sitearch}/samba/tests/krb5/ms_kile_client_principal_lookup_tests.py
+%{python3_sitearch}/samba/tests/krb5/nt_hash_tests.py
 %{python3_sitearch}/samba/tests/krb5/pac_align_tests.py
+%{python3_sitearch}/samba/tests/krb5/protected_users_tests.py
 %{python3_sitearch}/samba/tests/krb5/raw_testcase.py
 %{python3_sitearch}/samba/tests/krb5/rfc4120_constants.py
 %{python3_sitearch}/samba/tests/krb5/rfc4120_pyasn1.py
@@ -3036,6 +3136,7 @@ fi
 %{python3_sitearch}/samba/tests/ldap_upn_sam_account.py
 %{python3_sitearch}/samba/tests/libsmb.py
 %{python3_sitearch}/samba/tests/loadparm.py
+%{python3_sitearch}/samba/tests/logfiles.py
 %{python3_sitearch}/samba/tests/lsa_string.py
 %{python3_sitearch}/samba/tests/messaging.py
 %{python3_sitearch}/samba/tests/ndr.py
@@ -3052,6 +3153,7 @@ fi
 %{python3_sitearch}/samba/tests/ntlm_auth_krb5.py
 %{python3_sitearch}/samba/tests/pam_winbind.py
 %{python3_sitearch}/samba/tests/pam_winbind_chauthtok.py
+%{python3_sitearch}/samba/tests/pam_winbind_setcred.py
 %{python3_sitearch}/samba/tests/pam_winbind_warn_pwd_expire.py
 %{python3_sitearch}/samba/tests/param.py
 %{python3_sitearch}/samba/tests/password_hash.py
@@ -3160,7 +3262,9 @@ fi
 %{python3_sitearch}/samba/tests/sddl.py
 %{python3_sitearch}/samba/tests/security.py
 %{python3_sitearch}/samba/tests/segfault.py
+%{python3_sitearch}/samba/tests/sid_strings.py
 %{python3_sitearch}/samba/tests/smb.py
+%{python3_sitearch}/samba/tests/smbconf.py
 %{python3_sitearch}/samba/tests/smb-notify.py
 %{python3_sitearch}/samba/tests/smbd_base.py
 %{python3_sitearch}/samba/tests/smbd_fuzztest.py
@@ -3283,7 +3387,6 @@ fi
 %config(noreplace) %{_sysconfdir}/ctdb/nfs-checks.d/50.rquotad.check
 
 %{_sbindir}/ctdbd
-%{_sbindir}/ctdbd_wrapper
 %{_bindir}/ctdb
 %{_bindir}/ctdb_diagnostics
 %{_bindir}/ltdbtool
@@ -3316,7 +3419,6 @@ fi
 %{_mandir}/man1/onnode.1.gz
 %{_mandir}/man1/ltdbtool.1.gz
 %{_mandir}/man1/ping_pong.1.gz
-%{_mandir}/man1/ctdbd_wrapper.1.gz
 %{_mandir}/man5/ctdb.conf.5.gz
 %{_mandir}/man5/ctdb-script.options.5.gz
 %{_mandir}/man5/ctdb.sysconfig.5.gz
@@ -4172,17 +4274,53 @@ fi
 %endif
 
 %changelog
-* Sat Aug 6 2022 Nico Kadel-Garcia <nkadel@gmail.com>- 4.16.4
-- Update to 4.16.4
+* Thu Sep 8 2022 Nico Kadel-Garcia <nkadel@gmail.com>- 4.17.0rc5
 - Add kpasswd_test files
-
-* Tue Jul 19 2022 Nico Kadel-Garcia <nkadel@gmail.com>- 4.16.3
-- Update to 4.16.3
-- add dlz_bind9_18.so file
-
-* Fri Jun 17 2022 Nico Kadel-Garcia <nkadel@gmail.com>
 - Add BuildRequires perl(JSON)
 - Add system-mit-krb5 option to use Heimdal kkerberos
+
+* Thu Aug 25 2022 Adam Williamson <awilliam@redhat.com> - 4.17.0-0.8.rc3
+- Rebuild with no changes to fix F37 update grouping
+
+* Thu Aug 25 2022 Andreas Schneider <asn@redhat.com> - 4.17.0-0.7.rc3
+- python3-samba package should not require the samba package
+
+* Tue Aug 23 2022 Pavel Filipenský <pfilipen@redhat.com> - 4.17.0-0.6.rc3
+- resolves: #2118818 - Update to version 4.17.0rc3
+
+* Fri Aug 19 2022 Andreas Schneider <asn@redhat.com> - 4.17.0-0.5.rc2
+- Create a samba-gpupdate sub-package for GPO client support
+
+* Fri Aug 19 2022 Andreas Schneider <asn@redhat.com> - 4.17.0-0.4.rc2
+- Split out a samba-ldb-ldap-modules subpackage
+
+* Thu Aug 18 2022 Kalev Lember <klember@redhat.com> - 2:4.17.0-0.3.rc2
+- Avoid requiring systemd as per updated packaging guidelines
+
+* Wed Aug 17 2022 Guenther Deschner <gdeschner@redhat.com> - 4.17.0rc2-2
+- resolves: #2118818 - Update to version 4.17.0rc2
+
+* Wed Aug 10 2022 Andreas Schneider <asn@redhat.com> - 4.17.0rc1-1
+- Make sure we detect if SO version numbers of public libraries change.
+
+* Mon Aug 08 2022 Guenther Deschner <gdeschner@redhat.com> - 4.17.0rc1-0
+- resolves: #2116503 - Update to version 4.17.0rc1
+
+* Mon Aug 01 2022 Frantisek Zatloukal <fzatlouk@redhat.com> - 2:4.16.4-1
+- Rebuilt for ICU 71.1
+
+* Wed Jul 27 2022 Guenther Deschner <gdeschner@redhat.com> - 4.16.4-0
+- resolves: #2111490 - Update to version 4.16.4
+- resolves: #2108196, #2111729 - Security fixes for CVE-2022-32742
+- resolves: #2108205, #2111731 - Security fixes for CVE-2022-32744
+- resolves: #2108211, #2111732 - Security fixes for CVE-2022-32745
+- resolves: #2108215, #2111734 - Security fixes for CVE-2022-32746
+
+* Sat Jul 23 2022 Fedora Release Engineering <releng@fedoraproject.org> - 2:4.16.3-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
+
+* Mon Jul 18 2022 Andreas Schneider <asn@redhat.com> - 4.16.3-1
+- Update to version 4.16.3
 
 * Wed Jun 15 2022 Python Maint <python-maint@redhat.com> - 2:4.16.2-1
 - Rebuilt for Python 3.11
@@ -6002,7 +6140,7 @@ fi
 - adjust the Requires: for the scripts, add "chkconfig --add smb"
 
 * Tue Mar 20 2007 Simo Sorce <ssorce@redhat.com> 3.0.24-6.fc7
-- Do not put comments inline on smb.conf options, they may be read
+- do not put comments inline on smb.conf options, they may be read
   as part of the value (for example log files names)
 
 * Mon Mar 19 2007 Simo Sorce <ssorce@redhat.com> 3.0.24-5.fc7
@@ -6444,7 +6582,7 @@ fi
 - use internal dep generator.
 
 * Sat Dec 14 2002 Tim Powers <timp@redhat.com> 2.2.7-4
-- Do not use rpms internal dep generator
+- do not use rpms internal dep generator
 
 * Mon Dec 02 2002 Elliot Lee <sopwith@redhat.com> 2.2.7-3
 - Fix missing doc files.
@@ -6602,7 +6740,7 @@ fi
   by root (#41193)
 - Add pidfile: lines for smbd and nmbd and a config: line
   in the initscript  (#15343)
-- Do not use make -j
+- do not use make -j
 - explicitly include /usr/share/samba, not just the files in it
 
 * Tue Jun 19 2001 Bill Nottingham <notting@redhat.com>
@@ -6614,7 +6752,7 @@ fi
 * Thu Jun  7 2001 Helge Deller <hdeller@redhat.de>
 - build as 2.2.0-1 release
 - skip the documentation-directories docbook, manpages and yodldocs
-- Do not include *.sgml documentation in package
+- do not include *.sgml documentation in package
 - moved codepage-directory to /usr/share/samba/codepages
 - make it compile with glibc-2.2.3-10 and kernel-headers-2.4.2-2
 
@@ -6652,7 +6790,7 @@ fi
 * Mon Mar 26 2001 Nalin Dahyabhai <nalin@redhat.com>
 - tweak the PAM code some more to try to do a setcred() after initgroups()
 - pull in all of the optflags on i386 and sparc
-- Do not explicitly enable Kerberos support -- it is only used for password
+- do not explicitly enable Kerberos support -- it is only used for password
   checking, and if PAM is enabled it is a no-op anyway
 
 * Mon Mar  5 2001 Tim Waugh <twaugh@redhat.com>
@@ -6866,7 +7004,7 @@ fi
 
 * Fri Jun 18 1999 Bill Nottingham <notting@redhat.com>
 - split off clients into separate package
-- Do not run samba by default
+- do not run samba by default
 
 * Mon Jun 14 1999 Bill Nottingham <notting@redhat.com>
 - fix one problem with mount.smb script
