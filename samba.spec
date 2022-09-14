@@ -131,12 +131,11 @@
 %define samba_requires_eq()  %(LC_ALL="C" echo '%*' | xargs -r rpm -q --qf 'Requires: %%{name} = %%{epoch}:%%{version}\\n' | sed -e 's/ (none):/ /' -e 's/ 0:/ /' | grep -v "is not")
 
 %global samba_version 4.17.0
-# Update to 105 to exceed RHEL and Fedora published releases
+# Update to 108 to exceed RHEL and Fedora published releases
 #%%global baserelease 8
-%global baserelease 105
+%global baserelease 108
 # This should be rc1 or %%nil
-#%%global pre_release %%{nil}
-%global pre_release rc5
+%global pre_release %{nil}
 
 %global samba_release %{baserelease}
 %if "x%{?pre_release}" != "x"
@@ -214,8 +213,8 @@ Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+
 URL:            https://www.samba.org
 
-Source0:        https://download.samba.org/pub/samba/%{?pre_release:rc/}samba-%{version}%{pre_release}.tar.gz#/samba-%{version}%{pre_release}.tar.gz
-Source1:        https://download.samba.org/pub/samba/%{?pre_release:rc/}samba-%{version}%{pre_release}.tar.asc
+Source0:        https://download.samba.org/pub/samba/%{?pre_release:}samba-%{version}%{pre_release}.tar.gz
+Source1:        https://download.samba.org/pub/samba/%{?pre_release:}samba-%{version}%{pre_release}.tar.asc
 Source2:        https://download.samba.org/pub/samba/samba-pubkey.asc
 
 # Red Hat specific replacement-files
@@ -4274,6 +4273,9 @@ fi
 %endif
 
 %changelog
+* Wed Sep 14 2022 Nico Kadel-Garcia <nkadel@gmail.com>- 4.17.0
+- Update to 4.14.0
+
 * Thu Sep 8 2022 Nico Kadel-Garcia <nkadel@gmail.com>- 4.17.0rc5
 - Add kpasswd_test files
 - Add BuildRequires perl(JSON)
