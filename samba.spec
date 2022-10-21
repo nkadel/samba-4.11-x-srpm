@@ -130,7 +130,7 @@
 
 %define samba_requires_eq()  %(LC_ALL="C" echo '%*' | xargs -r rpm -q --qf 'Requires: %%{name} = %%{epoch}:%%{version}\\n' | sed -e 's/ (none):/ /' -e 's/ 0:/ /' | grep -v "is not")
 
-%global samba_version 4.17.0
+%global samba_version 4.17.1
 # Update to 108 to exceed RHEL and Fedora published releases
 #%%global baserelease 8
 %global baserelease 108
@@ -3080,6 +3080,7 @@ fi
 %{python3_sitearch}/samba/tests/krb5/__pycache__/kdc_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/kdc_tgs_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/kpasswd_tests.*.pyc
+%{python3_sitearch}/samba/tests/krb5/__pycache__/lockout_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/ms_kile_client_principal_lookup_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/nt_hash_tests.*.pyc
 %{python3_sitearch}/samba/tests/krb5/__pycache__/pac_align_tests.*.pyc
@@ -3109,6 +3110,7 @@ fi
 %{python3_sitearch}/samba/tests/krb5/kdc_tests.py
 %{python3_sitearch}/samba/tests/krb5/kdc_tgs_tests.py
 %{python3_sitearch}/samba/tests/krb5/kpasswd_tests.py
+%{python3_sitearch}/samba/tests/krb5/lockout_tests.py
 %{python3_sitearch}/samba/tests/krb5/ms_kile_client_principal_lookup_tests.py
 %{python3_sitearch}/samba/tests/krb5/nt_hash_tests.py
 %{python3_sitearch}/samba/tests/krb5/pac_align_tests.py
@@ -4273,8 +4275,11 @@ fi
 %endif
 
 %changelog
+* Thu Oct 20 2022 Nico Kadel-Garcia <nkadel@gmail.com>- 4.17.1
+- Update to 4.17.1
+
 * Wed Sep 14 2022 Nico Kadel-Garcia <nkadel@gmail.com>- 4.17.0
-- Update to 4.14.0
+- Update to 4.17.0
 
 * Thu Sep 8 2022 Nico Kadel-Garcia <nkadel@gmail.com>- 4.17.0rc5
 - Add kpasswd_test files
