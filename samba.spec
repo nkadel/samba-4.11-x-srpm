@@ -134,7 +134,7 @@
 %global samba_version 4.17.3
 # Update to 108 to exceed RHEL and Fedora published releases
 #%%global baserelease 8
-%global baserelease 108
+%global baserelease 109
 # This should be rc1 or %%nil
 %global pre_release %{nil}
 
