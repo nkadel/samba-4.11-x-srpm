@@ -1154,7 +1154,11 @@ Support for using an existing CEPH cluster as a mutex helper for CTDB
 
 %prep
 # STOP DOING THIS!!! It relies on a GPG key embedded in the SRPM
+#%%if 0%%{?fedora} || 0%%{?rhel} >= 9
+#zcat %%{SOURCE0} | %%{gpgverify} --keyring='%%{SOURCE2}' --signature='%%{SOURCE1}' --data=-
+#%%else
 #zcat %%{SOURCE0} | gpgv2 --quiet --keyring %%{SOURCE2} %%{SOURCE1} -
+#%%endif
 %autosetup -n samba-%{version}%{pre_release} -p1
 
 # Ensure we rely on GnuTLS and do not build any other crypto code shipping with
@@ -2007,6 +2011,7 @@ fi
 ### COMMON
 %files common
 %{_tmpfilesdir}/samba.conf
+%{_sysusersdir}/samba.conf
 %dir %{_sysconfdir}/logrotate.d/
 %config(noreplace) %{_sysconfdir}/logrotate.d/samba
 %attr(0700,root,root) %dir /var/log/samba
@@ -2720,9 +2725,9 @@ fi
 %{python3_sitearch}/samba/subnets.py
 %dir %{python3_sitearch}/samba/subunit
 %{python3_sitearch}/samba/subunit/__init__.py
-#%%dir %%{python3_sitearch}/samba/subunit/__pycache__
-#%%{python3_sitearch}/samba/subunit/__pycache__/__init__.*.pyc
-#%%{python3_sitearch}/samba/subunit/__pycache__/run.*.pyc
+%dir %{python3_sitearch}/samba/subunit/__pycache__
+%{python3_sitearch}/samba/subunit/__pycache__/__init__.*.pyc
+%{python3_sitearch}/samba/subunit/__pycache__/run.*.pyc
 %{python3_sitearch}/samba/subunit/run.py
 %{python3_sitearch}/samba/tdb_util.py
 %{python3_sitearch}/samba/trust_utils.py
