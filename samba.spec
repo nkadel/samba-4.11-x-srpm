@@ -229,6 +229,7 @@ Source16:       samba-systemd-sysusers.conf
 Source17:       samba-usershares-systemd-sysusers.conf
 
 Source201:      README.downgrade
+Source202:      samba.abignore
 
 Requires(pre): /usr/sbin/groupadd
 
@@ -925,6 +926,17 @@ Provides: bundled(libreplace)
 %description test-libs
 %{name}-test-libs provides libraries required by the testing tools.
 
+### USERSHARES
+%package usershares
+Summary: Provides support for non-root user shares
+Requires: %{name} = %{samba_depver}
+Requires: %{name}-common-tools = %{samba_depver}
+
+%description usershares
+Installing this package will provide a configuration file, group and
+directories to support non-root user shares. You can configure them
+as a user using the `net usershare` command.
+
 ### WINBIND
 %package winbind
 Summary: Samba winbind
@@ -1279,6 +1291,7 @@ install -d -m 0755 %{buildroot}/var/lib/samba/lock
 install -d -m 0755 %{buildroot}/var/lib/samba/private
 install -d -m 0755 %{buildroot}/var/lib/samba/scripts
 install -d -m 0755 %{buildroot}/var/lib/samba/sysvol
+install -d -m 0755 %{buildroot}/var/lib/samba/usershares
 install -d -m 0755 %{buildroot}/var/lib/samba/winbindd_privileged
 install -d -m 0755 %{buildroot}/var/log/samba/old
 install -d -m 0755 %{buildroot}/run/samba
@@ -2727,9 +2740,9 @@ fi
 %{_libdir}/samba/libpyldb-util.cpython*.so
 %{_libdir}/samba/libpytalloc-util.cpython*.so
 
-#%%{python3_sitearch}/__pycache__/_ldb_text*.pyc
-#%%{python3_sitearch}/__pycache__/_tdb_text*.pyc
-#%%{python3_sitearch}/__pycache__/tevent*.pyc
+%{python3_sitearch}/__pycache__/_ldb_text.cpython*.pyc
+%{python3_sitearch}/__pycache__/_tdb_text.cpython*.pyc
+%{python3_sitearch}/__pycache__/tevent.cpython*.pyc
 %{python3_sitearch}/_ldb_text.py
 %{python3_sitearch}/_tdb_text.py
 %{python3_sitearch}/_tevent.cpython*.so
@@ -3315,6 +3328,12 @@ fi
 %else
 %{_libdir}/samba/libdsdb-module-samba4.so
 %endif
+
+### USERSHARES
+%files usershares
+%config(noreplace) %{_sysconfdir}/samba/usershares.conf
+%attr(1770,root,usershares) %dir /var/lib/samba/usershares
+%{_sysusersdir}/samba-usershares.conf
 
 ### WINBIND
 %files winbind
