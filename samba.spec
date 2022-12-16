@@ -131,7 +131,7 @@
 
 %define samba_requires_eq()  %(LC_ALL="C" echo '%*' | xargs -r rpm -q --qf 'Requires: %%{name} = %%{epoch}:%%{version}\\n' | sed -e 's/ (none):/ /' -e 's/ 0:/ /' | grep -v "is not")
 
-%global samba_version 4.17.3
+%global samba_version 4.17.4
 # Update to 108 to exceed RHEL and Fedora published releases
 #%%global baserelease 8
 %global baserelease 109
@@ -466,7 +466,12 @@ SMB/CIFS clients.
 Summary: Files used by both Samba servers and clients
 BuildArch: noarch
 
+#Requires(post): (systemd-standalone-tmpfiles or systemd)
+%if 0%{?rhel} > 7 || 0%{?fedora}
 Requires(post): (systemd-standalone-tmpfiles or systemd)
+%else
+Requires(post): systemd
+%endif
 %if 0%{?fedora}
 Recommends:     logrotate
 %endif
@@ -4307,6 +4312,9 @@ fi
 %endif
 
 %changelog
+* Fri Dec 16 2022 Nico Kadel-Garcia <nkadel@gmail.com>- 4.17.4
+- Update to 4.17.4
+
 * Tue Nov 15 2022 Nico Kadel-Garcia <nkadel@gmail.com>- 4.17.3
 - Update to 4.17.3
 - Set includelibs for RHEL and sssd compatibility
