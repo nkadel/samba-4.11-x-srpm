@@ -2161,7 +2161,7 @@ fi
 %{_mandir}/man8/samba_downgrade_db.8*
 %dir %{_datadir}/samba/admx
 %{_datadir}/samba/admx/samba.admx
-%{_datadir}/samba/admx/GNOME_settings.admx
+%{_datadir}/samba/admx/GNOME_Settings.admx
 %dir %{_datadir}/samba/admx/en-US
 %{_datadir}/samba/admx/en-US/samba.adml
 %{_datadir}/samba/admx/en-US/GNOME_Settings.adml
@@ -2806,6 +2806,7 @@ fi
 %{python3_sitearch}/samba/forest_update.py
 %{python3_sitearch}/samba/ms_forest_updates_markdown.py
 %{python3_sitearch}/samba/ms_schema_markdown.py
+%{python3_sitearch}/samba/safe_tarfile.py
 
 %dir %{python3_sitearch}/samba/kcc
 %{python3_sitearch}/samba/kcc/__init__.py
@@ -2956,7 +2957,7 @@ fi
 %{python3_sitearch}/samba/tests/__pycache__/segfault.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/sid_strings.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/smb.*.pyc
-%{python3_sitearch}/samba/tests/__pycache__/smb1posix.cpython-311.*.pyc
+%{python3_sitearch}/samba/tests/__pycache__/smb1posix.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/smb2symlink.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/smb3unix.*.pyc
 %{python3_sitearch}/samba/tests/__pycache__/smbconf.*.pyc
