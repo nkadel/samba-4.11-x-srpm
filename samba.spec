@@ -406,6 +406,9 @@ BuildRequires: python%{python3_pkgversion}-cryptography
 %if %{without includelibs}
 BuildRequires: tdb-tools
 BuildRequires: ldb-tools
+%else
+Conflicts: tdb-tools
+Conflicts: ldb-tools
 #endif without includelibs
 %endif
 
@@ -540,7 +543,9 @@ Requires: libwbclient = %{samba_depver}
 # samba-tool needs python%%{python3_pkgversion}-samba
 Requires: python%{python3_pkgversion}-%{name} = %{samba_depver}
 # samba-tool needs tdbbackup
+%if %{without includelibs}
 Requires: tdb-tools
+%endif
 %if %{with dc}
 # samba-tool needs python%%{python3_pkgversion}-samba-dc on a full build
 Requires: python%{python3_pkgversion}-%{name}-dc = %{samba_depver}
@@ -572,7 +577,9 @@ Requires(post): libwbclient = %{samba_depver}
 Requires: libwbclient = %{samba_depver}
 %endif
 
+%if %{without includelibs}
 Requires: ldb-tools
+%endif
 Requires: python%{python3_pkgversion}-setproctitle
 # Force using libldb version to be the same as build version
 # Otherwise LDB modules will not be loaded and samba-tool will fail
@@ -821,10 +828,18 @@ Requires: %{name}-libs = %{samba_depver}
 %if %{with dc}
 Requires: %{name}-dc-libs = %{samba_depver}
 %endif
+
+%if %{without includelibs}
 Requires: python%{python3_pkgversion}-talloc
 Requires: python%{python3_pkgversion}-tevent
 Requires: python%{python3_pkgversion}-tdb
 Requires: python%{python3_pkgversion}-ldb
+%else
+Conflicts: python%{python3_pkgversion}-talloc
+Conflicts: python%{python3_pkgversion}-tevent
+Conflicts: python%{python3_pkgversion}-tdb
+Conflicts: python%{python3_pkgversion}-ldb
+%endif
 Requires: python%{python3_pkgversion}-dns
 %if %{with libsmbclient}
 Requires: libsmbclient = %{samba_depver}
@@ -1070,7 +1085,9 @@ Requires: coreutils
 # for ps and killall
 Requires: psmisc
 Requires: sed
+%if %{without includelibs}
 Requires: tdb-tools
+%endif
 Requires: gawk
 # for pkill and pidof:
 Requires: procps-ng
@@ -4358,6 +4375,7 @@ fi
 - Update tdb_version to 1.4.7
 - Update tevent_version to 0.13.0
 - Update libwbc_alternatives_version to 0.16
+- List Conflicts rather than Requires for tdb-tools, python3-{talloc,tdb,tevent,ldb}
 
 * Fri Dec 16 2022 Nico Kadel-Garcia <nkadel@gmail.com>- 4.17.4
 - Update to 4.17.4
