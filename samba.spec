@@ -136,7 +136,7 @@
 #%%global baserelease 8
 %global baserelease 109
 # This should be rc1 or %%nil
-%global pre_release rc1
+%global pre_release rc2
 
 %global samba_release %{baserelease}
 %if "x%{?pre_release}" != "x"
