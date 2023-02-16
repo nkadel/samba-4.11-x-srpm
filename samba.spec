@@ -136,7 +136,7 @@
 #%%global baserelease 8
 %global baserelease 109
 # This should be rc1 or %%nil
-%global pre_release rc2
+%global pre_release rc3
 
 %global samba_release %{baserelease}
 %if "x%{?pre_release}" != "x"
@@ -166,10 +166,10 @@
 %global libsmbclient_so_version 0
 %global libwbclient_so_version 0
 
-%global talloc_version 2.3.4
-%global tdb_version 1.4.7
-%global tevent_version 0.13.0
-%global ldb_version 2.6.1
+%global talloc_version 2.4.0
+%global tdb_version 1.4.8
+%global tevent_version 0.14.1
+%global ldb_version 2.7.1
 
 %bcond_with system_mit_krb5
 %if %{with system_mit_krb5}
@@ -4368,6 +4368,9 @@ fi
 %endif
 
 %changelog
+* Thu Feb 16 2023 Nico Kadel-Garcia <nkadel@gmail.com>- 4.18.0rc3
+- Update to 4.18.0rc3
+
 * Thu Jan 19 2023 Nico Kadel-Garcia <nkadel@gmail.com>- 4.18.0rc1
 - Update to 4.18.0rc1
 - Update ldb_version to 2.6.1
