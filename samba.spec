@@ -136,7 +136,7 @@
 #%%global baserelease 8
 %global baserelease 109
 # This should be rc1 or %%nil
-%global pre_release rc3
+%global pre_release rc4
 
 %global samba_release %{baserelease}
 %if "x%{?pre_release}" != "x"
@@ -4368,6 +4368,9 @@ fi
 %endif
 
 %changelog
+* Thu Mar 1 2023 Nico Kadel-Garcia <nkadel@gmail.com>- 4.18.0rc4
+- Update to 4.18.0rc4
+
 * Thu Feb 16 2023 Nico Kadel-Garcia <nkadel@gmail.com>- 4.18.0rc3
 - Update to 4.18.0rc3
 
