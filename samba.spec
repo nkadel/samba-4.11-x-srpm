@@ -136,7 +136,7 @@
 #%%global baserelease 8
 %global baserelease 109
 # This should be rc1 or %%nil
-%global pre_release rc4
+%global pre_release %nil
 
 %global samba_release %{baserelease}
 %if "x%{?pre_release}" != "x"
@@ -214,11 +214,11 @@ Summary:        Server and Client software to interoperate with Windows machines
 License:        GPLv3+ and LGPLv3+
 URL:            https://www.samba.org
 
-#Source0:        https://download.samba.org/pub/samba/%%{?pre_release:}samba-%%{version}%%{pre_release}.tar.gz
-#Source1:        https://download.samba.org/pub/samba/%%{?pre_release:}samba-%%{version}%%{pre_release}.tar.asc
+Source0:        https://download.samba.org/pub/samba/%{?pre_release:}samba-%{version}%{pre_release}.tar.gz
+Source1:        https://download.samba.org/pub/samba/%{?pre_release:}samba-%{version}%{pre_release}.tar.asc
 
-Source0:        https://download.samba.org/pub/samba/rc/samba-%{version}%{pre_release}.tar.gz
-Source1:        https://download.samba.org/pub/samba/rc/samba-%{version}%{pre_release}.tar.asc
+#Source0:        https://download.samba.org/pub/samba/rc/samba-%{version}%{pre_release}.tar.gz
+#Source1:        https://download.samba.org/pub/samba/rc/samba-%{version}%{pre_release}.tar.asc
 
 Source2:        https://download.samba.org/pub/samba/samba-pubkey.asc
 
@@ -4368,6 +4368,9 @@ fi
 %endif
 
 %changelog
+* Wed Mar 8 2023 Nico Kadel-Garcia <nkadel@gmail.com>- 4.18.0
+- Update to 4.18.0
+
 * Thu Mar 1 2023 Nico Kadel-Garcia <nkadel@gmail.com>- 4.18.0rc4
 - Update to 4.18.0rc4
 
