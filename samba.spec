@@ -14,8 +14,8 @@
 # or
 # rpmbuild --rebuild --with=testsuite --with=includelibs samba.src.rpm
 #
-# Use this to avoid loibldb dependency incompatibility with RHEL 8
-%bcond_without includelibs
+# Warning: libldb dependencies create sssd conflicts for RHEL
+%bcond_with includelibs
 
 # ctdb is enabled by default, you can disable it with: --without clustering
 %bcond_without clustering
